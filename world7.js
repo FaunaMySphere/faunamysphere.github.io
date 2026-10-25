@@ -12,7 +12,7 @@ const PROF={home:{gr:1,gh:1,fl:[0xffffff,0xffd84a,0xff8fc0,0xb48cff,0xfff1a8],tr
  candy:{gr:.8,gh:.9,fl:[0xffb6d9,0xfff1a8,0xc8a8ff,0xffffff],tree:'leaf',leaf:0xf2a6c6,nt:.45,bu:6,mu:2,bo:2,pe:.6},
  scorch:{gr:.15,gh:1.2,dry:1,fl:null,tree:null,nt:0,bu:0,mu:0,bo:7,pe:2.5,sand:1,roots:0},
  mesa:{gr:.12,gh:1,dry:1,fl:[0xffd84a,0xff8f6a],tree:'cactus',nt:.5,bu:0,mu:0,bo:8,pe:2.5,sand:1,roots:0},
- sea:{gr:0,fl:null,tree:'kelp',nt:1.3,bu:7,coral:1,mu:0,bo:6,pe:2.5,sand:1,roots:0,shells:1,sea:1},
+ sea:{gr:0,fl:null,tree:'kelp',nt:1.8,bu:16,coral:1,mu:0,bo:10,pe:3.2,sand:1,roots:0,shells:1,sea:1},
  dungeon:{gr:0,fl:null,tree:'crystal',nt:.9,bu:0,mu:2,glow:1,bo:10,pe:3,stone:1,cave:1},
  beach:{gr:.25,gh:1.3,dry:1,fl:null,tree:null,nt:0,bu:0,mu:0,bo:3,pe:3,sand:1,roots:0,shells:1}};
 const PK=z=>PROF[z]||null;const zb=id=>{try{return Z(id).biome}catch(e){return null}};const ON=new Proxy({},{get:(t,id)=>!!PK(zb(id))});
@@ -88,11 +88,13 @@ let tAcc=0;(function tick(){requestAnimationFrame(tick);if(!skyG.visible)return;
  if(W.sun){const sp=W.sun.position.clone().normalize();sunGlow.position.copy(sp.multiplyScalar(180))}})();
 G.W6env=(z,nt)=>{const id=z.id||G.S?.zone,on=!!ON[id];skyG.visible=on;G.W7ON=on;if(!on)return;const PP=PK(zb(id));if(PP.cave){skyG.visible=false;return}if(PP.sea){skyG.visible=false;const pl=(G.ZPAL&&G.ZPAL[id])||BIOMES[zb(id)];const fc=C(pl[4]).lerp(C(pl[3]),.4);scene.background=fc;scene.fog=new THREE.Fog(fc,(W.camDist||20)*1.1,(W.camDist||20)*3.2);if(W.hemi){W.hemi.color.set(0x9fd8ff);W.hemi.groundColor.copy(C(pl[0]).multiplyScalar(.5));W.hemi.intensity=1.2}if(W.sun){W.sun.color.set(0xd8f4ff);W.sun.intensity=2}return}const pal=(G.ZPAL&&G.ZPAL[id])||BIOMES[zb(id)],day=1-Math.min(1,nt||0),night=C(0x0a1028);
  const hor=C(pal[5]).lerp(night,1-day),top=C(pal[4]).lerp(night,1-day);
+ // v6.7: cool the peach home horizon so the haze behind the island reads as soft sky, not pink
+ const hh={};C(pal[5]).getHSL(hh);const pinkHz=zb(id)!=='candy'&&(hh.h>.86||hh.h<.07)&&hh.s>.2;if(pinkHz){hor.lerp(C(0xcfe3f2).lerp(night,1-day),.7);top.lerp(C(0x9cc8ec).lerp(night,1-day),pal[4]&&zb(id)==='home'?.5:0)}
  if(W.su){W.su.uTop.value.copy(top);W.su.uHor.value.copy(hor)}
  // soft depth fog, gently tinted by the zone horizon colour
  const fc=hor.clone().lerp(C(0xffffff),.12*day);scene.background=fc;scene.fog=new THREE.Fog(fc,(W.camDist||20)*2.2,(W.camDist||20)*7);
  // shaded cloud underside tinted from the zone sky (pink at home, blue-grey in Rock Garden)
- const sh='#'+C(pal[4]).lerp(C(0x8a8fb0),.45).lerp(C(0xffffff),.25).getHexString();if(sh!==cloudShade||!clouds.length){cloudShade=sh;buildClouds()}
+ const sh='#'+(pinkHz&&zb(id)==='home'?C(0xb8c6dc):C(pal[4])).lerp(C(0x8a8fb0),.45).lerp(C(0xffffff),.25).getHexString();if(sh!==cloudShade||!clouds.length){cloudShade=sh;buildClouds()}
  cloudMats.forEach(m=>m.color.setScalar(.35+.65*day));islets.forEach(g=>g.visible=true);sunGlow.material.opacity=.85*day;
  if(W.sun){W.sun.color.set(0xfff0d2).lerp(C(0x8090c0),1-day);W.sun.intensity=2.7*day+.35}
  if(W.hemi){W.hemi.color.copy(C(pal[4]).lerp(C(0xdcecff),.6));W.hemi.groundColor.copy(C(pal[0]).multiplyScalar(.55));W.hemi.intensity=.7+.75*day}};
@@ -169,7 +171,7 @@ G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;G.W7ON=on;if(!on
  for(let t=0;t<nT;t++){const[i,j]=rim[(t*stp+2)%rim.length];const tr=({pine:mkPine,cactus:mkCactus,kelp:mkKelp,crystal:mkCrystal}[P.tree]||mkTree)(1.05+rnd()*.5);tr.position.set(i-C0+(rnd()-.5)*.2,0,j-C0+(rnd()-.5)*.2);tr.rotation.y=rnd()*6;tr.scale.setScalar(.85+rnd()*.3);isl.add(nr(tr));treeSpots.push(tr.position.clone())}
  // 6) bushes with blossoms, mushrooms near trees, mossy boulders, pebbles
  const bushM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,color:leafBase.clone().offsetHSL(.02,0,.03)});
- const nB=P.bu;if(P.coral)for(let b=0;b<nB&&free.length;b++){const[i,j]=free[Math.floor(rnd()*free.length)];const cc=[0xff7f9a,0xffa45a,0xc48bff,0xff5f7a][b%4];const cm2=new THREE.MeshStandardMaterial({color:cc,roughness:.7});const g=new THREE.Group();const br=(d,len,par)=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.018*(3-d)/3+.008,.03*(3-d)/3+.01,len,6),cm2);c.position.y=len/2;const piv=new THREE.Group();piv.add(c);par.add(piv);if(d<2)for(let k=0;k<3;k++){const ch=new THREE.Group();ch.position.y=len;ch.rotation.set(.6*(rnd()+.3),k*2.1+rnd(),0,'YXZ');piv.add(ch);br(d+1,len*.7,ch)}};br(0,.16,g);g.position.set(i-C0+(rnd()-.5)*.6,0,j-C0+(rnd()-.5)*.6);isl.add(nr(g))}
+ const nB=P.bu;if(P.coral)for(let b=0;b<nB&&free.length;b++){const[i,j]=free[Math.floor(rnd()*free.length)];const cc=[0xff7f9a,0xffa45a,0xc48bff,0xff5f7a][b%4];const cm2=new THREE.MeshStandardMaterial({color:cc,roughness:.7});const g=new THREE.Group();const br=(d,len,par)=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.018*(3-d)/3+.008,.03*(3-d)/3+.01,len,6),cm2);c.position.y=len/2;const piv=new THREE.Group();piv.add(c);par.add(piv);if(d<2)for(let k=0;k<3;k++){const ch=new THREE.Group();ch.position.y=len;ch.rotation.set(.6*(rnd()+.3),k*2.1+rnd(),0,'YXZ');piv.add(ch);br(d+1,len*.7,ch)}};br(0,.16,g);g.scale.setScalar(1.5+rnd()*.8);g.position.set(i-C0+(rnd()-.5)*.6,0,j-C0+(rnd()-.5)*.6);isl.add(nr(g))}
  if(!P.coral)for(let b=0;b<nB&&rim.length;b++){const[i,j]=rim[(b*stp*2+Math.floor(stp/2)+5)%rim.length];const parts=[];for(let k=0;k<4;k++){const g=blob(.13+rnd()*.07,1,.12,k);g.translate((rnd()-.5)*.22,.1+rnd()*.06,(rnd()-.5)*.22);parts.push([g,C(0xffffff)])}const bgeo=merge(parts);shadeV(bgeo,.5,1.1,0,.3);
   const bu=new THREE.Group();const bm=new THREE.Mesh(bgeo,bushM);bm.castShadow=!!QP.shadow;bu.add(bm,new THREE.Mesh(bgeo,olM));
   const bc=[0xff8fc0,0xffffff,0xffd84a][b%3];for(let k=0;k<7;k++){const f=new THREE.Mesh(new THREE.IcosahedronGeometry(.022,0),new THREE.MeshLambertMaterial({color:bc,emissive:bc,emissiveIntensity:.12}));const a=rnd()*6.28;f.position.set(Math.cos(a)*.16,.16+rnd()*.1,Math.sin(a)*.16);bu.add(f)}
@@ -183,6 +185,10 @@ G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;G.W7ON=on;if(!on
  const shadeAt=[...treeSpots.map(p=>[p.x,p.z,.9])];const nBo=P.bo;for(let b=0;b<nBo&&rim.length;b++){const[i,j]=rim[(b*3+1)%rim.length];const g=mossy(blob(.13+rnd()*(rock?.18:.08),1,.18,b));const m=new THREE.Mesh(g,stoneM);m.scale.y=.75;m.position.set(i-C0+(rnd()-.5)*.5,.04,j-C0+(rnd()-.5)*.5);m.rotation.y=rnd()*6;shadeAt.push([m.position.x,m.position.z,.5]);m.castShadow=!!QP.shadow;m.receiveShadow=true;const o=new THREE.Mesh(g,olM);m.add(o);isl.add(nr(m))}
  {const pg=new THREE.DodecahedronGeometry(.03,0);const pm=new THREE.MeshStandardMaterial({color:C(pal[2]).lerp(C(0xffffff),.25),roughness:.9,flatShading:true});const nP=Math.round(tiles.length*P.pe);const pi=new THREE.InstancedMesh(pg,pm,nP);
   for(let k=0;k<nP;k++){const[i,j]=tiles[Math.floor(rnd()*tiles.length)];e.set(rnd()*3,rnd()*3,0);q.setFromEuler(e);const s2=.5+rnd()*1.3;sc.set(s2,s2*.55,s2);p.set(i-C0+rnd()-.5,.005,j-C0+rnd()-.5);m4.compose(p,q,sc);pi.setMatrixAt(k,m4);if(P.shells)col.set([0xfff0e6,0xffc9b8,0xf6e2c0,0xffffff][k%4]);else if(P.snow)col.set(0xd8ecff);else col.setScalar(.8+rnd()*.3);pi.setColorAt(k,col)}pi.receiveShadow=true;isl.add(nr(pi))}
+ // v6.7: cheap fish school for sea zones (1 instanced mesh, animated by group spin)
+ if(P.sea){const fg=new THREE.ConeGeometry(.05,.18,5);fg.rotateZ(-Math.PI/2);fg.scale(1,1,.45);const nF=Math.min(36,6+Math.round(n*1.2));const fi=new THREE.InstancedMesh(fg,new THREE.MeshLambertMaterial({color:0xffffff}),nF);const fsh=new THREE.Group();
+  for(let k=0;k<nF;k++){const a=rnd()*6.28,r=n*.18+rnd()*n*.3;p.set(Math.cos(a)*r,.6+rnd()*1.4,Math.sin(a)*r);e.set(0,-a,0);q.setFromEuler(e);sc.setScalar(1.8+rnd()*1.4);m4.compose(p,q,sc);fi.setMatrixAt(k,m4);col.set([0xffc24a,0x7fd8ff,0xff8a5a,0xf4f4ff][k%4]);fi.setColorAt(k,col)}
+  fi.frustumCulled=false;fsh.add(fi);fi.onBeforeRender=()=>{fsh.rotation.y=performance.now()*-.00012;fsh.position.y=Math.sin(performance.now()*.0008)*.08};isl.add(nr(fsh))}
  if(shadeAt.length){const sg=new THREE.PlaneGeometry(1,1);sg.rotateX(-Math.PI/2);const si=new THREE.InstancedMesh(sg,new THREE.MeshBasicMaterial({map:shadowTex,transparent:true,depthWrite:false,opacity:P.snow?.6:1}),shadeAt.length);shadeAt.forEach(([x,z,s2],k)=>{p.set(x,.02,z);q.identity();sc.set(s2,1,s2);m4.compose(p,q,sc);si.setMatrixAt(k,m4)});si.renderOrder=1;isl.add(nr(si))}
 };
 if(W.zone)try{G.W6build(W.zone);G.W6env({id:W.zone},0)}catch(e){console.warn('w7',e)}
