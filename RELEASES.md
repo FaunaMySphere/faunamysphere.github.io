@@ -75,3 +75,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 - ⚙ High/Low graphics toggle (stored per device in fs_gfx6, not in the save). Auto-detect picks Low on slow phones (≤4 cores or ≤3 GB).
 - Wider home camera on phones (1.3x, centered more on the island).
 - Saves untouched (faunasphere_save_v3).
+
+## v6.0.1 — Revert v6 world look
+- world6.js disabled (not loaded); the world is back to the v5 look with outlines. Home camera restored to v5. ⚙ High/Low kept, changes quality only.

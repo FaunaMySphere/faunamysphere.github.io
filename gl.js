@@ -13,7 +13,7 @@ let Q=QS.get('q')||localStorage.getItem('fs_q')||(isPhone?'med':'high');if(!['lo
 // v6 graphics High/Low (localStorage fs_gfx6; not part of the save). Auto: Low on slow phones.
 const GFX=(()=>{let g=QS.get('gfx')||localStorage.getItem('fs_gfx6');if(g!=='high'&&g!=='low'){const hc=navigator.hardwareConcurrency||8,dm=navigator.deviceMemory||8;g=(hc<=4||dm<=3)?'low':'high';localStorage.setItem('fs_gfx6',g);localStorage.setItem('fs_gfx6_auto','1')}return g})();
 if(GFX==='low')Q='low';else if(Q==='low'&&!QS.get('q'))Q=isPhone?'med':'high';
-const REAL=G.REAL=GFX==='high';
+const REAL=G.REAL=false; // v6 world look reverted (Leo); High/Low only changes quality
 const QP={low:{pr:1,shadow:0,grass:900,bloom:0,post:0,tex:128,weather:120},med:{pr:1.5,shadow:1024,grass:2600,bloom:1,post:0,tex:256,weather:220},high:{pr:2,shadow:2048,grass:6000,bloom:1,post:1,tex:512,weather:380}}[Q];
 
 // ---------- renderer ----------
@@ -442,7 +442,7 @@ let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
- const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=portrait&&typeof S!=="undefined"&&S.zone==="home";if(HW)dist*=1.3;
+ const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=false;
  const follow=portrait?(HW?.55:1):clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
  if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
  let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if((titleOn||!fa())&&!(G.editCam&&S.zone==="home")){yaw+=t*.12;d*=1.15;pitch=.55}
