@@ -579,9 +579,9 @@ const arc=new THREE.Line(ag,new THREE.LineDashedMaterial({color:0x3CC300,dashSiz
 const nn=document.createElement('div');nn.id='nonav';nn.textContent='NO NAV';document.body.appendChild(nn);
 let hov=null;cv.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||e.buttons){hov=null;return}const r=cv.getBoundingClientRect();hov={x:e.clientX,y:e.clientY,px:e.clientX-r.left,py:e.clientY-r.top}});
 cv.addEventListener('pointerleave',()=>{hov=null});
-function arcLoop(){requestAnimationFrame(arcLoop);try{let ok=false,bad=false;if(hov&&fauna&&typeof S!=='undefined'&&![...document.querySelectorAll('.sheet')].some(x=>x.offsetParent)){const[i,j]=G.screenToTile(hov.px,hov.py),s=zs(S.zone),n=s.tiles.length;
+let arcWas=true;function arcLoop(){requestAnimationFrame(arcLoop);if(!hov&&!arcWas)return;try{let ok=false,bad=false;if(hov&&fauna&&typeof S!=='undefined'&&![...document.querySelectorAll('.sheet')].some(x=>x.offsetParent)){const[i,j]=G.screenToTile(hov.px,hov.py),s=zs(S.zone),n=s.tiles.length;
  if(i>=0&&j>=0&&i<n&&j<n&&s.tiles[i]&&s.tiles[i][j]){const a=fauna.position,b=W2(i,j),p=ag.attributes.position.array,d=a.distanceTo(b);for(let k=0;k<ARCN;k++){const u=k/(ARCN-1);p[k*3]=a.x+(b.x-a.x)*u;p[k*3+2]=a.z+(b.z-a.z)*u;p[k*3+1]=a.y+(b.y-a.y)*u+.08+Math.sin(u*Math.PI)*Math.min(1.6,.25+d*.18)}ag.attributes.position.needsUpdate=true;arc.computeLineDistances();ok=d>.4}else bad=true}
- arc.visible=ok;{const p=ag.attributes.position.array;dots.forEach((m,k)=>{m.visible=ok;if(ok){const q=Math.min(ARCN-2,Math.round((k+.5)/12*(ARCN-1)));m.position.set(p[q*3],p[q*3+1],p[q*3+2]);m.lookAt(p[q*3+3],p[q*3+4],p[q*3+5]);m.rotateY(Math.PI/2)}})}nn.style.display=bad?'block':'none';if(bad){nn.style.left=hov.x+14+'px';nn.style.top=hov.y+10+'px'}cv.style.cursor=bad?'not-allowed':''}catch(e){}}arcLoop();}
+ arc.visible=ok;{const p=ag.attributes.position.array;dots.forEach((m,k)=>{m.visible=ok;if(ok){const q=Math.min(ARCN-2,Math.round((k+.5)/12*(ARCN-1)));m.position.set(p[q*3],p[q*3+1],p[q*3+2]);m.lookAt(p[q*3+3],p[q*3+4],p[q*3+5]);m.rotateY(Math.PI/2)}})}nn.style.display=bad?'block':'none';if(bad){nn.style.left=hov.x+14+'px';nn.style.top=hov.y+10+'px'}cv.style.cursor=bad?'not-allowed':'';arcWas=ok||bad}catch(e){}}arcLoop();}
 // v4.10: vile looks: black blob with green eyes (2, 4-eyed Gassy every 3rd, 9-eyed boss)
 {const t0=B.tox,EW=new THREE.MeshBasicMaterial({color:0xffffff}),EG=new THREE.MeshBasicMaterial({color:0x6dff3a}),EK=new THREE.MeshBasicMaterial({color:0});
 B.tox=o=>{const g=t0(o);try{g.children.slice().forEach(c=>{if(c!==g.userData.blob&&c.position.z>.25&&c.position.y>.3)g.remove(c)});
@@ -607,3 +607,7 @@ const _bf2=buildFauna;buildFauna=function(genes){const sp=SPECIES[genes.species]
  if(lk==='crane'){add(h,new THREE.ConeGeometry(1,1,8),M(0x333333),[R*.18,R*1.6,R*.18],[0,0,R*1.3],[Math.PI/2,0,0]);add(h,S0,M(0xd2202a),[R*.4,R*.25,R*.4],[0,R*.85,0])}
  if(lk==='kangaroo'){if(body)body.rotation.x=-.6;[-1,1].forEach(s=>add(rig.root,S0,M(col.clone().multiplyScalar(.8)),[.04,.025,.11],[s*.09,.02,.08]));add(body||rig.root,S0,M(col.clone().lerp(new THREE.Color(0xffffff),.5)),[.08,.06,.03],[0,-.06,a.b[2]*.85])}
  }catch(e){}return f}}
+// v4.15 (notes 23): Reverie Stump (green hollow stump, glowing blue center) + Idea shadow (black silhouette with glowing lightbulb)
+B.reverie=stumpStation(0x5fae3a,0x4fb8ff);
+B.ideashadow=o=>{const g=new THREE.Group(),k=new THREE.MeshBasicMaterial({color:0x111111});g.add(mesh(CYL,k,[.07,.5,.07],[0,.25,0]));[[0,.72,0,.3],[.18,.6,.1,.2],[-.17,.62,-.06,.22]].forEach(([x,y,z,r])=>g.add(mesh(SPHL,k,[r,r*.9,r],[x,y,z])));
+ const bulb=mesh(SPHL,glowM(0xffffff,3),[.09,.11,.09],[0,1.18,0]);g.add(bulb);g.add(mesh(CYL,std(0xbbbbbb),[.04,.05,.04],[0,1.06,0]));g.userData.blob=bulb;return g};
