@@ -19,6 +19,7 @@ NetMP.send=send;
 function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if(seen.has(k))return;seen.add(k);if(seen.size>4000)seen.clear()}let p=NetMP.peers.get(m.id);
  if(m.t==='st'){const isNew=!p;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}}
  else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere')return;
+ if(m.t&&m.t.slice(0,4)==='gift'&&window.FSGift){FSGift.on(m,p);return}
  if(m.t==='say'){p.say={text:String(m.text).slice(0,80),at:Date.now()};Sound.tone&&Sound.tone(1320,.2,'sine',.04);chatLog(p.name,m.text)}
  if(m.t==='trick'){p.trick={k:m.k,t0:now()}}
  if(m.t==='bye'){NetMP.peers.delete(m.id);toast((p?p.name:'A friend')+' left the room.')}
