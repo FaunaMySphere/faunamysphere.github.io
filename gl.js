@@ -214,6 +214,15 @@ B.decor=o=>{const it=o.item||'',g=new THREE.Group();
  else if(it.includes('fence')){const w=std(0xf4ead8);for(let k=-2;k<=2;k++)g.add(mesh(BOX,w,[.06,.4,.04],[k*.18,.2,0]));g.add(mesh(BOX,w,[.8,.05,.03],[0,.28,0]))}
  else{g.add(mesh(CYL,std(0xb5653a),[.12,.16,.12],[0,.08,0]));const f=windify(std(0x5cb84a),.04,.6);g.add(mesh(SPHL,f,[.14,.12,.14],[0,.24,0]));for(let k=0;k<4;k++)g.add(mesh(SPHL,glowM(0xffe066,.3),[.04,.04,.04],[Math.cos(k*1.6)*.1,.32,Math.sin(k*1.6)*.1]))}return g};
 
+// v4.20 decor: rotation (o.rot quarter turns) + new home decor models
+{const bd0=B.decor;B.decor=o=>{const it=o.item||'';let g;
+ if(it==='d_bench'){g=new THREE.Group();const w=std(0xa0673a);g.add(mesh(BOX,w,[.7,.06,.24],[0,.24,0]));g.add(mesh(BOX,w,[.7,.2,.05],[0,.38,-.1]));[-1,1].forEach(s=>g.add(mesh(BOX,std(0x555a60),[.05,.24,.2],[s*.3,.12,0])))}
+ else if(it==='d_hedge'){g=new THREE.Group();g.add(mesh(BOX,std(0x3f8f3a,{roughness:.9}),[.8,.4,.3],[0,.2,0]))}
+ else if(it==='d_birdbath'){g=new THREE.Group();const st=std(0xcfd2d6);g.add(mesh(CYL,st,[.08,.35,.08],[0,.175,0]));g.add(mesh(CYL,st,[.32,.06,.32],[0,.37,0]));g.add(mesh(CYL,std(0x4fb3e8,{roughness:.1}),[.26,.02,.26],[0,.405,0]))}
+ else if(it==='d_pinwheel'){g=new THREE.Group();g.add(mesh(CYL,std(0xf4f4f0),[.025,.6,.025],[0,.3,0]));[0xff5f5f,0xffd84a,0x5fb0ff,0x7ad15a].forEach((c,k)=>{const m=mesh(BOX,std(c),[.04,.2,.08],[0,.6,0]);m.rotation.x=k*Math.PI/2;m.translateY(.1);g.add(m)})}
+ else if(it==='d_totem'){g=new THREE.Group();[0xb5653a,0x2fd3c4,0xf6cf4a].forEach((c,k)=>g.add(mesh(BOX,std(c),[.3,.26,.3],[0,.13+k*.27,0])));[-1,1].forEach(s=>g.add(mesh(BOX,new THREE.MeshBasicMaterial({color:0x1a1a1a}),[.06,.06,.02],[s*.07,.72,.16])))}
+ else g=bd0(o);g.rotation.y=((o.rot|0)%4)*Math.PI/2;return g}}
+
 // ---------- fauna ----------
 const SP={ // proportions (original designs)
  horse:{b:[.17,.16,.26],leg:.26,lr:.04,head:.12,neck:[.16,.9],snout:[.11,.06],ears:'point',tail:'long',mane:1},
@@ -521,7 +530,7 @@ function overlay(t,fade){const D=Math.min(2,devicePixelRatio||1);if(cv.width!==M
  if(fade>0){ctx2.strokeStyle=`rgba(255,255,255,${fade})`;ctx2.lineWidth=3;for(let k=0;k<5;k++){ctx2.beginPath();ctx2.arc(W/2,H/2,(k*70+t*300)%Math.max(W,H),0,7);ctx2.stroke()}}
  if(!finalPass){/* cheap vignette on low/med */const vg=ctx2.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#00000040');ctx2.fillStyle=vg;ctx2.fillRect(0,0,W,H)}}
 // title-screen backdrop: render home island even before adoption
-G.draw=frame;
+G.rebuildIsland=()=>{curZone=null};G.draw=frame;
 G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reload()},get fps(){return G.GLfps},renderer:R};
 // keep rendering behind the adopt/title screens when no fauna yet
 (function idle(){if(!fa()){try{const z=Z(S.zone);if(curZone!==S.zone){curZone=S.zone;zs(S.zone);buildIsland(S.zone);applyEnv(z,0);camS.dist=null}syncObjs();U.time.value=performance.now()/1000;updCamera(.016,U.time.value);composer?composer.render():R.render(scene,camera)}catch(e){console.error(e)}}requestAnimationFrame(idle)})();
@@ -617,3 +626,5 @@ B.ideashadow=o=>{const g=new THREE.Group(),k=new THREE.MeshBasicMaterial({color:
 B.friendgate=o=>{const g=new THREE.Group(),gr=std(0x8a8d93,{roughness:.6}),y=std(0xf2c230,{roughness:.6}),k=new THREE.MeshBasicMaterial({color:0x1a1a1a});const BX=new THREE.BoxGeometry(1,1,1);
  g.add(mesh(BX,gr,[.62,.22,.62],[0,.11,0]));g.add(mesh(BX,gr,[.4,.18,.4],[0,.31,0]));g.add(mesh(BX,y,[.44,.62,.4],[0,.71,0]));
  [-1,1].forEach(s=>g.add(mesh(BX,k,[.1,.1,.02],[s*.1,.82,.205])));g.add(mesh(BX,k,[.24,.05,.02],[0,.6,.205]));g.add(mesh(CYL,glowM(0x6dff3a,2),[.3,.02,.3],[0,.225,0]));return g};
+// v4.19 Sphere Store pad: flat purple pad with a glowing gold sphere icon
+B.storepad=o=>{const g=new THREE.Group(),p=std(0x7a4fc9,{roughness:.5}),r=std(0xe8e0ff,{roughness:.5});g.add(mesh(CYL,r,[.8,.08,.8],[0,.04,0]));g.add(mesh(CYL,p,[.66,.1,.66],[0,.09,0]));g.add(mesh(new THREE.SphereGeometry(.5,14,10),glowM(0xffd84a,1.5),[.36,.36,.36],[0,.42,0]));return g};

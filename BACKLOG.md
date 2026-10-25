@@ -209,3 +209,5 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Keep the original look: floating islands over a flat backdrop.
 - Phone perf at 5x: chunked/streamed zone loading, distance culling, merged static geometry, LOD for distant objects; no per-frame work that scales with zone size.
 - VERTICALITY (Leo, 2:09 PM): hills + raised block terrain at several heights, climbable via walkable ramps/steps; pathing + jump arc height-aware; camera follows height. Keep separate top/side colors (VIDEO_NOTES_20). More original-style plants, rocks, props, landmarks per zone from the video notes. Watch phone perf.
+- DIVERSE/DETAILED worlds (Leo, 2:14 PM): each zone distinct — own terrain shapes, props, plants, critters, landmarks, ambient effects, from the video notes.
+- Enemy damage +25% (Leo, 2:14 PM): single constant ENEMY_DMG_MULT=1.25 applied to every vile/Gassy damage value in one place.

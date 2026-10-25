@@ -1,0 +1,12 @@
+// v4.19 (notes 28): Sphere Store pad (owner-only message, "Add a Sphere" theme carousel, Bux placeholder, "Name your Sphere:"), trait name/color fixes
+(function(){const t=k=>(window.FS&&FS.t)?FS.t(k):k;
+try{COLORS.Sepia='#704214';COLORS['Tea Green']='#D0F0C0';COLORS.Byzantium='#702963';if(!TAILS.includes('Lumpy'))TAILS.push('Lumpy')}catch(e){}
+const THEMES=[['Autumn Farm','#556B2F'],['Japanese Resort','#3CB371'],['Forest','#2e7d32'],['Winter','#B0E0E6'],['Wasteland','#8d7b5a']];let ti=0;
+const guest=()=>{try{return !!(window.NET&&(NET.guest||NET.isGuest||(NET.host===false)))||!!(typeof S!=='undefined'&&S.visiting)}catch(e){return false}};
+setInterval(()=>{try{const hs=typeof S!=='undefined'&&S&&S.zones&&S.zones.home;if(hs&&!hs.objs.some(o=>o.type==='storepad')){const p=freeTile('home');if(p){hs.objs.push({id:'home_storepad',type:'storepad',i:p[0],j:p[1]});save()}}}catch(e){}},1700);
+const draw=()=>{const [n,c]=THEMES[ti];return '<div class="dest"><h2>'+t('Sphere Store')+'</h2><div class="dsc">'+t('Add a Sphere')+'</div><div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0"><button class="btn" onclick="FSst(-1)">◀</button><div style="width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8,'+c+' 60%);box-shadow:0 4px 0 #0004"></div><button class="btn" onclick="FSst(1)">▶</button></div><div style="text-align:center"><b>'+t(n)+'</b><br><span class="small">6000 Bux ('+t('coming soon')+')</span></div><p>'+t('Name your Sphere:')+' <input id="spn" maxlength="20" placeholder="'+t('My Sphere')+'"></p><button class="btn" onclick="FSbuy()">'+t('Add a Sphere')+'</button></div>'};
+window.FSst=d=>{ti=(ti+d+THEMES.length)%THEMES.length;MB.innerHTML=draw()};
+window.FSbuy=()=>{try{toast(t('Bux purchases are coming soon!'))}catch(e){}};
+const u0=window.ui;window.ui=ui=function(v,p={}){if(v!=='store')return u0(v,p);if(guest())return open('<h2>'+t('Sphere Store')+'</h2><p>'+t('Only the owner of this Sphere can use the Sphere Store.')+'</p>');return open(draw())};
+const i0=interact;interact=window.interact=o=>{if(o&&(o.type==='storepad'||o.type==='friendgate')){rt.tgtObj=o;const v=o.type==='storepad'?'store':'friends';try{Sound.sfx('click')}catch(e){}walkTo(o,()=>ui(v));const z=S.zone;setTimeout(()=>{try{if(S.zone===z&&rt.tgtObj===o&&M.classList.contains('hidden'))ui(v)}catch(e){}},1800);return}return i0(o)};
+})();
