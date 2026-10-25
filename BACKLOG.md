@@ -170,3 +170,9 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Biorock Disc combining (e.g. Honeyroot = Root + Molass) and a recipe UI
 - Trick chips + Tricks radial menu (Greet, Play, Bored, Sniff)
 - Quests with full dialog: Malady, Volcano Monitoring, Little Love, Keep a Secret, Long Waddle (Scrutinizer escort)
+
+## v6 backlog (notes 25)
+- Vile 4-eyed Gassy (black blob, 4 green eyes, green gas): 2 antennae each block one beam, so 3 caretakers are needed (or 2 strong fauna timing the antenna "tired" window). Quest "No More Vile Drama" (Glacierbase, 8000 Lux) with E.P. dialog
+- Sand Scrubber machine (tall, blue bowl): Polluted Sand -> Scrubbed Sand ("Clean Sand"); quests "The Sand Which is Polluted" (Duned Tract, 7000 Lux) and "More Scrubbed Sand" (Fishatish, repeatable, random coral deco)
+- Colors: hub grass #749c34/#5c7c24, stone edge #7c847c; Glacierbase ice #c4e4f4, water #347ca4; Duned Tract/Mesa sand #c47c4c, rock #a46c44, water #4c9ca4 (cacti, dead trees, ponds); Sand Bar beach #e4c48c, ocean #44a4dc (palms, coral, starfish)
+- Green rounded world hover tooltips; sounds: gate chime, footsteps (crunchy on ice), staticky zap hum, gurgle/pop, level-up fanfare, hub loop and zone drone
