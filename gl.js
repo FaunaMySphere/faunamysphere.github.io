@@ -228,7 +228,10 @@ B.decor=o=>{const it=o.item||'',g=new THREE.Group();
  if(vc!=null&&it!=='d_block'){const c=new THREE.Color(vc);g.traverse(m=>{if(m.isMesh&&m.material&&m.material.color&&!m.material.emissive?.getHex?.()){m.material=m.material.clone();m.material.color.lerp(c,.65)}})}
  const out=new THREE.Group();out.add(g);g.position.y=(o.h|0)*.3;out.rotation.y=((o.rot|0)%4)*Math.PI/2;return out}}
 // v4.22 tile paint layer (S.home.paint {"i,j":"#hex"}): thin slabs, rebuilt only when the paint signature changes
-let paintG=null,paintSig='';let ghostG=null,ghostK='';function ghostFrame(){try{const gh=typeof rt!=='undefined'&&rt.ghost&&S.zone==='home'?rt.ghost:null;const k=gh?JSON.stringify(gh):'';if(k===ghostK)return;ghostK=k;if(ghostG){scene.remove(ghostG);ghostG=null}if(!gh)return;ghostG=B.decor({item:gh.item,rot:gh.rot});ghostG.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;m.material.opacity=.45;m.material.depthWrite=false;m.raycast=()=>{}}});ghostG.position.copy(W2(gh.i,gh.j));scene.add(ghostG)}catch(e){}}
+let paintG=null,paintSig='';let ghostG=null,ghostK='',selG=null,selK='';const selM=new THREE.LineBasicMaterial({color:0xffe14d,depthTest:false,transparent:true});const selGeo=new THREE.EdgesGeometry(new THREE.BoxGeometry(.98,.5,.98));
+function ghostFrame(){try{const on=typeof rt!=='undefined'&&S.zone==='home';const L=on?(rt.ghosts&&rt.ghosts.length?rt.ghosts:(rt.ghost?[rt.ghost]:[])):[];const k=JSON.stringify(L);if(k!==ghostK){ghostK=k;if(ghostG){scene.remove(ghostG);ghostG=null}if(L.length){ghostG=new THREE.Group();for(const gh of L){const m0=B.decor({item:gh.item,rot:gh.rot,h:gh.h,col:gh.col,v:gh.v});m0.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;m.material.opacity=gh.bad?.6:.45;m.material.depthWrite=false;if(gh.bad&&m.material.color){m.material.color.set(0xff3030);if(m.material.emissive)m.material.emissive.set(0x550000)}m.raycast=()=>{}}});m0.position.add(W2(gh.i,gh.j));ghostG.add(m0)}scene.add(ghostG)}}
+ const S2=on&&rt.sel?rt.sel:[];const k2=JSON.stringify(S2);if(k2!==selK){selK=k2;if(selG){scene.remove(selG);selG=null}if(S2.length){selG=new THREE.Group();for(const q of S2){const l=new THREE.LineSegments(selGeo,selM);l.renderOrder=999;l.position.copy(W2(q.i,q.j));l.position.y=(q.h|0)*.3+.25;selG.add(l)}scene.add(selG)}}
+ if(selG)selM.opacity=.6+.4*Math.sin(performance.now()/180)}catch(e){}}
 function paintFrame(){try{const on=typeof S!=='undefined'&&S.zone==='home'&&builtZone==='home';const P=on&&S.home&&S.home.paint||{};const sig=on?JSON.stringify(P)+C0:'';if(sig===paintSig)return;paintSig=sig;if(paintG){scene.remove(paintG);paintG.traverse(m=>{if(m.material)m.material.dispose()})}paintG=new THREE.Group();scene.add(paintG);const mats={};
  for(const k in P){const[i,j]=k.split(',').map(Number);const c=P[k];const m=mats[c]||(mats[c]=std(new THREE.Color(c).getHex(),{roughness:.85}));const sl=mesh(BOX,m,[.98,.02,.98],[0,0,0]);sl.position.copy(W2(i,j));sl.position.y=.012;paintG.add(sl)}}catch(e){}}
 
@@ -435,10 +438,10 @@ let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
- const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?2.9:2.1)/(cam.zoom||1));
- const follow=portrait?1:clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15;
+ const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));
+ const follow=portrait?1:clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
  if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
- let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if(titleOn||!fa()){yaw+=t*.12;d*=1.15;pitch=.55}
+ let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if((titleOn||!fa())&&!(G.editCam&&S.zone==="home")){yaw+=t*.12;d*=1.15;pitch=.55}
  const k=Math.cos(pitch)*d;camera.position.set(camS.t.x+Math.sin(yaw)*k,camS.t.y+Math.sin(pitch)*d,camS.t.z+Math.cos(yaw)*k);
  if(rt.shake>.3){camera.position.x+=(Math.random()-.5)*rt.shake*.01;camera.position.y+=(Math.random()-.5)*rt.shake*.01}camera.lookAt(camS.t)}
 // drag-rotate (single pointer)
@@ -449,6 +452,7 @@ addEventListener('pointerup',()=>dragS=null);cv.addEventListener('pointercancel'
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function setRay(px,py){ndc.set(px/W*2-1,-(py/H)*2+1);ray.setFromCamera(ndc,camera)}
 G.screenToTile=(px,py)=>{setRay(px,py);const p=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,p))return[-1,-1];return[Math.round(p.x+C0),Math.round(p.z+C0)]};
+G.screenToWorld=(px,py)=>{setRay(px,py);const p=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,p))return null;return[p.x+C0,p.z+C0]};G.projTile=(i,j,y)=>{const v=W2(i,j);v.y=y||0;return proj(v)};G.camYaw=()=>camS.yaw;G._camDbg=()=>[camera.position.toArray().map(x=>+x.toFixed(2)),camS.t.toArray().map(x=>+x.toFixed(2)),+camS.dist.toFixed(2),camera.fov,camera.aspect.toFixed(3),C0];
 G.hitObj=(px,py)=>{setRay(px,py);const hits=[];for(const[,e]of objMap)if(isClickable(e.o))hits.push(e.hit);const r=ray.intersectObjects(hits,false);return r.length?r[0].object.userData.obj:null};
 const proj=v=>{const p=v.clone().project(camera);return[(p.x*.5+.5)*W,(-p.y*.5+.5)*H,p.z]};
 // test helper: screen position of an object
