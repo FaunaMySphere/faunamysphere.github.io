@@ -108,3 +108,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 
 ## v6.8 — High graphics by default
 - Every device, phones included, now starts on High graphics; the automatic Low for weaker phones is gone. Low is kept only if the player chose it with the ⚙ button. An old Low setting that was picked automatically becomes High. Saves untouched.
+
+## v6.9.1 — ⚙ button hotfix
+- Gear icon and High/Low label no longer overlap: gear above a small label inside the round button (all zones). Cache fs-v691-1.

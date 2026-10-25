@@ -594,7 +594,7 @@ G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reloa
 // ---------- title screen & settings ----------
 const title=document.getElementById('title');
 if(title&&!QS.has('notitle')){titleOn=true;title.classList.remove('hidden');document.getElementById('play').onclick=()=>{Sound.init();Sound.sfx&&Sound.sfx('gate');vib(20);title.classList.add('out');titleOn=false;camS.dist=null;setTimeout(()=>title.remove(),900)}}else if(title)title.remove();
-const qb=document.getElementById('gfx');if(qb){qb.textContent='⚙ '+(GFX==='high'?'High':'Low');qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
+const qb=document.getElementById('gfx');if(qb){{const tt=k=>(window.FS&&FS.t)?FS.t(k):k;qb.innerHTML='<i>⚙</i><span></span>';qb.lastChild.textContent=tt(GFX==='high'?'High':'Low')}qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
 const ld=document.getElementById('loading');if(ld){ld.classList.add('out');setTimeout(()=>ld.remove(),700)}
 console.log('[FaunaMySphere] WebGL renderer active, quality='+Q);
 
