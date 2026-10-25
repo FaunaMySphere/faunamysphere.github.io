@@ -90,7 +90,7 @@ G.W6env=(z,nt)=>{const id=z.id||G.S?.zone,on=!!ON[id];skyG.visible=on;G.W7ON=on;
  const hor=C(pal[5]).lerp(night,1-day),top=C(pal[4]).lerp(night,1-day);
  if(W.su){W.su.uTop.value.copy(top);W.su.uHor.value.copy(hor)}
  // soft depth fog, gently tinted by the zone horizon colour
- const fc=hor.clone().lerp(C(0xffffff),.12*day);scene.background=fc;scene.fog=new THREE.Fog(fc,(W.camDist||20)*1.5,(W.camDist||20)*5.5);
+ const fc=hor.clone().lerp(C(0xffffff),.12*day);scene.background=fc;scene.fog=new THREE.Fog(fc,(W.camDist||20)*2.2,(W.camDist||20)*7);
  // shaded cloud underside tinted from the zone sky (pink at home, blue-grey in Rock Garden)
  const sh='#'+C(pal[4]).lerp(C(0x8a8fb0),.45).lerp(C(0xffffff),.25).getHexString();if(sh!==cloudShade||!clouds.length){cloudShade=sh;buildClouds()}
  cloudMats.forEach(m=>m.color.setScalar(.35+.65*day));islets.forEach(g=>g.visible=true);sunGlow.material.opacity=.85*day;
