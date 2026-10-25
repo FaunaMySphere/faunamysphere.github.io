@@ -183,7 +183,7 @@ let stepT=0;
 function step(dt){const f=fa();if(!f)return;if(rt.tgt){const[ti,tj]=rt.tgt,di=ti-rt.pos.i,dj=tj-rt.pos.j,d=Math.hypot(di,dj),sp=(f.energy>=95?4.4:3.2)*dt/1000;
   if(Math.abs(di-dj)>.05)rt.face=(di-dj)>0?1:-1;if(now()-stepT>270+Math.random()*30){stepT=now();Sound.sfx('step')}
   if(d<=sp){rt.pos={i:ti,j:tj};rt.tgt=null;if(rt.onArrive){const a=rt.onArrive;rt.onArrive=null;a()}}else{rt.pos.i+=di/d*sp;rt.pos.j+=dj/d*sp}}
- const s=zs(S.zone);if(now()-rt.lastTox>2000){rt.lastTox=now();for(const o of s.objs)if(o.type==='tox'){const di=Math.sign(rt.pos.i-o.i),dj=Math.sign(rt.pos.j-o.j);const ni=o.i+(Math.random()<.5?di:pick([-1,1])),nj=o.j+(Math.random()<.5?dj:0);
+ const s=zs(S.zone);if(now()-rt.lastTox>2000){rt.lastTox=now();for(const o of s.objs)if(o.type==='tox'&&!o.mon){const di=Math.sign(rt.pos.i-o.i),dj=Math.sign(rt.pos.j-o.j);const ni=o.i+(Math.random()<.5?di:pick([-1,1])),nj=o.j+(Math.random()<.5?dj:0);
   if(s.tiles[ni]&&s.tiles[ni][nj]&&!s.objs.some(x=>x.i===ni&&x.j===nj)&&!(Math.round(rt.pos.i)===ni&&Math.round(rt.pos.j)===nj))Object.assign(o,{i:ni,j:nj});if(Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<1.6&&!rt.sleep&&!rt.trans){f.happiness=clamp(f.happiness-enemyDmg(2));emit('hurt');if(f.happiness<=0){tooSad();save()}}}}}
 function walkTo(o,cb){const s=zs(S.zone),opts=[[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].map(([a,b])=>[o.i+a,o.j+b]).filter(([i,j])=>s.tiles[i]&&s.tiles[i][j]&&!s.objs.some(x=>x.i===i&&x.j===j));
  opts.sort((a,b)=>Math.hypot(a[0]-rt.pos.i,a[1]-rt.pos.j)-Math.hypot(b[0]-rt.pos.i,b[1]-rt.pos.j));const t=opts[0]||[o.i,o.j];rt.sleep=false;rt.tgt=t;rt.onArrive=()=>{rt.face=(o.i-o.j)-(t[0]-t[1])>=0?1:-1;cb()}}

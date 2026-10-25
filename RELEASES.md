@@ -115,3 +115,10 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 ## v6.13 — Monsters (Leo-approved)
 - Six scary toon monsters (Shadow Stalker, Bramble Beast, Ice Wraith, Bog Lurker, Sand Scorpion, Cave Spider) with elite (2.4x) and boss (3x) variants; regular 1.8x. Horns/spikes/claws/fangs, haloed glowing eyes, smoky aura, breathing/twitch/loom idle, lunge attack, synthesized growls. EN/ES names, zappable, follow hill terrain, capped 7 (Low 4). Hearts sit above each monster. Cache fs-v613-1.
 - 2026-10-25 6:58 PM EDT — v6.13.1: Home Edit Mode rework (touch-first). Drag any item immediately (no long-press), finger-sized screen-space picking, home fixtures (den, nest, treat tree, totem, store pad, gates...) now movable, nearest-free-tile snap, edge auto-pan while dragging, ＋/− zoom, auto zoom-in on entering, bigger toolbar (Move, Rotate, Color, Layer, Store, Delete), Done saves, iOS long-press callout/pointercancel blocked, EN/ES. Save key/format unchanged. SW cache fs-v6131-1.
+
+## v6.15 — More monsters + respawn
+- Every non-home zone now has monsters, spread out: tier 0: 3, 1: 4, 2: 5, 3: 6, 4: 7, 5+: 8 (was max 7 total, many zones had none). Elite odds 5%+4.5%/tier, rare boss (tier>=2, 1 max). Mixed packs (tier>=2) and spider swarms.
+- Leo's rule: clear a zone's monsters -> 5 min timer (saved in S.monClr, survives reload) -> 2 monsters arrive from the island edge with toast. Debug: ?monresp=SECONDS or localStorage fs_monresp.
+- Balance: regular HP 3 (tier>=3: 4) = 6-8 zaps; spiders 2; elites x2, bosses x3. Only the 2 nearest monsters attack, max one monster hit per 1.8s; monsters no longer use the classic tox drift/sting.
+- Perf: monster models built once per type, same-material parts merged, shared materials (~22 draw objects per monster vs 35), animation skipped far from the fauna. Caps: High 12, Low 6.
+- New-worlds helper: FSmonAssign(zoneId,[types],{count}) / FS_MON_ZONES; biome table FS_MON_BIOME. Cache fs-v615-1.
