@@ -164,3 +164,9 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Marketplace (Buy/Sell/Search tabs, Bux/Lux toggle, listing fee) — Bux stays a placeholder, no payments.
 - Fauna slot prices, friend requests banner (View/Ignore, cap 300), Totem patrons (Loam Clod deposits), Gift Box.
 - Faunawear/collar slots, Fauna Profile panel (Age, Generation, ability icons), breeding challenges, Reacher/Waddler/Sniffer looks.
+
+## v6 content backlog (notes 24)
+- All 14 basic foods with their flavors (item defs + tooltips)
+- Biorock Disc combining (e.g. Honeyroot = Root + Molass) and a recipe UI
+- Trick chips + Tricks radial menu (Greet, Play, Bored, Sniff)
+- Quests with full dialog: Malady, Volcano Monitoring, Little Love, Keep a Secret, Long Waddle (Scrutinizer escort)
