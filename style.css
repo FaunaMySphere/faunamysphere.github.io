@@ -124,3 +124,8 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 .online{display:inline-block;width:10px;height:10px;border-radius:50%;background:#3fe03a;box-shadow:0 0 6px #3fe03a;margin-right:6px}
 .roomcode{font:900 26px monospace;letter-spacing:4px;background:#fff;border:3px solid #3ea318;border-radius:10px;padding:4px 12px;display:inline-block;color:#173c0f}
 #mpbadge{position:absolute;top:8px;left:8px;z-index:30;background:rgba(23,60,15,.85);color:#bfff8a;font:700 12px sans-serif;padding:4px 10px;border-radius:12px;border:2px solid #3ea318;pointer-events:none}
+/* static save pill: no zoom/pulse, only opacity fade */
+#savepill,#savepill *,#svnow{animation:none!important;transform:none!important;transition:none!important}
+#savepill{min-width:84px;text-align:left;white-space:nowrap}
+#savepill .svl{opacity:1;transition:opacity .8s ease!important}
+#svnow:active,#svnow:hover,#savepill:active,#savepill:hover{transform:none!important}

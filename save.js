@@ -3,7 +3,7 @@
 (()=>{const top=document.getElementById('top');const pill=document.createElement('button');pill.id='savepill';pill.title='Save & backup';pill.textContent='💾';
  pill.style.cssText='background:rgba(23,60,15,.8);color:#bfff8a;border:2px solid #3ea318;border-radius:14px;font:700 12px sans-serif;padding:4px 8px;margin-right:4px;cursor:pointer';
  const hi=document.getElementById('hi');if(top)top.insertBefore(pill,hi?hi.nextSibling:top.firstChild);
- let shown=0;setInterval(()=>{const t=window.__lastSave;if(window.__saveErr){pill.textContent='⚠️ Save failed';pill.style.color='#ffb3a0'}else if(t&&t!==shown){shown=t;pill.textContent='💾 Saved';setTimeout(()=>{pill.textContent='💾'},1200)}},1000);
+ let shown=0;setInterval(()=>{const t=window.__lastSave;if(window.__saveErr){pill.textContent='⚠️ Save failed';pill.style.color='#ffb3a0'}else if(t&&t!==shown){shown=t;pill.style.color='';pill.innerHTML='💾 <span class="svl">Saved</span>';const l=pill.querySelector('.svl');requestAnimationFrame(()=>{setTimeout(()=>{l.style.opacity='0'},900)})}},1000);
  const flush=()=>{try{save();if(window.FSidb&&S&&S.fauna&&S.fauna.length)FSidb.flush(JSON.stringify(S))}catch(e){}};
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});addEventListener('pagehide',flush);addEventListener('beforeunload',flush);
  const enc=s=>btoa(unescape(encodeURIComponent(s))),dec=s=>decodeURIComponent(escape(atob(s.trim())));
