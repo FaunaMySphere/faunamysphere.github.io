@@ -7,6 +7,11 @@ const PROF={home:{gr:1,gh:1,fl:[0xffffff,0xffd84a,0xff8fc0,0xb48cff,0xfff1a8],tr
  rock:{gr:.4,gh:.6,fl:[0xfff6e0,0xb9a2ff],tree:'leaf',nt:.2,bu:2,mu:0,bo:16,pe:3.5,rock:1},
  forest:{gr:1.1,gh:1.15,fl:[0xffffff,0xb48cff,0xffd84a],tree:'leaf',nt:.9,bu:8,mu:3,bo:5,pe:.8,fern:1},
  arctic:{gr:0,fl:null,tree:'pine',nt:.6,bu:0,mu:0,bo:8,pe:1.5,snow:1,roots:0},
+ swamp:{gr:1,gh:1.45,fl:[0xf3ecb0,0xd9c8ff],tree:'leaf',leaf:0x4f6b2a,nt:.45,bu:4,mu:2.5,bo:4,pe:.5},
+ night:{gr:1,gh:1,fl:[0xffffff,0xb48cff,0x9fd8ff],tree:'leaf',nt:.4,bu:5,mu:1.5,bo:4,pe:.8},
+ candy:{gr:.8,gh:.9,fl:[0xffb6d9,0xfff1a8,0xc8a8ff,0xffffff],tree:'leaf',leaf:0xf2a6c6,nt:.45,bu:6,mu:2,bo:2,pe:.6},
+ scorch:{gr:.15,gh:1.2,dry:1,fl:null,tree:null,nt:0,bu:0,mu:0,bo:7,pe:2.5,sand:1,roots:0},
+ mesa:{gr:.12,gh:1,dry:1,fl:[0xffd84a,0xff8f6a],tree:'cactus',nt:.5,bu:0,mu:0,bo:8,pe:2.5,sand:1,roots:0},
  beach:{gr:.25,gh:1.3,dry:1,fl:null,tree:null,nt:0,bu:0,mu:0,bo:3,pe:3,sand:1,roots:0,shells:1}};
 const PK=z=>PROF[z]||null;const zb=id=>{try{return Z(id).biome}catch(e){return null}};const ON=new Proxy({},{get:(t,id)=>!!PK(zb(id))});
 if(W&&G.W7){
@@ -125,7 +130,7 @@ G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;G.W7ON=on;if(!on
  // 5) trees (proper 3D: flared trunk, branches, clustered leafy canopy with AO, leaf cards, thin outline)
  const rim=free.filter(([i,j])=>[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>!TS.has((i+a)+','+(j+b)))&&!near(i,j,1));
  const barkM=new THREE.MeshStandardMaterial({map:bark,roughness:.95,color:0xd8c8b8});
- const leafBase=C(rock?0x5f8a34:0x5c9a32);const leafM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,color:leafBase});
+ const leafBase=C(P.leaf||(rock?0x5f8a34:0x5c9a32));const leafM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,color:leafBase});
  const cardM=W.windify(new THREE.MeshLambertMaterial({map:leafCard,alphaTest:.5,side:THREE.DoubleSide,color:leafBase.clone().offsetHSL(.01,.05,.06)}),.03,2);
  const olM=new THREE.MeshBasicMaterial({color:0x1d2a14,side:THREE.BackSide});olM.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=position+normal*0.018;')};
  const mkTree=(H)=>{const tr=new THREE.Group();const tg=new THREE.CylinderGeometry(.055,.1,H,9,6);const ta=tg.attributes.position;for(let k=0;k<ta.count;k++){const y=ta.getY(k)/H+.5;const fl=1+Math.pow(1-y,4)*.9;ta.setX(k,ta.getX(k)*fl+Math.sin(y*3)*.03);ta.setZ(k,ta.getZ(k)*fl)}tg.computeVertexNormals();tg.translate(0,H/2,0);
@@ -141,8 +146,13 @@ G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;G.W7ON=on;if(!on
   for(let k=0;k<4;k++){const r=.42-k*.09,h=.42-k*.04,y=H*.3+k*.26;const g=new THREE.ConeGeometry(r,h,10,2);const pa=g.attributes.position;for(let v=0;v<pa.count;v++){if(pa.getY(v)<-h*.4){pa.setY(v,pa.getY(v)+Math.sin(v*1.7)*.03);pa.setX(v,pa.getX(v)*(1+Math.sin(v*2.3)*.08))}}g.computeVertexNormals();g.translate(0,y+h/2,0);shadeV(g,.5,1.1,y,y+h);
    const cm=new THREE.Mesh(g,pineM);cm.castShadow=!!QP.shadow;tr.add(cm,new THREE.Mesh(g,olM));
    if(P.snow){const sg=new THREE.ConeGeometry(r*.72,h*.5,10,1);sg.translate(0,y+h*.78,0);tr.add(new THREE.Mesh(sg,snowM))}}return tr};
+ const cactM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.7,color:0x5f9a4a});
+ const mkCactus=(H)=>{const tr=new THREE.Group();const arm=(r,h)=>{const g=new THREE.CapsuleGeometry(r,h,4,10);const pa=g.attributes.position,c=[];for(let v=0;v<pa.count;v++){const an=Math.atan2(pa.getZ(v),pa.getX(v));const rib=.85+.15*Math.abs(Math.cos(an*4));pa.setX(v,pa.getX(v)*rib);pa.setZ(v,pa.getZ(v)*rib);c.push(rib,rib,rib)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));g.computeVertexNormals();return g};
+  const body=arm(.1,H*.8);body.translate(0,H*.5,0);const m=new THREE.Mesh(body,cactM);m.castShadow=!!QP.shadow;tr.add(m,new THREE.Mesh(body,olM));
+  [[-1,.45],[1,.6]].forEach(([s,y])=>{const g=arm(.06,.22);const a1=new THREE.Mesh(g,cactM);a1.position.set(s*.17,H*y+.12,0);tr.add(a1,new THREE.Mesh(g,olM).translateX(s*.17).translateY(H*y+.12));const h=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.14,8),cactM);h.rotation.z=1.57;h.position.set(s*.1,H*y,0);tr.add(h)});
+  const fl=new THREE.Mesh(new THREE.IcosahedronGeometry(.04,0),new THREE.MeshLambertMaterial({color:0xff7fa8,emissive:0xff7fa8,emissiveIntensity:.15}));fl.position.y=H*.92;tr.add(fl);return tr};
  const nT=P.tree?Math.min(rim.length,Math.max(2,Math.round(n*P.nt))):0;const stp=Math.max(1,Math.floor(rim.length/Math.max(1,nT)));const treeSpots=[];
- for(let t=0;t<nT;t++){const[i,j]=rim[(t*stp+2)%rim.length];const tr=(P.tree==='pine'?mkPine:mkTree)(1.05+rnd()*.5);tr.position.set(i-C0+(rnd()-.5)*.2,0,j-C0+(rnd()-.5)*.2);tr.rotation.y=rnd()*6;tr.scale.setScalar(.85+rnd()*.3);isl.add(nr(tr));treeSpots.push(tr.position.clone())}
+ for(let t=0;t<nT;t++){const[i,j]=rim[(t*stp+2)%rim.length];const tr=(P.tree==='pine'?mkPine:P.tree==='cactus'?mkCactus:mkTree)(1.05+rnd()*.5);tr.position.set(i-C0+(rnd()-.5)*.2,0,j-C0+(rnd()-.5)*.2);tr.rotation.y=rnd()*6;tr.scale.setScalar(.85+rnd()*.3);isl.add(nr(tr));treeSpots.push(tr.position.clone())}
  // 6) bushes with blossoms, mushrooms near trees, mossy boulders, pebbles
  const bushM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,color:leafBase.clone().offsetHSL(.02,0,.03)});
  const nB=P.bu;for(let b=0;b<nB&&rim.length;b++){const[i,j]=rim[(b*stp*2+Math.floor(stp/2)+5)%rim.length];const parts=[];for(let k=0;k<4;k++){const g=blob(.13+rnd()*.07,1,.12,k);g.translate((rnd()-.5)*.22,.1+rnd()*.06,(rnd()-.5)*.22);parts.push([g,C(0xffffff)])}const bgeo=merge(parts);shadeV(bgeo,.5,1.1,0,.3);
