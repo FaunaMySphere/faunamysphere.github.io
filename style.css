@@ -175,3 +175,8 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 .fpop.flvl i{position:absolute;left:50%;top:50%;width:26px;height:8px;border-top:3px solid #c27bff;border-radius:50%;transform:rotate(var(--a)) translateX(46px);animation:fsq .9s ease-out forwards}
 @keyframes fpu{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}12%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-40px)}}
 @keyframes fsq{to{transform:rotate(var(--a)) translateX(80px);opacity:0}}
+#iris{position:fixed;inset:0;z-index:75;pointer-events:none;background:transparent;box-shadow:0 0 0 200vmax #000;border-radius:50%;left:50%;top:50%;width:160vmax;height:160vmax;transform:translate(-50%,-50%);transition:width .6s ease-in,height .6s ease-in}
+#iris.shut{width:0;height:0}
+.dest{background:#3CC300;border:4px solid #1A5900;border-radius:16px;padding:10px 12px;color:#fff;text-shadow:0 1px 0 #1A5900}.dest h2{margin:0 0 4px;text-align:center}.dsc{font-size:13px;text-align:center;margin-bottom:6px}
+.dlist{max-height:55vh;overflow:auto;background:#2B8B1A;border:2px solid #1A5900;border-radius:10px;padding:4px}.dgrp{font-weight:900;padding:6px 6px 2px;color:#dfffc9}
+.drow{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;margin:2px 0;border-radius:8px;cursor:pointer;background:#44a81c}.drow:hover{background:#56c726}.drow.lock{opacity:.6;cursor:default;background:#2f7a16}.drow.here{outline:2px solid #fff}.ds{font-size:12px;opacity:.9}

@@ -192,3 +192,10 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Purple "Level up!" speech bubble with squiggle particles; "+N Lux" and "Wow! 5x" zap bonus popups
 - Sphere decoration themes: ice, rock/underwater coral, holiday (Mintmelon Tree)
 - Color names: Gold #FFD700, Vermilion #E34234, Rusty #984920, Scarlet #FF2400, Eggplant #4B0082, Pink #FFC0CB, Ochre #CC7722
+
+## v6 backlog (notes 28)
+- Friend Gate look (grey robot base with a yellow carved head) and gate hover tooltips; player sphere groups in Destination
+- Trait naming: '<Color> <Shape>' patterns (Ecru Dotted, Lilac Tiled, Midnight Bone, Ecru Flutter...), ears (Ibex, Konini, Angler, Robot, Kohia, Wahini), tails (Leafy, Frizzy, Finny, Lumpy, Wild, Feathered), eyes (Toony, Serious, Purplevamp, Buster); colors Byzantium #702963, Tea Green #D0F0C0, Sepia #704214
+- Sphere themes: Autumn/farm #556B2F, Resort/Japanese #3CB371, Forest, Winter #B0E0E6/#F0F8FF, Wasteland; themed totems; Wax Block patron
+- Sphere Store pad with the owner-only message; "Add a Sphere" (6000 Bux placeholder) theme carousel, "Name your Sphere:" (max 20)
+- Birth Certificate OK button with a thumbs-up icon

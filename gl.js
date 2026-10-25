@@ -588,3 +588,22 @@ B.tox=o=>{const g=t0(o);try{g.children.slice().forEach(c=>{if(c!==g.userData.blo
  const n=o.boss?9:((o.v||hsh(o.i,o.j,3)*3|0)%3===2?4:2),b=g.userData.blob;for(let k=0;k<n;k++){const row=n===9?Math.floor(k/3):n===4?Math.floor(k/2):0,cols=n===9?3:2,col=k%cols,x=(col-(cols-1)/2)*.32,y=.1+row*.28-(n===9?.28:n===4?.14:0),s=n===9?.16:.24;
   const e=new THREE.Group();e.position.set(x,y,Math.sqrt(Math.max(.05,1-x*x-y*y))*.97);e.add(mesh(SPHL,EW,[s,s,s*.5]));e.add(mesh(SPHL,EG,[s*.62,s*.62,s*.3],[0,0,s*.3]));e.add(mesh(SPHL,EK,[s*.28,s*.28,s*.15],[0,0,s*.45]));b.add(e)}
  if(n>=4){const gm=new THREE.MeshBasicMaterial({color:0x8dff5a,transparent:true,opacity:.18,depthWrite:false});for(let k=0;k<3;k++)g.add(mesh(SPHL,gm,[.14,.14,.14],[Math.sin(k*2.1)*.3,.75+k*.12,Math.cos(k*2.1)*.3]))}}catch(e){}return g}}
+// v4.13 (notes 26/27): distinct looks for Tusker (elephant), Dasher (deer), Bobbler (T-rex), Waddler (penguin), Flapper (crane), Thumper (kangaroo)
+Object.assign(SP,{
+ elephant:{b:[.22,.21,.27],leg:.17,lr:.07,head:.16,neck:[.03,.4],snout:[.04,.06],ears:'side',tail:'thin'},
+ deer:{b:[.14,.13,.23],leg:.26,lr:.03,head:.11,neck:[.18,.95],snout:[.09,.045],ears:'point',tail:'puff'},
+ trex:{b:[.16,.2,.2],leg:.16,lr:.06,head:.19,neck:[.1,1.1],snout:[.1,.08],ears:'',tail:'croc',spikes:1},
+ penguin:{b:[.16,.22,.15],leg:.05,lr:.04,head:.12,neck:[.02,1.3],snout:[.06,.025],ears:'',tail:'stub',beak:1},
+ crane:{b:[.12,.12,.17],leg:.34,lr:.018,head:.09,neck:[.3,1.2],snout:[.12,.022],ears:'',tail:'bushy',beak:1},
+ kangaroo:{b:[.15,.18,.18],leg:.14,lr:.05,head:.11,neck:[.1,1.1],snout:[.07,.05],ears:'long',tail:'croc'}});
+{const LOOK={tusker:'elephant',dasher:'deer',bobbler:'trex',waddler:'penguin',flapper:'crane',thumper:'kangaroo'};
+const _bf2=buildFauna;buildFauna=function(genes){const sp=SPECIES[genes.species],lk=LOOK[genes.species];let a0;if(sp&&lk){a0=sp.animal;sp.animal=lk}let f;try{f=_bf2(genes)}finally{if(sp&&lk)sp.animal=a0}
+ try{const rig=f.userData.rig,h=rig&&rig.head,a=SP[lk];if(!h||!lk)return f;const body=rig.body,col=new THREE.Color(COLORS[genes.color]||'#e2b273'),M=c=>new THREE.MeshToonMaterial({color:c,gradientMap:typeof TOONG!=='undefined'?TOONG:null}),S0=new THREE.SphereGeometry(1,14,10),C0=new THREE.CylinderGeometry(1,1,1,10);
+ const add=(p,geo,m,s,pos,rot=[0,0,0])=>{const o=new THREE.Mesh(geo,m);o.scale.set(...s);o.position.set(...pos);o.rotation.set(...rot);p.add(o);return o};const R=a.head;
+ if(lk==='elephant'){const tm=M(col);for(let k=0;k<5;k++)add(h,S0,tm,[R*.28-k*.012,R*.28-k*.012,R*.3],[0,-k*R*.32,R*.95+Math.sin(k*.5)*R*.2]);const iv=M(0xfffff0);[-1,1].forEach(s=>{add(h,new THREE.ConeGeometry(1,1,8),iv,[R*.09,R*.6,R*.09],[s*R*.38,-R*.55,R*.6],[.9,0,0]);add(h,S0,M(col.clone().multiplyScalar(.85)),[R*.08,R*.75,R*.62],[s*R*1.05,0,-R*.1],[0,s*.3,0])})}
+ if(lk==='deer'){const am=M(0xd9c9a3);[-1,1].forEach(s=>{const b=add(h,C0,am,[R*.06,R*.9,R*.06],[s*R*.45,R*1.2,-R*.1],[0,0,-s*.35]);for(let k=0;k<2;k++)add(h,C0,am,[R*.05,R*.45,R*.05],[s*R*(.6+k*.15),R*(1.25+k*.35),R*.05],[.5,0,-s*.9])})}
+ if(lk==='trex'){h.scale.multiplyScalar(1.15);if(body)body.rotation.x=-.45;const am=M(col);[-1,1].forEach(s=>add(body||rig.root,C0,am,[.025,.09,.025],[s*.11,.02,a.b[2]*.85],[1.1,0,0]));add(h,S0,M(0xffffff),[R*.7,R*.08,R*.5],[0,-R*.38,R*.45])}
+ if(lk==='penguin'){add(body||rig.root,S0,M(0xffffff),[a.b[0]*.8,a.b[1]*.85,a.b[2]*.5],[0,0,a.b[2]*.62]);if(body)body.rotation.x=-.9;const fm=M(col.clone().multiplyScalar(.7));[-1,1].forEach(s=>add(body||rig.root,S0,fm,[.025,.13,.07],[s*a.b[0]*1.02,0,0],[0,0,s*.35]));add(h,new THREE.ConeGeometry(1,1,8),M(0xffa500),[R*.25,R*.6,R*.25],[0,-R*.1,R*1.05],[Math.PI/2,0,0])}
+ if(lk==='crane'){add(h,new THREE.ConeGeometry(1,1,8),M(0x333333),[R*.18,R*1.6,R*.18],[0,0,R*1.3],[Math.PI/2,0,0]);add(h,S0,M(0xd2202a),[R*.4,R*.25,R*.4],[0,R*.85,0])}
+ if(lk==='kangaroo'){if(body)body.rotation.x=-.6;[-1,1].forEach(s=>add(rig.root,S0,M(col.clone().multiplyScalar(.8)),[.04,.025,.11],[s*.09,.02,.08]));add(body||rig.root,S0,M(col.clone().lerp(new THREE.Color(0xffffff),.5)),[.08,.06,.03],[0,-.06,a.b[2]*.85])}
+ }catch(e){}return f}}
