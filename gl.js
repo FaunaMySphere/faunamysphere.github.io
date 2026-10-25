@@ -649,3 +649,5 @@ B.friendgate=o=>{const g=new THREE.Group(),gr=std(0x8a8d93,{roughness:.6}),y=std
  [-1,1].forEach(s=>g.add(mesh(BX,k,[.1,.1,.02],[s*.1,.82,.205])));g.add(mesh(BX,k,[.24,.05,.02],[0,.6,.205]));g.add(mesh(CYL,glowM(0x6dff3a,2),[.3,.02,.3],[0,.225,0]));return g};
 // v4.19 Sphere Store pad: flat purple pad with a glowing gold sphere icon
 B.storepad=o=>{const g=new THREE.Group(),p=std(0x7a4fc9,{roughness:.5}),r=std(0xe8e0ff,{roughness:.5});g.add(mesh(CYL,r,[.8,.08,.8],[0,.04,0]));g.add(mesh(CYL,p,[.66,.1,.66],[0,.09,0]));g.add(mesh(new THREE.SphereGeometry(.5,14,10),glowM(0xffd84a,1.5),[.36,.36,.36],[0,.42,0]));return g};
+
+{const _bf0=buildFauna;buildFauna=function(g){const f=_bf0(g);try{if(g&&g.rfx&&window.RARFX)RARFX(f,g,THREE)}catch(e){}return f}}
