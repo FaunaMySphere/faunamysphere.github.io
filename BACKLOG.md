@@ -199,3 +199,7 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Sphere themes: Autumn/farm #556B2F, Resort/Japanese #3CB371, Forest, Winter #B0E0E6/#F0F8FF, Wasteland; themed totems; Wax Block patron
 - Sphere Store pad with the owner-only message; "Add a Sphere" (6000 Bux placeholder) theme carousel, "Name your Sphere:" (max 20)
 - Birth Certificate OK button with a thumbs-up icon
+
+## Roadmap: marketplace
+- v6–v7: original-style Marketplace (notes 21): Buy/Sell/Search tabs, Lux/Bux toggle, listing fee, 72-hour listings, COLLECT button, player-to-player trade window.
+- ~v9 (maybe): crypto marketplace, but only after a server-side or on-chain ownership design and a rebrand. Not now.

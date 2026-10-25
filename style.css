@@ -183,3 +183,4 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 .finfo #fipf canvas,.finfo #fipf img{border:5px solid #1A5900;border-radius:50%;background:radial-gradient(#d8ffb8,#6fd13a);float:left;margin:0 10px 6px 0;box-shadow:0 0 14px #6dff3a}.finfo .small{font-weight:normal}
 .gbox{font-size:44px;text-align:center;animation:gbb 1s steps(2) infinite}@keyframes gbb{50%{opacity:.35}}
 .islots{display:flex;gap:10px;justify-content:center;margin:8px 0}.islot{width:56px;height:56px;border:3px dashed #1A5900;border-radius:12px;background:#bdf59a;display:flex;align-items:center;justify-content:center;font-size:28px;color:#1A5900;font-weight:900}.islot.full{border-style:solid;background:#7be04a}
+#wtip{position:fixed;display:none;pointer-events:none;z-index:62;max-width:260px;background:#3CC300;color:#fff;border:2px solid #1A5900;border-radius:12px;padding:5px 10px;font:bold 13px sans-serif;text-shadow:0 1px 0 #1A5900;box-shadow:0 2px 6px rgba(0,0,0,.3)}
