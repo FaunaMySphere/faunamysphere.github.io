@@ -54,7 +54,7 @@ function attach(c){c.on('data',m=>{if(!m||typeof m!=='object')return;if(NetMP.is
  c.on('close',()=>{if(NetMP.isHost){const id=c._pid;NetMP.conns.delete(id);if(id&&NetMP.peers.has(id)){const p=NetMP.peers.get(id);NetMP.peers.delete(id);toast((p.name||'A friend')+' disconnected.');deliver({t:'bye',id},c)}}else if(c===NetMP.hostConn){NetMP.hostConn=null;NetMP.status='reconnecting';NetMP.peers.clear();toast('📡 Room host left. Reconnecting…');setTimeout(()=>start(NetMP.room,'auto'),800+Math.random()*2500)}});
  c.on('error',()=>{})}
 function start(code,mode){if(typeof Peer==='undefined'){toast('Multiplayer library failed to load. Check your connection.');return}
- stop(true);NetMP.room=code;NetMP.status='connecting';badge();if(RL.topic!==PFX+code)relayStart(code);
+ stop(true);NetMP.room=code;NetMP.status=RL.up&&RL.topic===PFX+code?'online':'connecting';badge();if(RL.topic!==PFX+code)relayStart(code);
  const asClient=()=>{const pr=new Peer();NetMP.peer=pr;pr.on('open',id=>{NetMP.isHost=false;const c=pr.connect(PFX+code,{reliable:true});NetMP.hostConn=c;attach(c);
    const to=setTimeout(()=>{if(!c.open){if(!RL.up)toast('Room '+code+' not found. Hosting it instead.');pr.destroy();asHost(true)}},9000);
    c.on('open',()=>{clearTimeout(to);NetMP.status='online';toast('🟢 Joined room '+code+'!');announce()})});pr.on('error',e=>{if(e.type==='peer-unavailable'){pr.destroy();if(mode!=='join-only')asHost(true);else toast('Room '+code+' not found.')}else if(e.type==='network'||e.type==='server-error')(!RL.up&&toast('📡 Network trouble: '+e.type))})};
