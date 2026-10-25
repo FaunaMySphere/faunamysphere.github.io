@@ -13,7 +13,7 @@ function newState(){return{v:2,player:{id:'ct-'+Math.random().toString(36).slice
  fauna:[],active:0,zone:'home',zones:{},done:{},unlocked:{home:1,rockgarden:1},
  stats:{buys:0,zap:{},tox:0,toxZ:{},skill:0,cleared:{}},home:{decor:[],nest:{egg:null,inc:null,at:0},treat:{count:1,last:now()},totem:{last:now()-3e5}},
  tf:{},tut:0,projects:{rockgarden:{prog:0,need:10},village:{prog:0,need:20}},friends:[],visited:{},lastTick:now()}}
-const save=()=>{if(!S||!S.fauna||!S.fauna.length)return;S.lastTick=now();let j;try{j=JSON.stringify(S)}catch(e){return}try{localStorage.setItem(KEY,j);window.__saveErr=null}catch(e){window.__saveErr=e;console.warn('localStorage save failed',e)}window.__lastSave=Date.now();window.FSidb&&FSidb.put(j)};
+const save=()=>{if(!S||!S.fauna||!S.fauna.length)return;S.lastTick=now();let j;try{j=JSON.stringify(S)}catch(e){window.__saveErr=e;console.warn('save stringify failed',e);return}try{localStorage.setItem(KEY,j);window.__saveErr=null}catch(e){window.__saveErr=e;console.warn('localStorage save failed',e)}window.__lastSave=Date.now();window.FSidb&&FSidb.put(j)};
 const fa=()=>S.fauna[S.active];const Z=id=>ZONES.find(z=>z.id===id);
 function banner(t){const b=document.getElementById('banner');if(!b)return;b.textContent=t;b.classList.remove('hidden','show');void b.offsetWidth;b.classList.add('show');clearTimeout(banner.t);banner.t=setTimeout(()=>b.classList.add('hidden'),2500)}
 function toast(m){const d=document.createElement('div');d.textContent=m;const t=document.getElementById('toast');t.prepend(d);setTimeout(()=>d.remove(),4000);while(t.children.length>4)t.lastChild.remove()}
