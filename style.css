@@ -129,3 +129,19 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #savepill{min-width:84px;text-align:left;white-space:nowrap}
 #savepill .svl{opacity:1;transition:opacity .8s ease!important}
 #svnow:active,#svnow:hover,#savepill:active,#savepill:hover{transform:none!important}
+/* ---- v4.3 original UI skin: translucent green rounded panels, white text ---- */
+#top{background:linear-gradient(#44981Ce8,#2B8B1Ae8);border-bottom:3px solid #1d5e10}
+#bar{background:linear-gradient(#44981Ce8,#2B8B1Ae8);border-top:3px solid #1d5e10}
+#hud{background:linear-gradient(#44981Cd9,#2B8B1Ad9);color:#fff;border-top:3px solid #1d5e10;text-shadow:0 1px 0 #0006}
+#hud .small,#hud b{color:#fff}
+.sheet{background:linear-gradient(#44981Cf0,#2B8B1Af0);color:#fff;border:3px solid #1d5e10;border-bottom:0;text-shadow:0 1px 0 #0005}
+.sheet h2,.sheet h3,.sheet p,.sheet .small{color:#fff}
+.sheet .row{background:#ffffff26;border:2px solid #ffffff40;color:#fff}
+.sheet .row>span:first-child{background:#ffffff33}
+.sheet .card{background:#ffffff26;border:2px solid #ffffff50;color:#fff}
+.sheet input,.sheet textarea,.sheet select{background:#fff;color:#223;border:2px solid #1d5e10;border-radius:8px}
+#x{background:#33A11D;color:#fff;border:2px solid #fff}
+.btn{background:linear-gradient(#ffd84a,#f0a81e);color:#4a2a00;text-shadow:none;border:2px solid #7a4a00;box-shadow:0 3px 0 #7a4a00}
+#zoneName{background:#33A11De8;border:3px solid #1d5e10;color:#fff;border-radius:16px;text-shadow:0 1px 0 #0006}
+#tut{background:#33A11Df0!important;color:#fff;border:3px solid #1d5e10}
+#toast div{background:#33A11Df0;color:#fff;border-left:0;border:2px solid #1d5e10}

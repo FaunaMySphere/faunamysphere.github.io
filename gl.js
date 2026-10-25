@@ -19,8 +19,8 @@ let R;
 try{R=new THREE.WebGLRenderer({canvas:glc,antialias:Q!=='low',powerPreference:'high-performance'});}catch(e){console.warn('WebGL unavailable, staying on 2D',e);glc.remove();throw new Error('no-webgl-fallback-2d')}
 document.body.classList.add('webgl');
 let PR=Math.min(devicePixelRatio||1,QP.pr);R.setPixelRatio(PR);
-R.toneMapping=THREE.NeutralToneMapping||THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.0;R.outputColorSpace=THREE.SRGBColorSpace;
-if(QP.shadow){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
+R.toneMapping=THREE.NoToneMapping;R.toneMappingExposure=1.0;R.outputColorSpace=THREE.SRGBColorSpace;
+if(false){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,400);
 const hemi=new THREE.HemisphereLight(0xcfe9ff,0x5a4630,1.1);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1d8,2.6);sun.castShadow=!!QP.shadow;
@@ -83,7 +83,7 @@ function genTex(kind,base){const key=kind+base;if(texCache[key])return texCache[
 const BTOP={beach:'sand',mesa:'sand',candy:'snow',sea:'sand',night:'grass',home:'grass',garden:'grass',forest:'grass',rock:'rock',arctic:'snow',scorch:'sand',swamp:'mud',dungeon:'stone'};
 
 // ---------- materials ----------
-const M={};const mat=(k,o)=>M[k]||(M[k]=new THREE.MeshStandardMaterial(o));
+const TFLAT=(c,o)=>{const m=new THREE.MeshStandardMaterial(o);m.userData.flat=c;return m};const M={};const mat=(k,o)=>M[k]||(M[k]=new THREE.MeshStandardMaterial(o));
 const std=(color,o={})=>new THREE.MeshStandardMaterial({color,roughness:.8,...o});
 const glowM=(color,i=2.5)=>new THREE.MeshStandardMaterial({color:0x111111,emissive:color,emissiveIntensity:i,roughness:.4});
 const shadowify=o=>{o.traverse(m=>{if(m.isMesh){m.castShadow=!!QP.shadow;m.receiveShadow=!!QP.shadow}});return o};
@@ -101,17 +101,17 @@ function windify(m,amt=.12,hgt=.35){m.onBeforeCompile=s=>{s.uniforms.uTime=U.tim
 let island=new THREE.Group();scene.add(island);let builtZone=null,N0=0,C0=0;
 const W2=(i,j)=>new THREE.Vector3(i-C0,0,j-C0);
 function buildIsland(zid){scene.remove(island);island.traverse(o=>{if(o.geometry)o.geometry.dispose()});island=new THREE.Group();scene.add(island);
- const z=Z(zid),s=zs(zid),pal=BIOMES[z.biome],n=z.n;N0=n;C0=(n-1)/2;const tiles=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(s.tiles[i][j])tiles.push([i,j]);
+ const z=Z(zid),s=zs(zid),pal=(window.ZPAL&&ZPAL[zid])||BIOMES[z.biome],n=z.n;N0=n;C0=(n-1)/2;const tiles=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(s.tiles[i][j])tiles.push([i,j]);
  const top=genTex(BTOP[z.biome],pal[0]),side=genTex(z.biome==='arctic'?'rock':'dirt',pal[1]);
- const topM=new THREE.MeshStandardMaterial({color:BTOP[z.biome]==='grass'?0xeef8dc:0xffffff,map:top.map,normalMap:top.normalMap,roughness:z.biome==='arctic'?.55:.92,normalScale:new THREE.Vector2(.8,.8)});
- const sideM=new THREE.MeshStandardMaterial({map:side.map,normalMap:side.normalMap,roughness:.95});
+ const topM=TFLAT(pal[0],{color:BTOP[z.biome]==='grass'?0xeef8dc:0xffffff,map:top.map,normalMap:top.normalMap,roughness:z.biome==='arctic'?.55:.92,normalScale:new THREE.Vector2(.8,.8)});
+ const sideM=TFLAT(pal[1],{map:side.map,normalMap:side.normalMap,roughness:.95});
  const g=new THREE.BoxGeometry(1,.5,1);g.translate(0,-.25,0);
  const im=new THREE.InstancedMesh(g,[sideM,sideM,topM,sideM,sideM,sideM],tiles.length),m4=new THREE.Matrix4(),col=new THREE.Color();
  const TSET=new Set(tiles.map(t=>t[0]+','+t[1]));tiles.forEach(([i,j],k)=>{const h=(hsh(i,j,4)-.5)*.04;m4.makeTranslation(i-C0,h,j-C0);im.setMatrixAt(k,m4);let nb=0;for(let a=-1;a<2;a++)for(let b=-1;b<2;b++)if((a||b)&&TSET.has((i+a)+','+(j+b)))nb++;col.setHSL(0,0,(.86+hsh(i,j,9)*.12)*(.86+.14*nb/8));im.setColorAt(k,col)});
  im.receiveShadow=!!QP.shadow;im.castShadow=!!QP.shadow;im.userData.ground=1;island.add(im);
  // grass lip on top edges for grassy biomes
  // underside: rocky stalactites
- const rockT=genTex('rock',pal[2]);const rM=new THREE.MeshStandardMaterial({map:rockT.map,normalMap:rockT.normalMap,roughness:1,flatShading:true});
+ const rockT=genTex('rock',pal[2]);const rM=TFLAT(pal[2],{map:rockT.map,normalMap:rockT.normalMap,roughness:1,flatShading:true});
  const cg=new THREE.ConeGeometry(.72,1,7,3);cg.rotateX(Math.PI);cg.translate(0,-.5,0);
  const pa=cg.attributes.position;for(let k=0;k<pa.count;k++){const y=pa.getY(k);if(y<-.02&&y>-.98){pa.setX(k,pa.getX(k)*(1+(hsh(k,1,2)-.5)*.35));pa.setZ(k,pa.getZ(k)*(1+(hsh(k,2,2)-.5)*.35))}}cg.computeVertexNormals();
  const cm=new THREE.InstancedMesh(cg,rM,tiles.length);const q=new THREE.Quaternion(),sc=new THREE.Vector3(),p=new THREE.Vector3();
@@ -400,7 +400,7 @@ function syncObjs(){const s=zs(S.zone),seen=new Set();
 function clearObjs(){for(const[,e]of objMap)scene.remove(e.g);objMap.clear()}
 
 // ---------- camera ----------
-const camS={yaw:Math.PI/4,pitch:.72,dist:null,t:new THREE.Vector3(),drag:null,intro:1};
+const camS={yaw:Math.PI/4,pitch:.92,dist:null,t:new THREE.Vector3(),drag:null,intro:1};
 let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);R.setSize(W,H,false);glc.style.width=W+'px';glc.style.height=H+'px';camera.aspect=W/H;camera.updateProjectionMatrix();if(composer){composer.setPixelRatio(PR);composer.setSize(W,H)}if(finalPass)finalPass.uniforms.uRes.value.set(W*PR,H*PR);pMat.uniforms.uPR.value=PR*H/800;wMatAdd.uniforms.uPR.value=wMatN.uniforms.uPR.value=PR*H/800}
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
@@ -444,16 +444,16 @@ const origEmit=G.emit;G.emit=function(ev,d={}){try{origEmit(ev,d)}catch(_){}
 let lastT=performance.now(),fpsAcc=0,fpsN=0,fpsT=0,curZone=null;const clock0=performance.now();let titleOn=false;
 const nightA=()=>{if(QS.has('night'))return 1;if(QS.has('day'))return 0;const h=new Date().getHours()+new Date().getMinutes()/60;if(h>=20.5||h<5)return 1;if(h>=18.5)return(h-18.5)/2;if(h<7)return(7-h)/2;return 0};
 const moon=new THREE.Group();{const mc=new THREE.Mesh(new THREE.SphereGeometry(3,24,16),new THREE.MeshBasicMaterial({color:0xfff6d0,fog:false}));const cut=new THREE.Mesh(new THREE.SphereGeometry(2.8,24,16),new THREE.MeshBasicMaterial({color:0x0a1030,fog:false}));cut.position.set(1.4,.6,.6);moon.add(mc,cut);moon.position.set(-40,38,-60);moon.visible=false;scene.add(moon)}
-function applyEnv(z,nt){const pal=BIOMES[z.biome],dun=z.biome==='dungeon';const el=(dun?-4:(1-nt)*38-4)*Math.PI/180,az=.9;
+function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun=z.biome==='dungeon';const el=(dun?-4:(1-nt)*38-4)*Math.PI/180,az=.9;
  const sd=new THREE.Vector3(Math.cos(el)*Math.cos(az),Math.sin(el),Math.cos(el)*Math.sin(az));su.sunPosition.value.copy(sd);sky.visible=!dun;su.uTop.value.set(pal[4]).lerp(new THREE.Color(0x050a1e),nt);su.uHor.value.set(pal[5]).lerp(new THREE.Color(0x1a2448),nt);su.uSunC.value.set(nt>.5?0x8899cc:0xfff0c8);if(!dun&&!['candy','scorch','mesa','swamp'].includes(z.biome)){su.uTop.value.lerp(new THREE.Color(0x2c8ce8),(1-nt)*.5);su.uHor.value.lerp(new THREE.Color(0xc4ecff),(1-nt)*.45)}
  const dir=nt>.5||dun?new THREE.Vector3(-.4,.8,.3):sd.clone().setY(Math.max(.25,sd.y));sun.position.copy(dir.multiplyScalar(25));
- sun.color.set(nt>.5||dun?0x9fb4ff:0xfff1d8);sun.intensity=dun?.35:THREE.MathUtils.lerp(2.8,.55,nt);
- hemi.color.set(pal[4]).lerp(new THREE.Color(0x203060),nt);hemi.groundColor.set(pal[1]);hemi.intensity=dun?.35:THREE.MathUtils.lerp(1.55,.35,nt);
+ sun.color.set(nt>.5||dun?0x9fb4ff:0xfff1d8);sun.intensity=dun?.35:THREE.MathUtils.lerp(1.25,.4,nt);
+ hemi.color.set(pal[4]).lerp(new THREE.Color(0x203060),nt);hemi.groundColor.set(pal[1]);hemi.intensity=dun?.35:THREE.MathUtils.lerp(2.3,.7,nt);hemi.color.set(0xffffff).lerp(new THREE.Color(0x203060),nt);hemi.groundColor.set(0xd8d0c0);
  const fogC=dun?new THREE.Color(0x14111c):new THREE.Color(pal[5]).lerp(new THREE.Color(pal[4]),.15).lerp(new THREE.Color(0x0a1028),nt*.9);
  scene.background=dun?fogC:new THREE.Color(pal[5]).lerp(new THREE.Color(pal[4]),.15).lerp(new THREE.Color(0x0a1028),nt*.9);scene.fog=new THREE.Fog(fogC,(camS.dist||20)*1.6,(camS.dist||20)*4);
  if(!dun&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
  stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt);
- if(bloom)bloom.strength=dun||nt>.5?.9:.55;
+ if(bloom)bloom.strength=dun||nt>.5?.6:.3;
  setWeather({sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null))}
 function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
  const f=fa();if(!f)return;const z=Z(S.zone),nt=z.biome==='dungeon'?0:z.biome==='night'?1:nightA();
@@ -531,3 +531,22 @@ if(title&&!QS.has('notitle')){titleOn=true;title.classList.remove('hidden');docu
 const qb=document.getElementById('gfx');if(qb){qb.textContent='⚙ '+Q[0].toUpperCase()+Q.slice(1);qb.onclick=()=>{const n={low:'med',med:'high',high:'low'}[Q];G.GL.setQuality(n)}}
 const ld=document.getElementById('loading');if(ld){ld.classList.add('out');setTimeout(()=>ld.remove(),700)}
 console.log('[FaunaSphere] WebGL renderer active, quality='+Q);
+
+// ---- v4.3 art direction: flat toon shading + thick black outlines (original Flash look) ----
+const TOONG=(()=>{const d=new Uint8Array([150,150,150,255, 215,215,215,255, 255,255,255,255]);const t=new THREE.DataTexture(d,3,1,THREE.RGBAFormat);t.minFilter=t.magFilter=THREE.NearestFilter;t.needsUpdate=true;return t})();
+const OUTM=new THREE.MeshBasicMaterial({color:0x111111,side:THREE.BackSide});
+OUTM.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=position+normal*(0.028/max(length(modelMatrix[0].xyz),0.05));')};
+const TERR=new Set();
+function toonOf(m){if(!m||m.userData.toon||m.isShaderMaterial||m.isMeshBasicMaterial||m.isPointsMaterial||m.isLineBasicMaterial||m.isSpriteMaterial||m.isMeshToonMaterial)return m;
+ const keepMap=m.map&&!m.normalMap;const t=new THREE.MeshToonMaterial({color:m.color?m.color.clone():0xffffff,map:keepMap?m.map:null,gradientMap:TOONG,emissive:m.emissive?m.emissive.clone():0,emissiveIntensity:m.emissiveIntensity||1,transparent:m.transparent,opacity:m.opacity,side:m.side,alphaTest:m.alphaTest,depthWrite:m.depthWrite,vertexColors:m.vertexColors});
+ if(m.userData.flat)t.color.set(m.userData.flat);
+ if(m.onBeforeCompile&&String(m.onBeforeCompile).includes('uTime'))t.onBeforeCompile=m.onBeforeCompile;
+ t.userData.toon=1;return t}
+function toonify(root){root.traverse(o=>{if(!o.isMesh||o.userData.outline)return;
+ if(Array.isArray(o.material))o.material=o.material.map(toonOf);else o.material=toonOf(o.material);
+ o.castShadow=false;
+ if(!o.userData.ol&&!o.isInstancedMesh&&o.geometry&&o.geometry.attributes.normal&&!(o.material&&o.material.transparent)&&o.geometry.type!=='PlaneGeometry'&&o.geometry.type!=='CircleGeometry'&&o.geometry.type!=='RingGeometry'){
+  o.userData.ol=1;if(Q==='low'&&!o.parent?.userData?.fauna&&o.geometry.attributes.position.count>2000)return;const ol=new THREE.Mesh(o.geometry,OUTM);ol.userData.outline=1;ol.raycast=()=>{};o.add(ol)}})}
+hemi.groundColor&&0;
+setInterval(()=>{try{toonify(scene)}catch(e){console.warn('toon',e)}},400);
+const _ae=applyEnv;
