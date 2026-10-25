@@ -7,7 +7,7 @@ const newCode=()=>Array.from({length:5},()=>CH[Math.floor(Math.random()*CH.lengt
 ZONES.push({id:'visit',name:"Friend's Faunasphere",biome:'home',n:9,tier:0,stations:['gate'],nodes:{},poll:0,props:[],tox:0});
 if(S&&S.zone==='visit'){S.zone='home'}
 NetMP.zk=()=>S.zone==='visit'?'home:'+(S.v5.visitId||''):S.zone==='home'?'home:'+NetMP.myId:S.zone;
-NetMP.visiblePeers=()=>{const zk=NetMP.zk();return[...NetMP.peers.values()].filter(p=>p.zk===zk&&p.genes)};
+NetMP.visiblePeers=()=>{const zk=NetMP.zk();return[...NetMP.peers.values()].filter(p=>p.zk===zk&&p.genes).slice(0,7)};
 function me(){const f=fa();return{id:NetMP.myId,name:(S.player.name&&S.player.name!=='Caretaker'?S.player.name:(f?f.name+"'s Caretaker":'Caretaker')).slice(0,20),fname:f?f.name:'',genes:f?f.genes:null,level:f?f.level:1,zk:NetMP.zk(),zone:S.zone,i:+rt.pos.i.toFixed(2),j:+rt.pos.j.toFixed(2),sleep:!!rt.sleep}}
 function badge(){let b=document.getElementById('mpbadge');if(!NetMP.room){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='mpbadge';document.getElementById('stage').appendChild(b)}
  const here=NetMP.visiblePeers().length;const n=NetMP.peers.size;b.textContent=NetMP.status!=='online'?'🟡 Connecting to room '+NetMP.room+'…':n?'🟢 Room '+NetMP.room+' · connected to '+[...NetMP.peers.values()].map(p=>p.name).slice(0,2).join(', ')+(n>2?' +'+(n-2):'')+(here?' · '+here+' here':''):'🟡 Room '+NetMP.room+' · waiting for friends (they need the game open)'}
@@ -55,7 +55,7 @@ function start(code,mode){if(typeof Peer==='undefined'){toast('Multiplayer libra
  if(mode==='host')asHost(false);else asClient();
  try{const u=new URL(location.href);u.searchParams.set('room',code);history.replaceState(null,'',u)}catch(_){}}
 function stop(silent){if(!silent)relayStop();if(NetMP.peer){try{send({t:'bye'})}catch(_){}try{NetMP.peer.destroy()}catch(_){}}NetMP.peer=null;NetMP.conns.clear();NetMP.peers.clear();NetMP.hostConn=null;NetMP.isHost=false;if(!silent){NetMP.room=null;NetMP.status='offline';try{const u=new URL(location.href);u.searchParams.delete('room');history.replaceState(null,'',u)}catch(_){}badge()}}
-NetMP.create=()=>start(newCode(),'host');NetMP.join=code=>start(String(code).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8),'join');NetMP.leave=()=>{stop(false);toast('Left the room.')};
+NetMP.create=()=>start(newCode(),'host');NetMP.MAX=8;NetMP.join=code=>{start(String(code).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8),'join');const r=NetMP.room;setTimeout(()=>{if(NetMP.room===r&&NetMP.peers.size>=NetMP.MAX){stop(false);toast('Room is full ('+NetMP.MAX+' players max). Try another room!')}},8000)};NetMP.leave=()=>{stop(false);toast('Left the room.')};
 NetMP.visit=id=>{NetMP.pendingVisit=id;send({t:'sphereReq',to:id});toast('Asking to visit…');setTimeout(()=>{if(NetMP.pendingVisit===id){NetMP.pendingVisit=null;toast('No answer from that sphere.')}},8000)};
 let lastSent='';function tick(force){if(!NetMP.peer||!fa())return;const m=me(),k=JSON.stringify(m);if(force||k!==lastSent||Math.random()<.05){lastSent=k;send({t:'st',...m})}
  const cut=Date.now()-15000;for(const[id,p]of NetMP.peers)if(p.last<cut){NetMP.peers.delete(id);toast((p.name||'A friend')+' timed out.')}badge()}
