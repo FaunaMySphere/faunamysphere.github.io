@@ -268,7 +268,7 @@ function adoptScreen(){let sel='hoofer';const col=pick(['Tan','Cocoa','Cream','S
  Object.entries(SPECIES).filter(([k,s])=>s.starter).forEach(([k,s])=>{const d=document.createElement('div');d.className='card'+(k===sel?' sel':'');d.dataset.sp=k;d.appendChild(faunaPortrait({species:k,color:col,pattern:'Plain',tail:'Normal',eyes:'Round'}));d.insertAdjacentHTML('beforeend',`<b>${s.name}</b><br><span class="small">${s.desc}</span>`);d.onclick=()=>{sel=k;sg.querySelectorAll('.card').forEach(c=>c.classList.toggle('sel',c===d))};sg.appendChild(d)});
  document.getElementById('go').onclick=()=>{dispatch('adopt',{species:sel,name:document.getElementById('pn').value.trim()||'Sprout',color:col});document.getElementById('x').style.display='';close();boot()}}
 // ===== Boot =====
-let last=now();function loop(){const t=now(),dt=Math.min(100,t-last);last=t;if(fa()){step(dt);simulate(dt);draw()}requestAnimationFrame(loop)}
+let last=now();function loop(){requestAnimationFrame(loop);const t=now(),dt=Math.min(100,t-last);last=t;if(fa()){try{step(dt);simulate(dt);draw()}catch(e){if(!loop._e||t-loop._e>5000){loop._e=t;console.error(e)}}}}
 function boot(){S.tf=S.tf||{};if(S.tut==null)S.tut=99;Sound.biome=Z(S.zone).biome;zs('home');syncHomeDecor();const g=S.zones[S.zone]?S.zones[S.zone].objs.find(o=>o.type==='gate'):null;if(g)rt.pos={i:g.i-1,j:g.j};
  const off=Math.min(now()-S.lastTick,8*36e5);simulate(Math.max(0,off));renderHUD();setInterval(()=>{save();renderHUD()},1000);
  if(!S.unlocked.amelia)S.unlocked.amelia=1;if(S.done.g_buy&&S.goodie!==new Date().toDateString()&&!QS.has('nogoodie'))setTimeout(()=>{if(M.classList.contains('hidden'))ui('goodie')},1800);

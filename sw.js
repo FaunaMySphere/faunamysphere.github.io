@@ -1,4 +1,4 @@
-const C='fs-v49-1',F=['./','index.html','style.css','data.js','audio.js','art.js','game.js','save.js','fshooks.js','zonepal.js','mech.js','content6.js','fun.js','content7.js','unlock.js','content8.js','savedb.js','v5.js','net.js','i18n.js','i18n_es.js','vendor/peerjs.min.js','gl.js','vendor/three/three.module.min.js','manifest.json','icon.svg','icon-192.png','icon-512.png'];
+const C='fs-v49-2',F=['./','index.html','style.css','data.js','audio.js','art.js','game.js','save.js','fshooks.js','zonepal.js','mech.js','content6.js','fun.js','content7.js','unlock.js','content8.js','savedb.js','v5.js','net.js','i18n.js','i18n_es.js','vendor/peerjs.min.js','gl.js','vendor/three/three.module.min.js','manifest.json','icon.svg','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(F)).catch(()=>{}))});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 // network-first so deploys show up immediately; cache fallback offline
