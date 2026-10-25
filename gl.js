@@ -323,7 +323,7 @@ function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[
  // contact shadow blob for low quality
  const blob=mesh(new THREE.CircleGeometry(.28,20),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.28,depthWrite:false}),[1,1,1],[0,.012,0],[-Math.PI/2,0,0]);root.add(blob);
  shadowify(body);root.scale.setScalar(1.25);root.userData.rig=rig;root.userData.lift=body.position.y;return root}
-function animFauna(f,t,st){const TK=st.trick!==undefined?st.trick:(f===fauna&&window.rt?rt.trick:null);const r=f.userData.rig,b=r.body,L=f.userData.lift;const br=Math.sin(t*2.2)*.025;
+function animFauna(f,t,st){const TK=st.trick!==undefined?st.trick:(f===fauna&&(typeof rt!=="undefined")?rt.trick:null);const r=f.userData.rig,b=r.body,L=f.userData.lift;const br=Math.sin(t*2.2)*.025;
  b.scale.set(1-br*.4,1+br,1-br*.4);let y=L;
  if(st.walk){const ph=t*11;r.legs.forEach((l,k)=>{l.rotation.x=Math.sin(ph+(k===0||k===3?0:Math.PI))*.6});y+=Math.abs(Math.sin(ph))*.025;b.rotation.z=Math.sin(ph)*.04}
  else{r.legs.forEach((l,k)=>{l.rotation.x*=.8});b.rotation.z*=.8}
@@ -334,8 +334,8 @@ function animFauna(f,t,st){const TK=st.trick!==undefined?st.trick:(f===fauna&&wi
  if(r.tail)r.tail.rotation.y=Math.sin(t*(st.happy?16:4))*(st.happy?.6:.25);
  const blink=st.sleep?1:((t%3.7)<.12?1:0);r.lids.forEach(l=>{const base=l.userData.base??(l.userData.base=l.rotation.x);l.rotation.x=blink?1.5:base});
  if(r.gem){r.gem.rotation.y=t*2;r.gem.material.emissiveIntensity=(st.zap>0?6:2.2)+Math.sin(t*5)*.8}
- const te=TK?(now()-TK.t0)/1000:9;const ta=TK&&window.FSTrickAnim?window.FSTrickAnim(TK.k,te,r,b,L,y,t):undefined;if(ta!==undefined)y=ta;else if(te<1.6){const k=TK.k;if(k==='boing')y+=Math.abs(Math.sin(te*Math.PI*2.5))*.45;if(k==='roll')b.rotation.z=te*Math.PI*2.5;if(k==='play'){y+=Math.abs(Math.sin(te*12))*.12;b.rotation.y=Math.sin(te*8)*.4}if(k==='greet'&&r.head)r.head.rotation.z=Math.sin(te*10)*.35;if(k==='sniff'&&r.head)r.head.rotation.x=.45+Math.sin(te*30)*.06;if(k==='itch')b.rotation.z=Math.sin(te*30)*.12;if(k==='bored'){y=L*.8;if(r.head)r.head.rotation.x=.3}}else if(b.rotation.y)b.rotation.y*=.8;
- if(f===fauna&&window.rt&&now()-(rt.frownT||0)<1500&&r.head)r.head.rotation.y=Math.sin(now()/60)*.3;
+ const te=TK?(now()-TK.t0)/1000:9;const ta=window.FSTrickAnim?window.FSTrickAnim(TK?TK.k:null,te,r,b,L,y,t,f):undefined;if(ta!==undefined)y=ta;else if(te<1.6){const k=TK.k;if(k==='boing')y+=Math.abs(Math.sin(te*Math.PI*2.5))*.45;if(k==='roll')b.rotation.z=te*Math.PI*2.5;if(k==='play'){y+=Math.abs(Math.sin(te*12))*.12;b.rotation.y=Math.sin(te*8)*.4}if(k==='greet'&&r.head)r.head.rotation.z=Math.sin(te*10)*.35;if(k==='sniff'&&r.head)r.head.rotation.x=.45+Math.sin(te*30)*.06;if(k==='itch')b.rotation.z=Math.sin(te*30)*.12;if(k==='bored'){y=L*.8;if(r.head)r.head.rotation.x=.3}}else if(b.rotation.y)b.rotation.y*=.8;
+ if(f===fauna&&(typeof rt!=="undefined")&&now()-(rt.frownT||0)<1500&&r.head)r.head.rotation.y=Math.sin(now()/60)*.3;
  b.position.y+= (y-b.position.y)*.35}
 
 // ---------- v5 station / prop builders ----------

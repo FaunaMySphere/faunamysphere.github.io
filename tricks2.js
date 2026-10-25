@@ -39,7 +39,26 @@ function sfx(k){const c=Sound.ctx;if(!c||Sound.muted)return;const T=(f,d,w,v,at,
   snore:()=>{T(90,.9,'sawtooth',.035,0,1.3);Sound.noise&&Sound.noise(.8,.03,500,0,'lowpass');T(140,.6,'sine',.04,1.1,.6)}}[k]||(()=>{}))()}
 // ---------- animation (called from gl.js animFauna) ----------
 const sn=Math.sin,PI=Math.PI,ab=Math.abs;
-window.FSTrickAnim=function(k,te,r,b,L,y,t){const H=r.head,lg=r.legs,tl=r.tail;
+// whole-body motion on the root (position is re-copied every frame; rotations applied as deltas)
+function rootMove(f,te,k){const o={py:0,px:0,ry:0,rz:0,s:1};if(!k)return o;const TAU=PI*2;
+ if(DANCES.includes(k)){const bt=te*SONG[k].bpm/60,ph=bt*TAU;
+  if(k==='wiggle'){o.py=ab(sn(ph/2))*.22;o.rz=sn(ph/2)*.35;o.px=sn(ph/4)*.12}
+  else if(k==='twirl'){const c=bt%2;o.ry=c<1?c*TAU:0;o.py=c<1?sn(PI*c)*.45:ab(sn(ph))*.08}
+  else if(k==='hophop'){o.py=ab(sn(ph/2))*.5;o.px=((Math.floor(bt)%4)<2?1:-1)*.22;o.rz=-o.px*.8}
+  else if(k==='moonwalk'){const c=(bt/4)%2;o.px=(c<1?c:2-c)*.8-.4;o.py=ab(sn(ph))*.06;o.ry=PI/2}
+  else{o.py=ab(sn(ph))*.18;o.rz=sn(ph/2)*.2;o.s=1+ab(sn(ph))*.08}
+  return o}
+ const D=DUR[k];if(k==='sleep'){o.rz=1.25;o.py=-.05;return o}if(!D||te>D)return o;const p=te/D;
+ if(k==='jump'){const u=(p-.25)/.55;if(u>0&&u<1)o.py=sn(PI*u)*1.1;o.s=p<.25?1-.15*p/.25:1}
+ else if(k==='boing'){const u=(p-.2)/.6;if(u>0&&u<1)o.py=sn(PI*u)*.8}
+ else if(k==='play'){o.py=ab(sn(p*PI*2))*.45;o.ry=Math.min(1,p*2)*TAU}
+ else if(k==='roll'){const e=p<.1?0:p>.9?1:(p-.1)/.8;o.rz=e*TAU;o.py=sn(PI*e)*.35}
+ else if(k==='greet'){o.py=ab(sn(te*7))*.12*sn(PI*p)}
+ else if(k==='itch'){o.rz=.35*sn(PI*p)}
+ return o}
+function applyRoot(f,o){if(!f)return;o.py*=1.5;o.px*=1.3;const u=f.userData;f.position.y+=o.py;f.position.x+=o.px*Math.cos(f.rotation.y);f.position.z-=o.px*Math.sin(f.rotation.y);
+ f.rotation.y+=o.ry-(u._ry||0);u._ry=o.ry;f.rotation.z+=o.rz-(u._rz||0);u._rz=o.rz;const bs=u._bs||(u._bs=f.scale.x);if(o.s!==1||u._sc){f.scale.setScalar(bs*o.s);u._sc=o.s!==1}}
+window.FSTrickAnim=function(k,te,r,b,L,y,t,f){const _o=rootMove(f,te,k);applyRoot(f,_o);if(k&&f&&typeof rt!=="undefined"&&rt.trick&&rt.trick.k===k)window.__tko=_o;if(!k)return;const H=r.head,lg=r.legs,tl=r.tail;
  if(DANCES.includes(k)){const bt=te*SONG[k].bpm/60,ph=bt*PI*2,bar=Math.floor(bt/4)%2;
   if(k==='wiggle'){b.rotation.z=sn(ph)*.25;b.rotation.y=sn(ph/2)*.3;y=L+ab(sn(ph))*.06;if(H)H.rotation.z=-sn(ph)*.3;if(tl)tl.rotation.y=sn(ph*2)*.8;lg.forEach((l,i)=>l.rotation.x=sn(ph+i)*.4)}
   else if(k==='twirl'){const sp=(bt%4)<2?(bt%2)/2*PI*2:0;b.rotation.y=sp+(bar?PI:0)*0;b.rotation.z=sn(ph)*.08;y=L+ab(sn(ph/2))*.12;if(H)H.rotation.x=-.2;lg.forEach((l,i)=>l.rotation.x=(i%2?1:-1)*.5*ab(sn(ph)))}
@@ -90,5 +109,8 @@ function boot(){if(typeof S==='undefined'||!S||!S.tricks||typeof R==='undefined'
  LB['Go Home']='Go Home';
  V5.tricksMenu=function(){if(document.getElementById('radial')){document.getElementById('radial').remove();return}Sound.init&&Sound.init();prerender();wheel(['greet','play','bored','boing','sniff','roll','itch','jump','sleep','dance','home'],window.T?window.T('Tricks'):'Tricks')};
 }
+// camera: ease in on your fauna while it performs, then back to the previous zoom
+let z0=null;(function camLoop(){requestAnimationFrame(camLoop);try{if(typeof cam==='undefined'||!cam||typeof rt==='undefined')return;const tk=rt.trick,on=tk&&(tk.loop||(now()-tk.t0)/1000<(DUR[tk.k]||2)+.3);
+ if(on){if(z0===null)z0=cam.zoom||1;cam.zoom+=(Math.max(z0,1.9)-cam.zoom)*.06}else if(z0!==null){cam.zoom+=(z0-cam.zoom)*.08;if(Math.abs(cam.zoom-z0)<.01){cam.zoom=z0;z0=null}}}catch(e){}})();
 window.FSTricks2={BUF,get cur(){return cur},SONG};boot();
 })();
