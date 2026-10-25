@@ -38,3 +38,4 @@ window.I18N_ES_RX=[
 [/^Your Fauna \((\d+)\/(\d+)(\))?$/,(m,a,b,c)=>`Tu Fauna (${a}/${b}${c||''}`],[/^Online \((\d+)\)$/,(m,a)=>`En línea (${a})`],
 [/^Visit (.+)'s Faunasphere — their Totem gave you 15 Lux and a Treat!$/,(m,a)=>`Visitaste la Faunasfera de ${a}: ¡su Tótem te dio 15 Lux y una Golosina!`],
 [/^(\d+) Lux$/,(m,a)=>`${a} Lux`],[/^(\d+)s$/,(m,a)=>`${a} s`]];
+Object.assign(window.I18N_ES,{"Jump":"Saltar","Sleep":"Dormir","Wiggle":"Meneo","Twirl":"Giro","Hop-Hop":"Salti-salto","Moonwalk":"Paso lunar","Bop":"Cabeceo","Dance ▸":"Bailar ▸","Dance":"Bailar","Back":"Volver","Tricks":"Trucos","Hup! ⤴️":"¡Hop! ⤴️","💤 Zzz…":"💤 Zzz…","🎶 Wiggle!":"🎶 ¡A menearse!","🎶 Spin spin!":"🎶 ¡Gira gira!","🎶 Hop-hop!":"🎶 ¡Salti-salto!","🎶 Smooth…":"🎶 Suavecito…","🤘 Bop!":"🤘 ¡Cabeceo!"});
