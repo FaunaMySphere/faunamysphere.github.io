@@ -505,7 +505,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  if(finalPass){finalPass.uniforms.uTime.value=t%10;finalPass.uniforms.uFade.value=fade;composer.render(dt)}else R.render(scene,camera);
  overlay(t,fade);
  // adaptive resolution
- fpsAcc+=dt;fpsN++;if(fpsAcc>2.5){const fps=fpsN/fpsAcc;G.GLfps=fps;fpsAcc=0;fpsN=0;const tgt=isPhone?30:50;if(fps<tgt&&PR>.75){PR=Math.max(.75,PR-.2);R.setPixelRatio(PR);size()}else if(fps>tgt+15&&PR<Math.min(devicePixelRatio||1,QP.pr)){PR=Math.min(QP.pr,PR+.1);R.setPixelRatio(PR);size()}}}
+ fpsAcc+=dt;fpsN++;if(fpsAcc>2.5){const fps=fpsN/fpsAcc;G.GLfps=fps;fpsAcc=0;fpsN=0;const tgt=isPhone?30:50,nowT=performance.now();if(nowT-(G._prT||0)<12000||(G._prN||0)>=4){}else if(fps<tgt&&PR>.75){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.max(.75,PR-.2);R.setPixelRatio(PR);size()}else if(fps>tgt+15&&PR<Math.min(devicePixelRatio||1,QP.pr)){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.min(QP.pr,PR+.1);R.setPixelRatio(PR);size()}}}
 let sheetG=null;function sheet(t){if(!sheetG){sheetG=new THREE.Group();const ks=Object.keys(SPECIES),cols=Object.keys(COLORS);ks.forEach((k,i)=>{const f=buildFauna({species:k,color:cols[i%cols.length],pattern:PATTERNS[i%PATTERNS.length],tail:TAILS[i%3],eyes:EYES[i%3]});f.position.set((i%6)-2.5,0,Math.floor(i/6)*1.3-.6);f.rotation.y=.6;f.scale.setScalar(1.05);sheetG.add(f)});scene.add(sheetG);fauna.visible=false;clearObjs();island.visible=false;camS.yaw=Math.PI/4*0+0.0001;camS.pitch=.5}
  sheetG.children.forEach((f,i)=>animFauna(f,t+i,{walk:i%4===1,happy:i%4===2,sleep:i%4===3,zap:0}))}
 function applyEnvLite(z,nt){/* periodic day/night refresh */const k=z.id+'|'+nt.toFixed(2);if(applyEnvLite.k!==k){applyEnvLite.k=k;applyEnv(z,nt)}}
@@ -562,9 +562,11 @@ const _em2=G.emit;G.emit=function(ev,d={}){try{_em2(ev,d)}catch(_){}try{
   fxAdd(m,1.6,(o,k,t)=>{const tt=Math.min(t,1.0);const h=Math.abs(Math.sin(tt*Math.PI*2.2))*.7*(1-tt);if(t<1)o.position.set(p0.x+vx*tt,p0.y+h,p0.z+vz*tt);else o.position.lerp(mePosW().add(new THREE.Vector3(0,.4,0)),.15);o.scale.setScalar(1-Math.max(0,k-.7)*3)})}}
 }catch(e){console.warn(e)}};
 let trailT=0;const trailG=new THREE.CircleGeometry(.07,10);
-(function fxLoop(){requestAnimationFrame(fxLoop);const dt=.016;
- if(rt.tgt&&fa()&&performance.now()-trailT>110){trailT=performance.now();const m=new THREE.Mesh(trailG,ringM(0x6dff3a));m.rotation.x=-Math.PI/2;m.position.copy(mePosW()).add(new THREE.Vector3(0,.03,0));fxAdd(m,1.3,(o,k)=>{o.material.opacity=.85*(1-k)})}
- for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;const k=f.t/f.life;if(k>=1){scene.remove(f.m);f.m.traverse(x=>{x.geometry&&x.geometry!==trailG&&x.geometry.dispose()});FX.splice(i,1);continue}f.upd(f.m,k,f.t)}})();
+// v4.15: trail dots come from a fixed pool (no new mesh/material per step); other FX free their materials; real frame dt.
+const trailPool=[];for(let n=0;n<14;n++){const m=new THREE.Mesh(trailG,ringM(0x6dff3a));m.rotation.x=-Math.PI/2;m.visible=false;m._tp=1;trailPool.push(m)}let trailI=0,fxLast=performance.now();
+(function fxLoop(){requestAnimationFrame(fxLoop);const tn=performance.now(),dt=Math.min(.1,(tn-fxLast)/1000);fxLast=tn;
+ if(rt.tgt&&fa()&&tn-trailT>110){trailT=tn;const m=trailPool[trailI=(trailI+1)%trailPool.length];const old=FX.findIndex(f=>f.m===m);if(old>=0)FX.splice(old,1);m.visible=true;m.material.opacity=.85;m.position.copy(mePosW()).add(new THREE.Vector3(0,.03,0));fxAdd(m,1.3,(o,k)=>{o.material.opacity=.85*(1-k)})}
+ for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;const k=f.t/f.life;if(k>=1){scene.remove(f.m);if(f.m._tp)f.m.visible=false;else f.m.traverse(x=>{if(x.geometry&&x.geometry!==trailG)x.geometry.dispose();if(x.material&&x.material.dispose)x.material.dispose()});FX.splice(i,1);continue}f.upd(f.m,k,f.t)}})();
 
 // ---- v4.7 Faunawear hats ----
 const _bf=buildFauna;buildFauna=function(genes){const f=_bf(genes);try{const rig=f.userData.rig;const hd=rig&&(rig.head||rig.body);if(genes.hat&&hd&&window.HATS&&HATS[genes.hat]){const h=HATS[genes.hat];const g=new THREE.Group();

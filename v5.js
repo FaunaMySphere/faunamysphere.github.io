@@ -130,7 +130,7 @@ R.adopt=p=>{R0.adopt(p);const f=S.fauna[S.fauna.length-1];f.genes.eyes='Happy';f
 V5.layEgg=function(){const f=fa();if(S.player.eggs.length<6){const gm=JSON.parse(JSON.stringify(f.genome));if(f.genes.heatFed)gm.heatProof[0]='Heat Proof';S.player.eggs.push({id:'egg'+now()+Math.random(),genes:{...f.genes,heatProof:false},genome:gm,parent:f.name,gen:f.gen||1});toast('🥚 '+f.name+' laid an egg! Hatch it in your Nest.');emit('egg')}else toast('Egg basket full (6).')};
 layEgg=V5.layEgg;
 R.incubate=p=>{const n=S.home.nest;if(n.egg)return;R0.incubate(p);const f=S.fauna[p.fid];n.incG=JSON.parse(JSON.stringify(f.genome));n.incGen=f.gen||1;n.incName=f.name};
-R.hatch=({name})=>{const n=S.home.nest;if(!n.egg||now()<n.at)return;if(S.fauna.length>=3)return toast('All 3 fauna slots are full. Release one in the Fauna panel first.');
+R.hatch=({name})=>{const n=S.home.nest;if(!n.egg||now()<n.at)return;if(S.fauna.length>=10)return toast('All 10 fauna slots are full. Release one in the Fauna panel first.');
  const A=n.egg.genome||genomeFrom(n.egg.genes),Bg=n.incG||genomeFrom(n.inc),gm=V5.inherit(A,Bg);const f=mkFauna({},name||'Hatchling');f.genome=gm;f.gen=Math.max(n.egg.gen||1,n.incGen||1)+1;f.level=0;f.parents=[n.egg.parent,n.incName||'?'];applyGenome(f);
  S.fauna.push(f);n.egg=null;n.incG=null;emit('egg');Sound.sfx('hatch');banner('EGG HATCHED');
  if(f.genes.species==='bobbler'&&f.genes.pattern==='Spotted'&&f.genes.tail==='Tufted')S.stats.dragon=1;

@@ -8,6 +8,22 @@ const Sound={ctx:null,master:null,mus:null,fx:null,muted:localStorage.getItem('f
   this.mus=c.createGain();this.mus.gain.value=.5;this.mus.connect(this.master);this.mus.connect(this.rev);this.fx=c.createGain();this.fx.gain.value=.9;this.fx.connect(this.master);this.fx.connect(this.rev);
   const nb=c.createBuffer(1,c.sampleRate*2,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;this.nbuf=nb;
   this.startMusic();this.startAmbient()}catch(e){}},
+ // Footsteps: short synthesized buffers rendered ONCE per surface, then replayed (1 BufferSource per step, shared output gain).
+ _stepBufs(){if(this._sb)return this._sb;const c=this.ctx,sr=c.sampleRate,mk=(len,fn)=>{const b=c.createBuffer(1,Math.floor(sr*len),sr),d=b.getChannelData(0);fn(d,sr);let m=0;for(const x of d)m=Math.max(m,Math.abs(x));if(m)for(let i=0;i<d.length;i++)d[i]/=m;return b};
+  const lp=(d,a)=>{let y=0;for(let i=0;i<d.length;i++){y+=a*(d[i]-y);d[i]=y}},hp=(d,a)=>{let y=0,px=0;for(let i=0;i<d.length;i++){const x=d[i];y=a*(y+x-px);px=x;d[i]=y}};
+  const env=(d,sr,att,dec)=>{for(let i=0;i<d.length;i++){const t=i/sr;d[i]*=Math.min(1,t/att)*Math.exp(-t/dec)}};
+  const V={grass:[],sand:[],dirt:[],snow:[],wet:[],stone:[]};
+  for(let k=0;k<3;k++){
+   V.grass.push(mk(.07,(d,sr)=>{for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;lp(d,.18);hp(d,.97);env(d,sr,.004,.018)}));
+   V.sand.push(mk(.09,(d,sr)=>{for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;hp(d,.9);lp(d,.5);env(d,sr,.008,.025)}));
+   V.dirt.push(mk(.07,(d,sr)=>{for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)+.6*Math.sin(i/sr*2*Math.PI*(110+k*15));lp(d,.12);env(d,sr,.003,.016)}));
+   V.snow.push(mk(.11,(d,sr)=>{for(let i=0;i<d.length;i++)d[i]=(Math.random()<.08?(Math.random()*2-1)*3:0)+(Math.random()*2-1)*.4;hp(d,.85);env(d,sr,.002,.035)}));
+   V.wet.push(mk(.12,(d,sr)=>{const f0=500+k*80;for(let i=0;i<d.length;i++){const t=i/sr;d[i]=Math.sin(2*Math.PI*(f0*t+900*t*t*3))*.7+(Math.random()*2-1)*.5}lp(d,.3);env(d,sr,.003,.03)}));
+   V.stone.push(mk(.05,(d,sr)=>{for(let i=0;i<d.length;i++){const t=i/sr;d[i]=Math.sin(2*Math.PI*(900+k*120)*t)*.6+(Math.random()*2-1)*.5}hp(d,.6);env(d,sr,.001,.012)}))}
+  this.stepOut=c.createGain();this.stepOut.gain.value=1;this.stepOut.connect(this.fx);return this._sb=V},
+ footSurface(){const z=window.S&&S.zone||'',b=this.biome||'';if(/swamp|bog|abyss|probe|sea|water|falls|fishatish/.test(z)||b==='swamp')return'wet';if(b==='arctic'||/ice|snow|glacier|avalanche|village|wintergift|frozen/.test(z))return'snow';if(b==='scorch'||/sand|mesa|isthmus|desert|dune|beach/.test(z))return'sand';if(['rockisland','ruins','dungeon','rockgarden','quarry','cave'].some(x=>z.includes(x))||b==='rock'||b==='dungeon')return'stone';if(b==='forest'||b==='night')return'dirt';return'grass'},
+ footstep(){if(!this.ctx||this.muted||this.ctx.state!=='running')return;try{const V=this._stepBufs(),s=this.footSurface(),arr=V[s],src=this.ctx.createBufferSource();src.buffer=arr[(Math.random()*arr.length)|0];src.playbackRate.value=.9+Math.random()*.22;
+  const vol={grass:.16,sand:.15,dirt:.17,snow:.2,wet:.17,stone:.14}[s]*(.8+Math.random()*.35);if(!this._sg){this._sg=[];for(let i=0;i<4;i++){const g=this.ctx.createGain();g.connect(this.stepOut);this._sg.push(g)}this._si=0}const g=this._sg[this._si=(this._si+1)%4];g.gain.value=vol;src.connect(g);src.start();src.onended=()=>{try{src.disconnect()}catch(e){}}}catch(e){}},
  setMuted(m){this.muted=m;localStorage.setItem('fs_muted',m?'1':'0');if(this.master)this.master.gain.setTargetAtTime(m?0:.6,this.ctx.currentTime,.05)},
  env(g,t,a,d,v){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0008,t+a+d)},
  tone(f,d=.15,type='sine',v=.2,at=0,slide=0,dest,abs){const c=this.ctx;if(!c)return;const t=abs!=null?abs:c.currentTime+at,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+d);
@@ -94,7 +110,7 @@ const Sound={ctx:null,master:null,mus:null,fx:null,muted:localStorage.getItem('f
   hurt:()=>this.sfx('growl'),
   egg:()=>this.sfx('drop'),
   heartbeat:()=>{T(70,.12,'sine',.22,0,.6);T(62,.12,'sine',.17,.22,.6)}, // low thump-thump
-  step:()=>{const s=this.surface();if(s==='grass')N(.05,.06,260+Math.random()*80,0,'lowpass');else if(s==='stone'){T(900+Math.random()*300,.03,'triangle',.05);N(.02,.05,3200,0,'bandpass',3)}else N(.09,.04,5000+Math.random()*1500,0,'highpass')},
+  step:()=>this.footstep(),
   type:()=>N(.015,.06,2500,0,'bandpass',4),
   newborn:()=>this.voice(1300,800,.55,.05),hmm:()=>this.voice(420,640,.35,.035),moan:()=>this.voice(260,140,.7,.05,0),
   trill:()=>{for(let k=0;k<5;k++)setTimeout(()=>this.voice(1100+k*120,1500+k*150,.07,.035,0),k*65)},
