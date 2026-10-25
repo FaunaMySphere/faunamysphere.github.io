@@ -14,3 +14,4 @@
 - The render loop now keeps running even if one frame hits an error.
 - Service worker cache bumped to fs-v49-2.
 - v4.10 — 2026-10-25 1:42 PM ET — green dashed move arc on mouse hover; NO NAV cursor badge off-walkable; vile looks: black blob with green eyes (2, 4-eyed Gassy with gas puffs, 9 for bosses); backlog notes 24-26; SW fs-v410-1
+- v4.11 — 2026-10-25 1:45 PM ET — EGG HATCHED overlay (#1E392A dim, #228B22 band, cracked egg with silhouette); Birth Certificate as a table (Parents, Generation, Level, Species, Color, Pattern, Eye Type, Tail Type, 5 ability icons, 'Name your Fauna:' + OK); Lv20 gold ceremony now keeps body color, adds a #FFD700 gold collar, green lightning on a zap pad; backlog notes 27; SW fs-v411-1

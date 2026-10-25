@@ -184,3 +184,11 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Holiday decor (nutcrackers, candy canes, snowmen, antlers, Santa hat) and New Year party hats and blowers
 - Genome panel Gene/Dominant/Recessive with rows Coat, Cooling, Ear, Eye, Pattern, Primary/Secondary Color, Species, Tail, Waterproof
 - White chat speech bubbles over fauna
+
+## v6 backlog (notes 27)
+- All 17 species with their looks: Tusker (elephant), Chomper (alligator), Reacher (giraffe), Grazer (bison), Grabber (octopus), Flapper (crane), Dasher (deer), Hoofer (pony), Hugger (bear), Squeaker (mouse), Bobbler (T-rex), Waddler (penguin), Thumper (kangaroo), Oinker (pig), Scratcher (cat), Sniffer (dog), Hopper (frog)
+- Fauna Info window: "[Fauna] cared for by [Player]", Age, Ear Type, 6 ability icons, Report/Block, Remove Hat, Genome tab
+- Gift Box window text plus Send/Reset
+- Purple "Level up!" speech bubble with squiggle particles; "+N Lux" and "Wow! 5x" zap bonus popups
+- Sphere decoration themes: ice, rock/underwater coral, holiday (Mintmelon Tree)
+- Color names: Gold #FFD700, Vermilion #E34234, Rusty #984920, Scarlet #FF2400, Eggplant #4B0082, Pink #FFC0CB, Ochre #CC7722
