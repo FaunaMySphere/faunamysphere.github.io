@@ -53,6 +53,12 @@ function drawFauna(c,g,x,y,s,t,face=1,mood='',anim={}){
   else{E(c,ex,ey,r+.8,r+1.3,'#fff');c.fillStyle='#1d1d2a';c.beginPath();c.arc(ex+1,ey+.6,r*.72,0,7);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(ex+2,ey-.7,1.2,0,7);c.fill()}
   if(g.eyes==='Vamp'&&!sleep){c.strokeStyle='#8a3cb8';c.lineWidth=2;c.beginPath();c.arc(ex,ey,r+2,3.4,6);c.stroke();c.strokeStyle='#111';c.beginPath();c.moveTo(ex+3,ey-4);c.lineTo(ex+6,ey-7);c.stroke()}
   c.fillStyle='#ff8fb066';c.beginPath();c.ellipse(ex+1,ey+r+3.5,3,1.8,0,0,7);c.fill();c.lineWidth=2.4;c.strokeStyle=ln};
+ if(typeof SPECIES!=='undefined'&&SPECIES[sp]&&SPECIES[sp].animal==='bird'&&!['scooter','grabber','reacher','chomper'].includes(sp)){ // v6.11.1 bird portrait (Flapper/Waddler)
+  const wd=sp==='waddler',fl=Math.sin(t/(walk?70:300))*(happy?.6:.25);c.fillStyle='#f2a23a';for(const lx of[-6,5]){c.beginPath();c.roundRect(lx-1.5,-9,3,9,1.5);c.fill();c.stroke();EG(c,lx+3,-1,5,2,'#f2a23a')}
+  tail(-18,-20,'thin');EG(c,0,-22,wd?17:15,wd?16:13,col);EG(c,3,-18,wd?10:8,wd?11:8,lt);pattern(0,-22,15,13);
+  c.save();c.translate(-4,-24);c.rotate(-.3-fl);EG(c,-6,0,12,6,dk,-.4);c.restore();
+  EG(c,12,-40,11,10,col);E(c,9,-50,2.5,4,dk);E(c,13,-51,2.5,4,dk);poly(c,[21,-43,31,-40,21,-37],'#f6b23a',ln);eye(14,-42,2.8);
+ }else
  switch(sp){
  case'scooter':legs(4,8);tail(-20,-12,'thin');EG(c,0,-16,22,11,col);{const sh=g.pattern==='B-sharp'||g.pattern==='Palm'?col:'#5f9e4f';EG(c,-1,-22,19,13,sh);c.lineWidth=1.2;for(let i=-1;i<2;i++)poly(c,[i*10-4,-27,i*10+4,-27,i*10+6,-20,i*10-6,-20],shade(sh,.25),shade(sh,-.4));c.lineWidth=2.4}pattern(-1,-22,19,13);EG(c,22,-22+(walk?Math.sin(ph)*1.5:0),10,9,col);eye(24,-25);break;
  case'grabber':for(let i=0;i<6;i++){const a=Math.sin(t/(walk?90:220)+i)*4;c.beginPath();c.moveTo(-14+i*6,-12);c.quadraticCurveTo(-18+i*7+a,-2,-14+i*7,2);c.lineWidth=7;c.strokeStyle=ln;c.stroke();c.lineWidth=4.5;c.strokeStyle=dk;c.stroke()}c.lineWidth=2.4;c.strokeStyle=ln;EG(c,0,-28,20,20,col);pattern(0,-28,20,20);eye(-6,-28);eye(7,-28);c.beginPath();c.arc(0,-20,3,.3,2.8);c.stroke();break;

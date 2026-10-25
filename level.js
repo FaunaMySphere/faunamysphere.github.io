@@ -24,11 +24,12 @@ function gain(n){const p=P();if(!p||!n||p.lv>=MAX)return;p.xp+=Math.round(n);let
  while(p.lv<MAX&&p.xp>=need(p.lv)){p.xp-=need(p.lv);p.lv++;up=1}
  if(p.lv>=MAX)p.xp=0;if(up)levelUp();draw()}
 window.PLV.gain=gain;
-function levelUp(){const p=P();try{banner(tr('LEVEL ','NIVEL ')+p.lv+'!')}catch(e){}toast('🌟 '+tr('You reached Player Level ','¡Alcanzaste el Nivel de Jugador ')+p.lv+'!');
+function levelUp(){const p=P();lvBanner(tr('LEVEL ','NIVEL ')+p.lv+'!');toast('🌟 '+tr('You reached Player Level ','¡Alcanzaste el Nivel de Jugador ')+p.lv+'!');
  jingle([523,659,784,1047]);fx('#ffe25a');
- UNL.forEach(([l,sp])=>{if(p.lv>=l&&!p.seen[l]){p.seen[l]=1;setTimeout(()=>celebrate(l,sp),1200)}});try{save()}catch(e){}}
+ UNL.forEach(([l,sp])=>{if(p.lv>=l&&!p.seen[l]){p.seen[l]=1;setTimeout(()=>celebrate(l,sp),2300)}});try{save()}catch(e){}}
+function lvBanner(txt){let b=document.getElementById('plvban');if(!b){b=document.createElement('div');b.id='plvban';document.body.appendChild(b)}b.innerHTML='<b>🌟 '+txt+'</b>';b.classList.remove('on');void b.offsetWidth;b.classList.add('on');clearTimeout(lvBanner.t);lvBanner.t=setTimeout(()=>b.classList.remove('on'),2300)}
 function jingle(fr){try{const A=Sound;if(!A.ctx||A.muted)return;fr.forEach((f,i)=>A.tone(f,.18,'triangle',.18,i*.11))}catch(e){}}
-function fx(c){const d=document.createElement('div');d.className='plvfx';d.style.setProperty('--c',c);for(let i=0;i<18;i++){const s=document.createElement('i');s.style.setProperty('--a',(i*20)+'deg');d.appendChild(s)}document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
+function fx(c){const d=document.createElement('div');d.className='plvfx';d.style.setProperty('--c',c);for(let i=0;i<24;i++){const s=document.createElement('i');s.style.setProperty('--a',(i*15)+'deg');d.appendChild(s)}document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
 function giftEgg(sp){const f=fa();if(!f||!S.player)return false;if(S.player.eggs.length>=6)return false;
  const g={...f.genes,species:sp,heatProof:false};const e={id:'egg'+now()+Math.random(),genes:g,parent:tr('Level reward','Premio de nivel'),gen:1,forceSp:sp};
  try{e.genome=genomeFrom(g);e.genome.species=[sp,sp]}catch(x){}S.player.eggs.push(e);return true}
