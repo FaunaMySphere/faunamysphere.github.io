@@ -45,8 +45,8 @@ const E0=emit;emit=window.emit=function(ev,d){try{const z=(typeof Z==='function'
 // ---- gating: no gated species from mutation or inheritance ----
 if(typeof randAllele==='function'){const ra=randAllele;randAllele=window.randAllele=function(k,v){if(k==='species'){const ok=Object.keys(SPECIES).filter(s=>!isLocked(s));return pick(ok)}return ra(k,v)}}
 const H0=R.hatch;R.hatch=function(p){const n=S.home.nest,egg=n&&n.egg,k=S.fauna.length;const r=H0(p);const f=S.fauna[k];
- if(f&&egg){let sp=f.genes.species;if(egg.forceSp)sp=egg.forceSp;else if(isLocked(sp)){const alt=[egg.genes&&egg.genes.species,n.inc&&n.inc.species].filter(s=>s&&!isLocked(s));sp=alt[0]||'hoofer'}
-  if(sp!==f.genes.species){f.genes.species=sp;try{if(f.genome)f.genome.species=[sp,f.genome.species[1]];if(isLocked(f.genome.species[1]))f.genome.species[1]=sp;applyGenome(f)}catch(e){}}gain(50)}
+ if(f&&egg){let sp=f.genes.species;if(egg.forceSp)sp=egg.forceSp;else{const pool=Object.keys(SPECIES).filter(s=>!isLocked(s)),last=typeof S.lastHatchSp==='string'?S.lastHatchSp:null,pp=pool.length>1?pool.filter(s=>s!==last):pool;sp=pp.length?pp[Math.floor(Math.random()*pp.length)]:(isLocked(sp)?'hoofer':sp)} // v6.14: new breed every hatch
+  if(sp!==f.genes.species){f.genes.species=sp;try{if(f.genome)f.genome.species=[sp,f.genome.species[1]];if(isLocked(f.genome.species[1]))f.genome.species[1]=sp;applyGenome(f)}catch(e){}}S.lastHatchSp=f.genes.species;gain(50)}
  return r};
 // ---- HUD ----
 function draw(){const p=P();if(!p)return;let b=document.getElementById('plv');const me=document.querySelector('#me .mecol');if(!me)return;

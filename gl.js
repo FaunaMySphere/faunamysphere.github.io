@@ -303,7 +303,7 @@ function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[
  const lift=a.leg+a.b[1]*.7;body.position.y=lift;
  body.add(mesh(SPH,fur,a.b));body.add(mesh(SPH,belly,[a.b[0]*.8,a.b[1]*.6,a.b[2]*.8],[0,-a.b[1]*.35,0]));
  if(a.hump)body.add(mesh(SPH,dark,[a.b[0]*.8,a.b[1]*.6,a.b[2]*.5],[0,a.b[1]*.6,a.b[2]*.35]));
- if(a.shell){const sm=new THREE.MeshPhysicalMaterial({color:0x5f7a3a,roughness:.4,clearcoat:.8,flatShading:true});body.add(mesh(new THREE.SphereGeometry(1,10,6,0,6.283,0,1.6),sm,[a.b[0]*1.25,a.b[1]*2,a.b[2]*1.2],[0,-.01,0]));body.add(mesh(CYL,std(0xc9b56a),[a.b[0]*1.28,.025,a.b[2]*1.22],[0,0,0]))}
+ if(a.shell){const sm=new THREE.MeshPhysicalMaterial({color:genes.shc?new THREE.Color(COLORS[genes.color2]||col).lerp(new THREE.Color(col),.25).multiplyScalar(.85):0x5f7a3a,roughness:.4,clearcoat:.8,flatShading:true});body.add(mesh(new THREE.SphereGeometry(1,10,6,0,6.283,0,1.6),sm,[a.b[0]*1.25,a.b[1]*2,a.b[2]*1.2],[0,-.01,0]));body.add(mesh(CYL,std(0xc9b56a),[a.b[0]*1.28,.025,a.b[2]*1.22],[0,0,0]))}
  if(a.spikes)for(let k=0;k<5;k++)body.add(mesh(new THREE.ConeGeometry(.025,.06,4),dark,[1,1,1],[0,a.b[1]*.95,-a.b[2]*.6+k*a.b[2]*.3]));
  // legs
  if(a.leg){for(const[x,z]of[[-1,1],[1,1],[-1,-1],[1,-1]]){const lg=new THREE.Group();lg.position.set(x*a.b[0]*.62,0,z*a.b[2]*.58);const L=a.leg+a.b[1]*.6;lg.add(mesh(new THREE.CapsuleGeometry(a.lr,L-a.lr*2,4,10),fur,[1,1,1],[0,-L/2,0]));lg.add(mesh(SPHL,dark,[a.lr*1.15,a.lr*.8,a.lr*1.3],[0,-L+a.lr*.3,a.lr*.2]));body.add(lg);rig.legs.push(lg)}}
