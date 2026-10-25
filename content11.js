@@ -8,6 +8,12 @@ const u0=window.ui;window.ui=ui=function(v,p={}){if(v!=='map')return u0(v,p);
  Object.keys(tiers).sort().forEach(k=>{h+='<div class="dgrp">'+t('Worlds')+' · '+t('Tier')+' '+k+'</div>'+tiers[k].map(row).join('')});
  open(h+'</div></div>')};
 window.FSgo=id=>{try{M.classList.add('hidden')}catch(e){}startTravel(id)};let busy=false;const st0=startTravel;startTravel=window.startTravel=function(zone){const z=Z(zone);if(busy||!S.unlocked[zone]||zone===S.zone||(z.heat&&!fa().genes.heatProof))return st0(zone);
- busy=true;const o=document.createElement('div');o.id='iris';document.body.appendChild(o);requestAnimationFrame(()=>o.classList.add('shut'));
- setTimeout(()=>{try{dispatch('travel',{zone});toast('✨ '+t('Arrived at')+' '+z.name)}catch(e){}try{Sound.sfx('gate')}catch(e){}setTimeout(()=>{o.classList.remove('shut');setTimeout(()=>{o.remove();busy=false},650)},350)},650)};
+ busy=true;let done=false,o=null;const fin=()=>{try{o&&o.remove()}catch(e){}document.querySelectorAll('#iris').forEach(e=>e.remove());busy=false};
+ const go=()=>{if(done)return;done=true;try{dispatch('travel',{zone})}catch(e){console.warn('[FaunaMySphere] travel',e);try{st0(zone)}catch(_){}}try{toast('✨ '+t('Arrived at')+' '+t(z.name))}catch(e){}try{Sound.sfx('gate')}catch(e){}};
+ try{o=document.createElement('div');o.id='iris';document.body.appendChild(o);void o.offsetWidth;o.classList.add('shut')}catch(e){}
+ setTimeout(()=>{go();try{o&&o.classList.remove('shut')}catch(e){}setTimeout(fin,450)},380);
+ setTimeout(()=>{go();fin()},2500)};
 })();
+
+// v4.18.1 hotfix: gate always opens the Destination window even if the walk-to never "arrives"
+(function(){const i0=interact;interact=window.interact=function(o){const r=i0(o);if(o&&o.type==='gate'){const z=S.zone;setTimeout(()=>{try{if(S.zone===z&&rt.tgtObj===o&&M.classList.contains('hidden'))ui('map')}catch(e){}},1800)}return r}})();

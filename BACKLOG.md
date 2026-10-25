@@ -203,3 +203,9 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 ## Roadmap: marketplace
 - v6–v7: original-style Marketplace (notes 21): Buy/Sell/Search tabs, Lux/Bux toggle, listing fee, 72-hour listings, COLLECT button, player-to-player trade window.
 - ~v9 (maybe): crypto marketplace, but only after a server-side or on-chain ownership design and a rebrand. Not now.
+
+## v6 — Bigger worlds (Leo, 2:09 PM)
+- Each zone ~5x current area (updated 2:10 PM, was 2x): more floating block islands, more vile spots, more dig spots + decorations, plus the matching original landmarks from the notes.
+- Keep the original look: floating islands over a flat backdrop.
+- Phone perf at 5x: chunked/streamed zone loading, distance culling, merged static geometry, LOD for distant objects; no per-frame work that scales with zone size.
+- VERTICALITY (Leo, 2:09 PM): hills + raised block terrain at several heights, climbable via walkable ramps/steps; pathing + jump arc height-aware; camera follows height. Keep separate top/side colors (VIDEO_NOTES_20). More original-style plants, rocks, props, landmarks per zone from the video notes. Watch phone perf.

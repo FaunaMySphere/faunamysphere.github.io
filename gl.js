@@ -613,3 +613,7 @@ const _bf2=buildFauna;buildFauna=function(genes){const sp=SPECIES[genes.species]
 B.reverie=stumpStation(0x5fae3a,0x4fb8ff);
 B.ideashadow=o=>{const g=new THREE.Group(),k=new THREE.MeshBasicMaterial({color:0x111111});g.add(mesh(CYL,k,[.07,.5,.07],[0,.25,0]));[[0,.72,0,.3],[.18,.6,.1,.2],[-.17,.62,-.06,.22]].forEach(([x,y,z,r])=>g.add(mesh(SPHL,k,[r,r*.9,r],[x,y,z])));
  const bulb=mesh(SPHL,glowM(0xffffff,3),[.09,.11,.09],[0,1.18,0]);g.add(bulb);g.add(mesh(CYL,std(0xbbbbbb),[.04,.05,.04],[0,1.06,0]));g.userData.blob=bulb;return g};
+// v4.18 (notes 28): Friend Gate: grey boxy robot base topped by a tall yellow carved block head
+B.friendgate=o=>{const g=new THREE.Group(),gr=std(0x8a8d93,{roughness:.6}),y=std(0xf2c230,{roughness:.6}),k=new THREE.MeshBasicMaterial({color:0x1a1a1a});const BX=new THREE.BoxGeometry(1,1,1);
+ g.add(mesh(BX,gr,[.62,.22,.62],[0,.11,0]));g.add(mesh(BX,gr,[.4,.18,.4],[0,.31,0]));g.add(mesh(BX,y,[.44,.62,.4],[0,.71,0]));
+ [-1,1].forEach(s=>g.add(mesh(BX,k,[.1,.1,.02],[s*.1,.82,.205])));g.add(mesh(BX,k,[.24,.05,.02],[0,.6,.205]));g.add(mesh(CYL,glowM(0x6dff3a,2),[.3,.02,.3],[0,.225,0]));return g};
