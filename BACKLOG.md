@@ -176,3 +176,11 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Sand Scrubber machine (tall, blue bowl): Polluted Sand -> Scrubbed Sand ("Clean Sand"); quests "The Sand Which is Polluted" (Duned Tract, 7000 Lux) and "More Scrubbed Sand" (Fishatish, repeatable, random coral deco)
 - Colors: hub grass #749c34/#5c7c24, stone edge #7c847c; Glacierbase ice #c4e4f4, water #347ca4; Duned Tract/Mesa sand #c47c4c, rock #a46c44, water #4c9ca4 (cacti, dead trees, ponds); Sand Bar beach #e4c48c, ocean #44a4dc (palms, coral, starfish)
 - Green rounded world hover tooltips; sounds: gate chime, footsteps (crunchy on ice), staticky zap hum, gurgle/pop, level-up fanfare, hub loop and zone drone
+
+## v6 backlog (notes 26)
+- Gold ceremony: round metal zap pad, jagged green lightning, gold collar #FFD700
+- Hatching: "Incubate" radial, "Hatching..." bar, EGG HATCHED overlay (#1E392A, band #228B22), Birth Certificate (Parents, Generation, Level, Species, Color, Pattern, Eye, Tail, ability icons, "Name your Fauna:")
+- Species looks: Dragon (fire-breath cone #FFA500), Waddler penguin, Bobbler lizard, Sniffer fox, Walking Tall llama
+- Holiday decor (nutcrackers, candy canes, snowmen, antlers, Santa hat) and New Year party hats and blowers
+- Genome panel Gene/Dominant/Recessive with rows Coat, Cooling, Ear, Eye, Pattern, Primary/Secondary Color, Species, Tail, Waterproof
+- White chat speech bubbles over fauna

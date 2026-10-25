@@ -13,3 +13,4 @@
 - Fixed: the game froze the moment you sent a chat message. The chat bubble drew its text through a translation helper that was shadowed by a game variable, which threw an error and stopped the render loop.
 - The render loop now keeps running even if one frame hits an error.
 - Service worker cache bumped to fs-v49-2.
+- v4.10 — 2026-10-25 1:42 PM ET — green dashed move arc on mouse hover; NO NAV cursor badge off-walkable; vile looks: black blob with green eyes (2, 4-eyed Gassy with gas puffs, 9 for bosses); backlog notes 24-26; SW fs-v410-1

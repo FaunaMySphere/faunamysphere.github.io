@@ -161,3 +161,4 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #gcban{background:#3CC300d0}
 #top,#bar,#hud,.sheet,#microbox,#toast div,#zoneName{font-weight:700;text-shadow:0 2px 0 #1A5900}
 .dlg,.gpop{background:linear-gradient(#ffffff,#e4e4e4)!important;color:#223!important;text-shadow:none!important}
+#nonav{position:fixed;display:none;pointer-events:none;z-index:60;background:#3CC300;color:#fff;font:bold 12px sans-serif;padding:3px 8px;border:2px solid #1A5900;border-radius:10px;text-shadow:0 1px 0 #1A5900}
