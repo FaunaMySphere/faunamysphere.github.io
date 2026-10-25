@@ -40,7 +40,7 @@ const fd0=R.feed;R.feed=p=>{if(p.item==='moonpillow'){const f=fa();f.energy=0;S.
 function sleepyEl(){let e=document.getElementById('sleepy');if(!e){e=document.createElement('div');e.id='sleepy';document.body.appendChild(e)}return e}
 setInterval(()=>{try{if(!S||!fa())return;if(!S.player.inv.moonpillow&&!S.done.mp_given&&fa().level>=3){S.player.inv.moonpillow=1;S.done.mp_given=1;toast('🌙 '+t('You got a Moon Pillow! Use it from Goods to dream your way to Puddinpie Falls.'))}
  const el=sleepyEl();if(S.zone!=='puddinpie'){el.style.display='none';return}if(!S.sleepy)S.sleepy={left:480};S.sleepy.left--;const m=Math.max(0,S.sleepy.left);el.style.display='block';el.textContent='😴 '+t('Sleepy Time')+' '+Math.floor(m/60)+':'+String(m%60).padStart(2,'0');
- if(Math.random()<.03){S.sleepy.left-=10;toast('☁️ '+t('A Sleepy viley zapped you! -10 s'))}
+ if(Math.random()<.03){const d=Math.round(enemyDmg(10));S.sleepy.left-=d;toast('☁️ '+t('A Sleepy viley zapped you!')+' -'+d+' s')}
  if(S.sleepy.left<=0){S.sleepy=null;toast('🌅 '+fa().name+' '+t('woke up back home.'));R.travel({zone:'home'})}}catch(e){}},1000);
 // dream treats drop when shaking / digging in Puddinpie
 const zp2=R.zap;R.zap=p=>{zp2(p);if(S.zone==='puddinpie'&&Math.random()<.35){const k=Math.random()<.25?'trancetaffy':'dreamdonut';addItem(k);toast(t('Found')+' '+ITEMS[k].name+'!')}};

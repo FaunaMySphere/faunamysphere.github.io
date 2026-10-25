@@ -44,7 +44,7 @@ const R={
  adopt({species,name,color}){S.fauna.push(mkFauna({species,color,pattern:'Plain',tail:'Normal',eyes:'Round'},name))},
  zap({oid}){const f=fa(),s=zs(S.zone),o=s.objs.find(o=>o.id===oid),z=Z(S.zone);if(!o)return;
   if(f.energy<3){if(!rt.sleep){rt.sleep=true;toast(f.name+' ran out of energy and is taking a quick nap… 💤');setTimeout(()=>{rt.sleep=false;f.energy=Math.max(f.energy,20);renderHUD()},10000)}return}f.energy=clamp(f.energy-3);rt.beam=now();o.hp-=f.level>=10?2:1;o.hp=Math.max(0,o.hp);emit('hit',o);
-  if(o.type==='tox'){f.happiness=clamp(f.happiness-3);emit('hurt');if(f.happiness<=0)return tooSad()}
+  if(o.type==='tox'){f.happiness=clamp(f.happiness-enemyDmg(3));emit('hurt');if(f.happiness<=0)return tooSad()}
   if(o.hp>0)return;s.objs.splice(s.objs.indexOf(o),1);
   const tox=o.type==='tox',lux=(tox?12:4)+z.tier*3+Math.floor(Math.random()*4);gainLux(lux);emit('pop',{o,lux});gainXP((tox?30:10)+z.tier*5);
   S.stats.zap[S.zone]=(S.stats.zap[S.zone]||0)+1;if(tox){S.stats.tox++;S.stats.toxZ[S.zone]=(S.stats.toxZ[S.zone]||0)+1}
@@ -182,7 +182,7 @@ function step(dt){const f=fa();if(!f)return;if(rt.tgt){const[ti,tj]=rt.tgt,di=ti
   if(Math.abs(di-dj)>.05)rt.face=(di-dj)>0?1:-1;if(now()-stepT>270+Math.random()*30){stepT=now();Sound.sfx('step')}
   if(d<=sp){rt.pos={i:ti,j:tj};rt.tgt=null;if(rt.onArrive){const a=rt.onArrive;rt.onArrive=null;a()}}else{rt.pos.i+=di/d*sp;rt.pos.j+=dj/d*sp}}
  const s=zs(S.zone);if(now()-rt.lastTox>2000){rt.lastTox=now();for(const o of s.objs)if(o.type==='tox'){const di=Math.sign(rt.pos.i-o.i),dj=Math.sign(rt.pos.j-o.j);const ni=o.i+(Math.random()<.5?di:pick([-1,1])),nj=o.j+(Math.random()<.5?dj:0);
-  if(s.tiles[ni]&&s.tiles[ni][nj]&&!s.objs.some(x=>x.i===ni&&x.j===nj)&&!(Math.round(rt.pos.i)===ni&&Math.round(rt.pos.j)===nj))Object.assign(o,{i:ni,j:nj});if(Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<1.6&&!rt.sleep&&!rt.trans){f.happiness=clamp(f.happiness-2);emit('hurt');if(f.happiness<=0){tooSad();save()}}}}}
+  if(s.tiles[ni]&&s.tiles[ni][nj]&&!s.objs.some(x=>x.i===ni&&x.j===nj)&&!(Math.round(rt.pos.i)===ni&&Math.round(rt.pos.j)===nj))Object.assign(o,{i:ni,j:nj});if(Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<1.6&&!rt.sleep&&!rt.trans){f.happiness=clamp(f.happiness-enemyDmg(2));emit('hurt');if(f.happiness<=0){tooSad();save()}}}}}
 function walkTo(o,cb){const s=zs(S.zone),opts=[[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].map(([a,b])=>[o.i+a,o.j+b]).filter(([i,j])=>s.tiles[i]&&s.tiles[i][j]&&!s.objs.some(x=>x.i===i&&x.j===j));
  opts.sort((a,b)=>Math.hypot(a[0]-rt.pos.i,a[1]-rt.pos.j)-Math.hypot(b[0]-rt.pos.i,b[1]-rt.pos.j));const t=opts[0]||[o.i,o.j];rt.sleep=false;rt.tgt=t;rt.onArrive=()=>{rt.face=(o.i-o.j)-(t[0]-t[1])>=0?1:-1;cb()}}
 function interact(o){rt.tgtObj=o;Sound.sfx('click');const go=cb=>walkTo(o,cb);

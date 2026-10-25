@@ -467,7 +467,7 @@ const origEmit=G.emit;G.emit=function(ev,d={}){try{origEmit(ev,d)}catch(_){}
  if(ev==='egg'){floatW(me.clone().add(new THREE.Vector3(0,.6,0)),'🥚 Egg!','#fff');burstW(me,16,0xfff2c0,1.2)}
  if(ev==='skill'&&d.o){const p=objW(d.o).add(new THREE.Vector3(0,.5,0));burstW(p,24,0xfff9b0,1.6);if(d.l)floatW(p.clone().add(new THREE.Vector3(0,.4,0)),'+'+d.l+' Lux','#ffe25a');vib(15)}
  if(ev==='eat'){burstW(me,d.fav?16:7,0xff6f9f,.8,{g:.6,decay:.012,size:.16})}
- if(ev==='hurt'){floatW(me.clone().add(new THREE.Vector3(0,.5,0)),'-2 ♥','#ff7a8a');vib(40)}
+ if(ev==='hurt'){floatW(me.clone().add(new THREE.Vector3(0,.5,0)),'-'+(+(window.__lastHurt||2).toFixed(1))+' ♥','#ff7a8a');vib(40)}
  if(ev==='goal'){burstW(me,30,0xffe25a,2)}};
 
 // ---------- frame ----------
