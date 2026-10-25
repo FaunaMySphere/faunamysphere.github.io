@@ -168,3 +168,10 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 .cert{background:#3CC300;border:4px solid #1A5900;border-radius:18px;color:#fff;padding:12px;text-shadow:0 1px 0 #1A5900}.cert #cpf canvas,.cert #cpf img{border:5px solid #1A5900;border-radius:50%;background:#bdf59a;float:left;margin:0 10px 6px 0}
 .ctab td{padding:1px 8px 1px 0;font-size:14px}.cabil{clear:both;margin:6px 0}.cabil .abic{font-size:20px;margin-right:4px}.cabil .off{opacity:.25;filter:grayscale(1)}.cnl{font-weight:bold;margin-top:6px}
 #gbolt{position:fixed;inset:0;width:100%;height:100%;z-index:70;pointer-events:none;filter:drop-shadow(0 0 6px #6dff3a);animation:gbf .16s steps(2) infinite}@keyframes gbf{50%{opacity:.4}}
+.fpop{position:fixed;z-index:65;pointer-events:none;transform:translate(-50%,0);font:900 18px sans-serif;color:#fff;animation:fpu 1.8s ease-out forwards;white-space:nowrap}
+.fpop.flux{color:#fff;text-shadow:0 2px 0 #1A5900,0 0 4px #1A5900}.fpop.fwow{color:#ffe600;font-size:26px;text-shadow:0 2px 0 #7a4b00,0 0 6px #000}
+.fpop.flvl{background:#8b3fd1;border:3px solid #4b1878;border-radius:16px;padding:6px 14px;font-size:20px;text-shadow:0 2px 0 #4b1878}
+.fpop.flvl:after{content:'';position:absolute;left:24px;bottom:-12px;border:8px solid transparent;border-top-color:#4b1878}
+.fpop.flvl i{position:absolute;left:50%;top:50%;width:26px;height:8px;border-top:3px solid #c27bff;border-radius:50%;transform:rotate(var(--a)) translateX(46px);animation:fsq .9s ease-out forwards}
+@keyframes fpu{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}12%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-40px)}}
+@keyframes fsq{to{transform:rotate(var(--a)) translateX(80px);opacity:0}}
