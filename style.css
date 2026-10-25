@@ -1,0 +1,43 @@
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;font-family:"Trebuchet MS","Nunito","Segoe UI Rounded",system-ui,sans-serif;background:#16384a;color:#24323a;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+body{display:flex;flex-direction:column;height:100dvh}
+#top{display:flex;gap:8px;align-items:center;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));background:linear-gradient(#6cc487,#3a8a56);color:#fff;font-weight:bold;text-shadow:0 1px 0 #0006;border-bottom:3px solid #2a6a40;box-shadow:0 2px 6px #0004;z-index:2}
+#who{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cur{display:flex;gap:6px}#cur span{background:linear-gradient(#0000002a,#0000004a);padding:3px 10px;border-radius:14px;border:1px solid #ffffff40;font-size:14px;white-space:nowrap}
+#mute{background:#ffffff30;border:1px solid #ffffff50;border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer}
+#stage{position:relative;flex:1;min-height:0}canvas#cv{width:100%;height:100%;display:block;touch-action:none}
+#zoneName{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(#fffdf2,#f1e6c8);border:2px solid #b89a5a;color:#5a4320;padding:4px 18px;border-radius:16px;font-weight:bold;font-size:14px;box-shadow:0 2px 6px #0004;white-space:nowrap}
+#toast{position:absolute;bottom:10px;left:10px;right:10px;pointer-events:none;font-size:13px;display:flex;flex-direction:column-reverse;gap:4px;align-items:flex-start}
+#toast div{background:#fffdf4f0;border-left:4px solid #5fb57a;padding:5px 12px;border-radius:10px;box-shadow:0 2px 6px #0003;animation:tin .25s ease-out,f 4s forwards}
+@keyframes tin{from{transform:translateY(10px);opacity:0}}@keyframes f{80%{opacity:1}100%{opacity:0}}
+#tut{position:absolute;left:10px;right:10px;top:48px;max-width:460px;margin:auto;display:flex;gap:10px;align-items:flex-start;background:linear-gradient(#fffdf2,#f3ead2);border:3px solid #6cc487;border-radius:16px;padding:8px 10px;box-shadow:0 4px 14px #0005;font-size:13.5px}
+#tut canvas{width:56px;height:56px;border-radius:50%;background:radial-gradient(#e8f7ff,#9fd6ef);flex:none;border:2px solid #fff}
+#tut.pop{animation:pop .35s cubic-bezier(.3,1.6,.6,1)}@keyframes pop{from{transform:scale(.8);opacity:0}}
+.btn.sm{padding:4px 10px;font-size:12px;margin:6px 0 0}
+#hud{display:flex;gap:10px;padding:6px 10px;background:linear-gradient(#f4fbef,#e2f0da);border-top:2px solid #b9d8ab;font-size:12px;align-items:center;font-weight:bold;color:#3a5a40}
+#bars{flex:1;display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center}
+.bar{height:11px;background:#cfdccb;border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px #0003}.bar i{display:block;height:100%;border-radius:6px;transition:width .4s;background-image:linear-gradient(#ffffff60,#0000 60%)!important}
+.bar i{background-blend-mode:normal}
+#egg{width:58px;height:58px;text-align:center;border-radius:50%;background:conic-gradient(#ffd84a var(--p,0%),#ddd 0);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 1px 3px #0003}
+#egg>div{background:#fffdf4;width:46px;height:46px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+#bar{display:grid;grid-template-columns:repeat(6,1fr);background:linear-gradient(#3a8a56,#2a6a40);padding-bottom:env(safe-area-inset-bottom);border-top:2px solid #6cc487}
+#bar button{background:none;border:0;color:#fff;padding:5px 0;display:flex;flex-direction:column;align-items:center;cursor:pointer;font-family:inherit}
+#bar i{font-style:normal;font-size:19px;width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#ffffff1a;transition:transform .1s}
+#bar button:active i{transform:scale(.88);background:#ffffff35}#bar span{font-size:10px;font-weight:bold;margin-top:1px}
+#modal{position:fixed;inset:0;background:#0a1a2a88;display:flex;align-items:flex-end;justify-content:center;z-index:9;backdrop-filter:blur(2px)}
+.sheet{background:linear-gradient(#fffdf6,#f2f7ea);width:100%;max-width:540px;max-height:82vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px;position:relative;border:3px solid #6cc487;border-bottom:0;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+@media(min-width:700px){#modal{align-items:center}.sheet{border-radius:20px;border-bottom:3px solid #6cc487}}
+#x{position:absolute;right:10px;top:10px;border:0;background:#e5ecdf;border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer}
+.hidden{display:none!important}h2{margin:2px 0 12px;color:#2f6e48;font-size:20px}h3{color:#2f6e48;font-size:15px;margin:14px 0 6px}
+.btn{border:0;border-radius:12px;padding:8px 14px;background:linear-gradient(#7fd08f,#4fa065);color:#fff;font-weight:bold;margin:3px;box-shadow:0 3px 0 #2f7a45;font-family:inherit;cursor:pointer;text-shadow:0 1px 0 #0004}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2f7a45}.btn:disabled{background:#b8c2b5;box-shadow:0 3px 0 #8a948a}
+.row{display:flex;align-items:center;gap:10px;padding:8px;margin:4px 0;background:#ffffffb0;border:1px solid #e0ead8;border-radius:12px}.row .grow{flex:1}
+.row>span:first-child{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#eef6e6;border-radius:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.card{background:#fff;border:2px solid #cde3c4;border-radius:14px;padding:6px;text-align:center;font-size:12px;cursor:pointer;transition:transform .1s}.card:active{transform:scale(.97)}.card.sel{border-color:#f6a623;box-shadow:0 0 0 3px #f6a62355}
+.card canvas{width:90px;height:90px;background:radial-gradient(#f2fbff,#d6eefa);border-radius:50%}.small{font-size:11px;color:#678}
+input{font-size:16px;padding:10px;border-radius:10px;border:2px solid #cde3c4;width:100%;font-family:inherit}
+
+@media(max-width:600px){#tut{top:auto;bottom:10px;font-size:12.5px}#tut canvas{width:44px;height:44px}#tut~#toast,#toast{bottom:10px}}
+#stage:has(#tut:not(.hidden)) #toast{bottom:120px}
+@media(max-width:600px){#stage:has(#tut:not(.hidden)) #toast{bottom:175px}}
