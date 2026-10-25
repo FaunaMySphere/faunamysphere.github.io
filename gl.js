@@ -221,13 +221,15 @@ B.decor=o=>{const it=o.item||'',g=new THREE.Group();
  else if(it==='d_birdbath'){g=new THREE.Group();const st=std(0xcfd2d6);g.add(mesh(CYL,st,[.08,.35,.08],[0,.175,0]));g.add(mesh(CYL,st,[.32,.06,.32],[0,.37,0]));g.add(mesh(CYL,std(0x4fb3e8,{roughness:.1}),[.26,.02,.26],[0,.405,0]))}
  else if(it==='d_pinwheel'){g=new THREE.Group();g.add(mesh(CYL,std(0xf4f4f0),[.025,.6,.025],[0,.3,0]));[0xff5f5f,0xffd84a,0x5fb0ff,0x7ad15a].forEach((c,k)=>{const m=mesh(BOX,std(c),[.04,.2,.08],[0,.6,0]);m.rotation.x=k*Math.PI/2;m.translateY(.1);g.add(m)})}
  else if(it==='d_totem'){g=new THREE.Group();[0xb5653a,0x2fd3c4,0xf6cf4a].forEach((c,k)=>g.add(mesh(BOX,std(c),[.3,.26,.3],[0,.13+k*.27,0])));[-1,1].forEach(s=>g.add(mesh(BOX,new THREE.MeshBasicMaterial({color:0x1a1a1a}),[.06,.06,.02],[s*.07,.72,.16])))}
+ else if(it.includes('fence')){g=new THREE.Group();const w=std(0xf4ead8);for(let k=-2;k<=2;k++)g.add(mesh(BOX,w,[.06,.4,.04],[k*.2,.2,0]));g.add(mesh(BOX,w,[1.0,.05,.03],[0,.28,0]));g.add(mesh(BOX,w,[1.0,.05,.03],[0,.14,0]))}
  else if(it==='d_block'){g=new THREE.Group();g.add(mesh(BOX,std(new THREE.Color(o.col||'#c8a26a').getHex(),{roughness:.8}),[.96,.3,.96],[0,.15,0]))}
  else g=bd0(o);
  const VAR=[null,0xff6b6b,0x6bb5ff,0xffd84a,0xb07bff,0x6be08a,0xf4f4f0,0x333740];const vc=VAR[(o.v|0)%VAR.length];
  if(vc!=null&&it!=='d_block'){const c=new THREE.Color(vc);g.traverse(m=>{if(m.isMesh&&m.material&&m.material.color&&!m.material.emissive?.getHex?.()){m.material=m.material.clone();m.material.color.lerp(c,.65)}})}
  const out=new THREE.Group();out.add(g);g.position.y=(o.h|0)*.3;out.rotation.y=((o.rot|0)%4)*Math.PI/2;return out}}
 // v4.22 tile paint layer (S.home.paint {"i,j":"#hex"}): thin slabs, rebuilt only when the paint signature changes
-let paintG=null,paintSig='';function paintFrame(){try{const on=typeof S!=='undefined'&&S.zone==='home'&&builtZone==='home';const P=on&&S.home&&S.home.paint||{};const sig=on?JSON.stringify(P)+C0:'';if(sig===paintSig)return;paintSig=sig;if(paintG){scene.remove(paintG);paintG.traverse(m=>{if(m.material)m.material.dispose()})}paintG=new THREE.Group();scene.add(paintG);const mats={};
+let paintG=null,paintSig='';let ghostG=null,ghostK='';function ghostFrame(){try{const gh=typeof rt!=='undefined'&&rt.ghost&&S.zone==='home'?rt.ghost:null;const k=gh?JSON.stringify(gh):'';if(k===ghostK)return;ghostK=k;if(ghostG){scene.remove(ghostG);ghostG=null}if(!gh)return;ghostG=B.decor({item:gh.item,rot:gh.rot});ghostG.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;m.material.opacity=.45;m.material.depthWrite=false;m.raycast=()=>{}}});ghostG.position.copy(W2(gh.i,gh.j));scene.add(ghostG)}catch(e){}}
+function paintFrame(){try{const on=typeof S!=='undefined'&&S.zone==='home'&&builtZone==='home';const P=on&&S.home&&S.home.paint||{};const sig=on?JSON.stringify(P)+C0:'';if(sig===paintSig)return;paintSig=sig;if(paintG){scene.remove(paintG);paintG.traverse(m=>{if(m.material)m.material.dispose()})}paintG=new THREE.Group();scene.add(paintG);const mats={};
  for(const k in P){const[i,j]=k.split(',').map(Number);const c=P[k];const m=mats[c]||(mats[c]=std(new THREE.Color(c).getHex(),{roughness:.85}));const sl=mesh(BOX,m,[.98,.02,.98],[0,0,0]);sl.position.copy(W2(i,j));sl.position.y=.012;paintG.add(sl)}}catch(e){}}
 
 // ---------- fauna ----------
@@ -433,7 +435,7 @@ let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
- const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*2.1/(cam.zoom||1));
+ const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?2.9:2.1)/(cam.zoom||1));
  const follow=portrait?1:clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15;
  if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
  let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if(titleOn||!fa()){yaw+=t*.12;d*=1.15;pitch=.55}
@@ -494,7 +496,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  if(mv.lengthSq()>1e-6&&rt.tgt){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-fauna.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));fauna.rotation.y+=d*.18}
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);
  if(zapA>0&&rt.tgtObj&&!rt.tgt){const tp=W2(rt.tgtObj.i,rt.tgtObj.j);const d=tp.clone().sub(fpos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-fauna.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));fauna.rotation.y+=dd*.3}
- remoteFrame(t);roamFrame(t);paintFrame();animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});
+ remoteFrame(t);roamFrame(t);paintFrame();ghostFrame();animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});
  if(rt.sleep&&Math.random()<.02)spawn({p:fpos.clone().add(new THREE.Vector3(.1,.7,0)),v:new THREE.Vector3(.1,.4,0),g:0,col:new THREE.Color(0xaad4ff),size:.14,decay:.008});
  // lightning beam from necklace gem
  const gr=fauna.userData.rig;
