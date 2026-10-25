@@ -10,7 +10,7 @@ NetMP.zk=()=>S.zone==='visit'?'home:'+(S.v5.visitId||''):S.zone==='home'?'home:'
 NetMP.visiblePeers=()=>{const zk=NetMP.zk();return[...NetMP.peers.values()].filter(p=>p.zk===zk&&p.genes)};
 function me(){const f=fa();return{id:NetMP.myId,name:(S.player.name&&S.player.name!=='Caretaker'?S.player.name:(f?f.name+"'s Caretaker":'Caretaker')).slice(0,20),fname:f?f.name:'',genes:f?f.genes:null,level:f?f.level:1,zk:NetMP.zk(),zone:S.zone,i:+rt.pos.i.toFixed(2),j:+rt.pos.j.toFixed(2),sleep:!!rt.sleep}}
 function badge(){let b=document.getElementById('mpbadge');if(!NetMP.room){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='mpbadge';document.getElementById('stage').appendChild(b)}
- const here=NetMP.visiblePeers().length;b.textContent=(NetMP.status==='online'?'🟢':'🟡')+' Room '+NetMP.room+' · '+(NetMP.peers.size+1)+' online'+(here?' · '+here+' here':'')}
+ const here=NetMP.visiblePeers().length;const n=NetMP.peers.size;b.textContent=NetMP.status!=='online'?'🟡 Connecting to room '+NetMP.room+'…':n?'🟢 Room '+NetMP.room+' · connected to '+[...NetMP.peers.values()].map(p=>p.name).slice(0,2).join(', ')+(n>2?' +'+(n-2):'')+(here?' · '+here+' here':''):'🟡 Room '+NetMP.room+' · waiting for friends (they need the game open)'}
 function deliver(m,fromConn){ // host relays
  if(NetMP.isHost){if(m.to&&m.to!==NetMP.myId){const c=NetMP.conns.get(m.to);if(c&&c.open)c.send(m);return}if(!m.to)for(const[id,c]of NetMP.conns)if(c!==fromConn&&c.open)c.send(m)}
  if(!m.to||m.to===NetMP.myId)handle(m)}
