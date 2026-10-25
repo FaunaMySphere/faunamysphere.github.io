@@ -13,7 +13,8 @@ let Q=QS.get('q')||localStorage.getItem('fs_q')||(isPhone?'med':'high');if(!['lo
 // v6 graphics High/Low (localStorage fs_gfx6; not part of the save). Auto: Low on slow phones.
 const GFX=(()=>{let g=QS.get('gfx')||localStorage.getItem('fs_gfx6');if(g!=='high'&&g!=='low'){const hc=navigator.hardwareConcurrency||8,dm=navigator.deviceMemory||8;g=(hc<=4||dm<=3)?'low':'high';localStorage.setItem('fs_gfx6',g);localStorage.setItem('fs_gfx6_auto','1')}return g})();
 if(GFX==='low')Q='low';else if(Q==='low'&&!QS.get('q'))Q=isPhone?'med':'high';
-const REAL=G.REAL=false; // v6 world look reverted (Leo); High/Low only changes quality
+const REAL=G.REAL=false;G.W7=(QS.has('w7')||localStorage.getItem('fs_w7')==='1')&&GFX==='high'; // world7 preview, opt-in only
+ // v6 world look reverted (Leo); High/Low only changes quality
 const QP={low:{pr:1,shadow:0,grass:900,bloom:0,post:0,tex:128,weather:120},med:{pr:1.5,shadow:1024,grass:2600,bloom:1,post:0,tex:256,weather:220},high:{pr:2,shadow:2048,grass:6000,bloom:1,post:1,tex:512,weather:380}}[Q];
 
 // ---------- renderer ----------
@@ -561,6 +562,7 @@ function overlay(t,fade){const D=Math.min(2,devicePixelRatio||1);if(cv.width!==M
 // title-screen backdrop: render home island even before adoption
 G.rebuildIsland=()=>{curZone=null};G.draw=frame;
 G.W6={scene,camera,sun,hemi,su,sky,U,R,QP,get island(){return island},get N0(){return N0},get C0(){return C0},get zone(){return builtZone},hsh,fbm,vnoise,windify,get camDist(){return camS.dist}};
+if(G.W7)import('./world7.js').catch(e=>console.warn('w7',e));
 G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reload()},get fps(){return G.GLfps},renderer:R};
 // keep rendering behind the adopt/title screens when no fauna yet
 (function idle(){if(!fa()){try{const z=Z(S.zone);if(curZone!==S.zone){curZone=S.zone;zs(S.zone);buildIsland(S.zone);applyEnv(z,0);camS.dist=null}syncObjs();U.time.value=performance.now()/1000;updCamera(.016,U.time.value);composer?composer.render():R.render(scene,camera)}catch(e){console.error(e)}}requestAnimationFrame(idle)})();
