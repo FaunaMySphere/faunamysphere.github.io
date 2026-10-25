@@ -66,3 +66,9 @@ Rollup of everything from v4.15 to v4.24, retested in full on the live site in m
 - **Live EN/ES toggle** works both ways; **2-player multiplayer** verified live (room created and joined, both online, 1 peer each). No page errors.
 
 Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destination_mobile.png, v5_store_mobile.png, v5_edithome_mobile.png, v5_homecustom_mobile.png, v5_roam_mobile.png, v5_migrated_live_mobile.png, v5_fence_preview_mobile.png, v5_fences_mobile.png, v5_lang_es_mobile.png, v5_mp_host_mobile.png, v5_mp_guest_mobile.png, v5_title_mobile.png, v5_tricks_badge_mobile.png, v5_tricks_wheel_mobile.png, v5_home_button_mobile.png, v5_edit_mode_mobile.png, v5_edit_select_mobile.png, v5_edit_drag_mobile.png, v5_edit_invalid_mobile.png, v5_edit_box_mobile.png.
+
+## v6.0 — Realistic worlds, increment 1 (home + Rock Garden)
+- New world6.js (High graphics only): wind-swaying grass with color variation, flowers (4 species), procedural trees on free edge tiles, boulders in the Rock Garden, rock-strata island sides, soft blue sky, drifting clouds, hazy mountain ring, natural sun/sky light, distance haze. The world has no outlines (fauna keep theirs).
+- ⚙ High/Low graphics toggle (stored per device in fs_gfx6, not in the save). Auto-detect picks Low on slow phones (≤4 cores or ≤3 GB).
+- Wider home camera on phones (1.3x, centered more on the island).
+- Saves untouched (faunasphere_save_v3).

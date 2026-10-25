@@ -10,6 +10,10 @@ const G=window, QS=new URLSearchParams(location.search);
 // ---------- quality ----------
 const isPhone=matchMedia('(pointer:coarse)').matches||innerWidth<700;
 let Q=QS.get('q')||localStorage.getItem('fs_q')||(isPhone?'med':'high');if(!['low','med','high'].includes(Q))Q='med';
+// v6 graphics High/Low (localStorage fs_gfx6; not part of the save). Auto: Low on slow phones.
+const GFX=(()=>{let g=QS.get('gfx')||localStorage.getItem('fs_gfx6');if(g!=='high'&&g!=='low'){const hc=navigator.hardwareConcurrency||8,dm=navigator.deviceMemory||8;g=(hc<=4||dm<=3)?'low':'high';localStorage.setItem('fs_gfx6',g);localStorage.setItem('fs_gfx6_auto','1')}return g})();
+if(GFX==='low')Q='low';else if(Q==='low'&&!QS.get('q'))Q=isPhone?'med':'high';
+const REAL=G.REAL=GFX==='high';
 const QP={low:{pr:1,shadow:0,grass:900,bloom:0,post:0,tex:128,weather:120},med:{pr:1.5,shadow:1024,grass:2600,bloom:1,post:0,tex:256,weather:220},high:{pr:2,shadow:2048,grass:6000,bloom:1,post:1,tex:512,weather:380}}[Q];
 
 // ---------- renderer ----------
@@ -131,7 +135,7 @@ function buildIsland(zid){scene.remove(island);island.traverse(o=>{if(o.geometry
  // snow sparkle / pebbles for others
  if(z.biome==='arctic'||z.biome==='scorch'||z.biome==='dungeon'){const pg=new THREE.DodecahedronGeometry(.05,0);const pm=new THREE.MeshStandardMaterial({color:z.biome==='arctic'?0xe8f4ff:z.biome==='scorch'?0xb98a55:0x6b6578,roughness:.9,flatShading:true});const c=tiles.length*3;const pi=new THREE.InstancedMesh(pg,pm,c);
   for(let k=0;k<c;k++){const[i,j]=tiles[k%tiles.length];q.setFromEuler(new THREE.Euler(Math.random()*3,Math.random()*3,0));const s2=.5+Math.random()*1.4;sc.set(s2,s2*.6,s2);p.set(i-C0+(Math.random()-.5)*.9,.01,j-C0+(Math.random()-.5)*.9);m4.compose(p,q,sc);pi.setMatrixAt(k,m4)}pi.receiveShadow=true;island.add(pi)}
- builtZone=zid}
+ builtZone=zid;if(G.W6build)try{G.W6build(zid)}catch(e){console.warn('w6',e)}}
 
 // ---------- water shader ----------
 const waterMat=()=>new THREE.ShaderMaterial({transparent:true,uniforms:{uTime:U.time,uCol:{value:new THREE.Color(0x3aa7e0)},uDeep:{value:new THREE.Color(0x0d4f86)}},
@@ -438,8 +442,8 @@ let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
- const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));
- const follow=portrait?1:clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
+ const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=portrait&&typeof S!=="undefined"&&S.zone==="home";if(HW)dist*=1.3;
+ const follow=portrait?(HW?.55:1):clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
  if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
  let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if((titleOn||!fa())&&!(G.editCam&&S.zone==="home")){yaw+=t*.12;d*=1.15;pitch=.55}
  const k=Math.cos(pitch)*d;camera.position.set(camS.t.x+Math.sin(yaw)*k,camS.t.y+Math.sin(pitch)*d,camS.t.z+Math.cos(yaw)*k);
@@ -488,7 +492,7 @@ function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun
  if(!dun&&!(window.ZPAL&&ZPAL[z.id])&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
  stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt);
  if(bloom)bloom.strength=dun||nt>.5?.6:.3;
- setWeather({sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null))}
+ setWeather({sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
 function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
  const f=fa();if(!f)return;const z=Z(S.zone),nt=z.biome==='dungeon'?0:z.biome==='night'?1:nightA();
  if(S.zone!==curZone){curZone=S.zone;clearObjs();buildIsland(S.zone);camS.dist=null;applyEnv(z,nt);pv.length=0}
@@ -556,13 +560,14 @@ function overlay(t,fade){const D=Math.min(2,devicePixelRatio||1);if(cv.width!==M
  if(!finalPass){/* cheap vignette on low/med */const vg=ctx2.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#00000040');ctx2.fillStyle=vg;ctx2.fillRect(0,0,W,H)}}
 // title-screen backdrop: render home island even before adoption
 G.rebuildIsland=()=>{curZone=null};G.draw=frame;
+G.W6={scene,camera,sun,hemi,su,sky,U,R,QP,get island(){return island},get N0(){return N0},get C0(){return C0},get zone(){return builtZone},hsh,fbm,vnoise,windify,get camDist(){return camS.dist}};
 G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reload()},get fps(){return G.GLfps},renderer:R};
 // keep rendering behind the adopt/title screens when no fauna yet
 (function idle(){if(!fa()){try{const z=Z(S.zone);if(curZone!==S.zone){curZone=S.zone;zs(S.zone);buildIsland(S.zone);applyEnv(z,0);camS.dist=null}syncObjs();U.time.value=performance.now()/1000;updCamera(.016,U.time.value);composer?composer.render():R.render(scene,camera)}catch(e){console.error(e)}}requestAnimationFrame(idle)})();
 // ---------- title screen & settings ----------
 const title=document.getElementById('title');
 if(title&&!QS.has('notitle')){titleOn=true;title.classList.remove('hidden');document.getElementById('play').onclick=()=>{Sound.init();Sound.sfx&&Sound.sfx('gate');vib(20);title.classList.add('out');titleOn=false;camS.dist=null;setTimeout(()=>title.remove(),900)}}else if(title)title.remove();
-const qb=document.getElementById('gfx');if(qb){qb.textContent='⚙ '+Q[0].toUpperCase()+Q.slice(1);qb.onclick=()=>{const n={low:'med',med:'high',high:'low'}[Q];G.GL.setQuality(n)}}
+const qb=document.getElementById('gfx');if(qb){qb.textContent='⚙ '+(GFX==='high'?'High':'Low');qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
 const ld=document.getElementById('loading');if(ld){ld.classList.add('out');setTimeout(()=>ld.remove(),700)}
 console.log('[FaunaMySphere] WebGL renderer active, quality='+Q);
 
@@ -576,7 +581,7 @@ function toonOf(m){if(!m||m.userData.toon||m.isShaderMaterial||m.isMeshBasicMate
  if(m.userData.flat)t.color.set(m.userData.flat);
  if(m.onBeforeCompile&&String(m.onBeforeCompile).includes('uTime'))t.onBeforeCompile=m.onBeforeCompile;
  t.userData.toon=1;return t}
-function toonify(root){root.traverse(o=>{if(!o.isMesh||o.userData.outline||o.userData.noToon)return;
+function toonify(root){if(REAL&&root===scene){scene.children.forEach(c=>{if(c.userData.rig||c.userData.fauna||c.children.some(k=>k.userData&&k.userData.rig))toonify(c)});return}root.traverse(o=>{if(!o.isMesh||o.userData.outline||o.userData.noToon)return;
  if(Array.isArray(o.material))o.material=o.material.map(toonOf);else o.material=toonOf(o.material);
  o.castShadow=false;
  if(!o.userData.ol&&!o.isInstancedMesh&&o.geometry&&o.geometry.attributes.normal&&!(o.material&&o.material.transparent)&&o.geometry.type!=='PlaneGeometry'&&o.geometry.type!=='CircleGeometry'&&o.geometry.type!=='RingGeometry'){
