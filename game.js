@@ -13,7 +13,7 @@ function newState(){return{v:2,player:{id:'ct-'+Math.random().toString(36).slice
  fauna:[],active:0,zone:'home',zones:{},done:{},unlocked:{home:1,rockgarden:1},
  stats:{buys:0,zap:{},tox:0,toxZ:{},skill:0,cleared:{}},home:{decor:[],nest:{egg:null,inc:null,at:0},treat:{count:1,last:now()},totem:{last:now()-3e5}},
  tf:{},tut:0,projects:{rockgarden:{prog:0,need:10},village:{prog:0,need:20}},friends:[],visited:{},lastTick:now()}}
-const save=()=>{S.lastTick=now();localStorage.setItem(KEY,JSON.stringify(S))};
+const save=()=>{if(!S||!S.fauna||!S.fauna.length)return;S.lastTick=now();let j;try{j=JSON.stringify(S)}catch(e){return}try{localStorage.setItem(KEY,j);window.__saveErr=null}catch(e){window.__saveErr=e;console.warn('localStorage save failed',e)}window.__lastSave=Date.now();window.FSidb&&FSidb.put(j)};
 const fa=()=>S.fauna[S.active];const Z=id=>ZONES.find(z=>z.id===id);
 function banner(t){const b=document.getElementById('banner');if(!b)return;b.textContent=t;b.classList.remove('hidden','show');void b.offsetWidth;b.classList.add('show');clearTimeout(banner.t);banner.t=setTimeout(()=>b.classList.add('hidden'),2500)}
 function toast(m){const d=document.createElement('div');d.textContent=m;const t=document.getElementById('toast');t.prepend(d);setTimeout(()=>d.remove(),4000);while(t.children.length>4)t.lastChild.remove()}
@@ -273,11 +273,11 @@ function boot(){S.tf=S.tf||{};if(S.tut==null)S.tut=99;Sound.biome=Z(S.zone).biom
  const off=Math.min(now()-S.lastTick,8*36e5);simulate(Math.max(0,off));renderHUD();setInterval(()=>{save();renderHUD()},1000);
  if(!S.unlocked.amelia)S.unlocked.amelia=1;if(S.done.g_buy&&S.goodie!==new Date().toDateString()&&!QS.has('nogoodie'))setTimeout(()=>{if(M.classList.contains('hidden'))ui('goodie')},1800);
  toast(S.done.g_buy?'Welcome back, Caretaker!':'Tip: walk into the World Gate (glowing ring) to visit the Rock Garden.')}
-S=JSON.parse(localStorage.getItem(KEY)||'null');if(!S){const o=JSON.parse(localStorage.getItem('faunasphere_save_v2')||'null');if(o&&o.fauna&&o.fauna.length){o.zones={};o.tut=99;S=o}}resize();
+try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){console.warn('bad save',e);S=null}if(S&&!Array.isArray(S.fauna))S=null;if(S&&S.zone&&!Z(S.zone))S.zone='home';if(!S){const o=JSON.parse(localStorage.getItem('faunasphere_save_v2')||'null');if(o&&o.fauna&&o.fauna.length){o.zones={};o.tut=99;S=o}}resize();
 // migrate: species stored in genes
-if(S&&S.fauna.length)boot();else{S=newState();adoptScreen()}
+if(S&&S.fauna.length){try{boot()}catch(e){console.error('boot error',e);try{S.zone='home';boot()}catch(e2){}}}else{S=newState();adoptScreen();window.FSidb&&FSidb.get().then(j=>{try{const o=j&&JSON.parse(j);if(o&&o.fauna&&o.fauna.length&&!(S.fauna&&S.fauna.length)){localStorage.setItem(KEY,j);location.reload()}}catch(e){}})}
 requestAnimationFrame(loop);setTimeout(()=>{const l=document.getElementById("loading");if(l)l.remove()},6000);
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
 // ===== v4 reliable saving =====
 const safeSave=()=>{try{if(S&&S.fauna&&S.fauna.length)save()}catch(e){}};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')safeSave()});
