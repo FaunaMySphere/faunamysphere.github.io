@@ -454,7 +454,7 @@ function objVisualState(o){if(o.type==='treetree')o.count=S.home.treat.count;if(
  if(o.type==='project'){const p=S.projects[S.zone];if(p){o.prog=p.prog;o.need=p.need}}if(o.type==='goal')o.alert=GOALS.some(g=>g.zone===S.zone&&!S.done[g.id]&&g.check(S))}
 function syncObjs(){const s=zs(S.zone),seen=new Set();
  for(const o of s.objs){seen.add(o.id);let e=objMap.get(o.id);const key=o.type+(o.item||'');
-  if(!e||e.key!==key){if(e)scene.remove(e.g);const g=shadowify((B[o.type]||B.rock)(o));g.rotation.y+=(o.type==='gate'?0:(hsh(o.i,o.j,2)-.5)*.6);
+  if(!e||e.key!==key){if(e)scene.remove(e.g);const g=shadowify((B[o.type]||B.rock)(o));g.rotation.y+=(o.type==='gate'||o.type==='house'?0:(hsh(o.i,o.j,2)-.5)*.6);
    const hit=mesh(BOX,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,colorWrite:false}),[.8,1.1,.8],[0,.55,0]);hit.userData.obj=o;g.add(hit);if(Q!=='low'&&o.type!=='gate'){const ao=new THREE.Mesh(AOG,AOM);ao.rotation.x=-Math.PI/2;ao.position.y=.012;ao.renderOrder=-1;g.add(ao)}
    if(isClickable(o)){const r=new THREE.Mesh(clickRingG,clickRingM);r.rotation.x=-Math.PI/2;r.position.y=.02;r.visible=false;g.add(r);g.userData.ring=r;const sk=Object.entries(SKILLS).find(([k,v])=>v.node===o.type);if(sk){r.material=clickRingM.clone();g.userData.nodeSkill=sk[0]}}
    g.position.copy(W2(o.i,o.j));scene.add(g);e={g,key,o,hit};objMap.set(o.id,e)}
