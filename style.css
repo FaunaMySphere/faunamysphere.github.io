@@ -149,3 +149,8 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #gcban i{display:block;font:italic 900 34px "Trebuchet MS",sans-serif;letter-spacing:1px}#gcban span{font:700 16px "Trebuchet MS",sans-serif}
 #gcban.drop{top:28%}#gcban.up{top:-120px;transition:top .4s ease-in}
 #sleepy{position:fixed;right:10px;top:64px;z-index:8;background:#33A11De8;color:#fff;font:700 15px "Trebuchet MS",sans-serif;padding:6px 12px;border-radius:14px;border:2px solid #1d5e10;display:none}
+#microbox{position:fixed;right:8px;top:96px;z-index:7;max-width:230px;background:#33A11Dcc;color:#fff;border:2px solid #1d5e10;border-radius:14px;padding:6px 10px;font:600 12px "Trebuchet MS",sans-serif;text-shadow:0 1px 0 #0006;cursor:pointer}
+#microbox h4{margin:0 0 3px;font-size:13px;display:flex;justify-content:space-between}#microbox div{margin:2px 0}#microbox .ok{opacity:.75}
+#rarepop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:21;background:#33A11Df2;color:#fff;border:3px solid #ffe25a;border-radius:18px;padding:12px 26px;text-align:center;font:700 15px "Trebuchet MS",sans-serif;opacity:0;pointer-events:none;transition:opacity .35s;text-shadow:0 1px 0 #0006}
+#rarepop.on{opacity:1}#rarepop b{display:block;font:italic 900 24px "Trebuchet MS";color:#ffe25a}#rarepop .ri{font-size:44px}
+@media (max-width:600px){#microbox{top:86px;font-size:11px;max-width:180px;padding:4px 8px}}

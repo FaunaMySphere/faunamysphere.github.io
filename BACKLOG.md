@@ -152,3 +152,15 @@ These are items from VIDEO_NOTES_1/2/3 that we deferred so v4 could ship. Detail
 - Cooking with Hot and Cold Crocks (3 min).
 - Community Projects with ticket tiers and a raffle.
 - Four more quests with full dialogue; see ref/VIDEO_NOTES_11.md.
+
+## v6 graphics (art direction = carbon copy of the original Flash look)
+- Shipped v4.3: toon 3-band shading, black inverted-hull outlines, flat zone palettes, bright ambient, contact blobs, steeper camera, green UI skin. Before/after: screenshots/v5_before_*.png, v5_after_*.png, v5_art_*.png.
+- Todo: green dashed jump arc between block heights and NO NAV cursor on invalid tiles (notes 20); stacked-block terrain with real height steps; flat backdrop with distant floating islands; falling snow/rain overlays per zone; outline thickness by screen space; 2D-sprite-like billboarded props option.
+## v6 content backlog (from VIDEO_NOTES 13-21)
+- Halloween Charnelsphere (graveyard #55524B, jack-o-lanterns, purple night), Monty (giant worm boss), Oxygenator community project (4h cycles, tiers, raffle, Waterproof Gene Food top reward).
+- Bridge worlds (Gorgeous Meander, Sand Bar) with 9-eyed vilies and co-op zapping.
+- Odd Cactus, Ol' Nothin' (Bob Sensor), Roll Out!, Voucher Exchange, Breakwater School, Science is Real-ly Awesome, Called to the Stage, Space Potato, The Trowel, Mama Bear's New Hat, Post Time, Hugg Life, Swamp Spruce-Up.
+- Exact bottom HUD bar layout (notes 21), item tooltip format "Name (Flavor): Type | Restores N Energy | Tradeable/Giftable".
+- Marketplace (Buy/Sell/Search tabs, Bux/Lux toggle, listing fee) — Bux stays a placeholder, no payments.
+- Fauna slot prices, friend requests banner (View/Ignore, cap 300), Totem patrons (Loam Clod deposits), Gift Box.
+- Faunawear/collar slots, Fauna Profile panel (Age, Generation, ability icons), breeding challenges, Reacher/Waddler/Sniffer looks.
