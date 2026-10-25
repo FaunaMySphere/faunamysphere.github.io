@@ -550,3 +550,18 @@ function toonify(root){root.traverse(o=>{if(!o.isMesh||o.userData.outline)return
 hemi.groundColor&&0;
 setInterval(()=>{try{toonify(scene)}catch(e){console.warn('toon',e)}},400);
 const _ae=applyEnv;
+// ---- v4.4 juice: zap progress ring, level-up ring, green path trail, bouncing drops ----
+const FX=[];const fxAdd=(m,life,upd)=>{scene.add(m);FX.push({m,life,t:0,upd})};
+const ringM=c=>new THREE.MeshBasicMaterial({color:c,transparent:true,side:THREE.DoubleSide,depthTest:false});
+const _em2=G.emit;G.emit=function(ev,d={}){try{_em2(ev,d)}catch(_){}try{
+ if(ev==='hit'&&d&&d.i!=null){if(!d.hp0)d.hp0=d.hp+(fa()&&fa().level>=10?2:1);const fr=Math.max(.02,1-d.hp/d.hp0);const p=objW(d).add(new THREE.Vector3(0,.9,0));
+  const bg=new THREE.Mesh(new THREE.RingGeometry(.2,.29,32),ringM(0x1d5e10));const fg=new THREE.Mesh(new THREE.RingGeometry(.2,.29,32,1,Math.PI/2,-fr*Math.PI*2),ringM(0x7dff3a));bg.renderOrder=fg.renderOrder=9;
+  const g=new THREE.Group();g.add(bg,fg);g.position.copy(p);fxAdd(g,.9,(o,k)=>{o.quaternion.copy(camera.quaternion);bg.material.opacity=fg.material.opacity=1-k*k})}
+ if(ev==='level'){const r=new THREE.Mesh(new THREE.TorusGeometry(.5,.06,8,40),ringM(0xffe25a));r.rotation.x=-Math.PI/2;fxAdd(r,1.4,(o,k)=>{o.position.copy(mePosW()).add(new THREE.Vector3(0,.1+k*.8,0));o.scale.setScalar(1+k*1.8);o.material.opacity=1-k})}
+ if(ev==='pop'&&d.o){const p0=objW(d.o).add(new THREE.Vector3(0,.3,0));for(let n=0;n<3;n++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.07,0),new THREE.MeshToonMaterial({color:[0xffe25a,0x9be15a,0xffffff][n],gradientMap:TOONG}));const vx=(Math.random()-.5)*1.4,vz=(Math.random()-.5)*1.4;
+  fxAdd(m,1.6,(o,k,t)=>{const tt=Math.min(t,1.0);const h=Math.abs(Math.sin(tt*Math.PI*2.2))*.7*(1-tt);if(t<1)o.position.set(p0.x+vx*tt,p0.y+h,p0.z+vz*tt);else o.position.lerp(mePosW().add(new THREE.Vector3(0,.4,0)),.15);o.scale.setScalar(1-Math.max(0,k-.7)*3)})}}
+}catch(e){console.warn(e)}};
+let trailT=0;const trailG=new THREE.CircleGeometry(.07,10);
+(function fxLoop(){requestAnimationFrame(fxLoop);const dt=.016;
+ if(rt.tgt&&fa()&&performance.now()-trailT>110){trailT=performance.now();const m=new THREE.Mesh(trailG,ringM(0x6dff3a));m.rotation.x=-Math.PI/2;m.position.copy(mePosW()).add(new THREE.Vector3(0,.03,0));fxAdd(m,1.3,(o,k)=>{o.material.opacity=.85*(1-k)})}
+ for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;const k=f.t/f.life;if(k>=1){scene.remove(f.m);f.m.traverse(x=>{x.geometry&&x.geometry!==trailG&&x.geometry.dispose()});FX.splice(i,1);continue}f.upd(f.m,k,f.t)}})();

@@ -145,3 +145,7 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #zoneName{background:#33A11De8;border:3px solid #1d5e10;color:#fff;border-radius:16px;text-shadow:0 1px 0 #0006}
 #tut{background:#33A11Df0!important;color:#fff;border:3px solid #1d5e10}
 #toast div{background:#33A11Df0;color:#fff;border-left:0;border:2px solid #1d5e10}
+#gcban{position:fixed;left:0;right:0;top:-120px;z-index:20;text-align:center;background:#33A11Dd9;color:#fff;padding:10px 0 12px;border-top:3px solid #1d5e10;border-bottom:3px solid #1d5e10;pointer-events:none;text-shadow:0 2px 0 #0007;transition:top .45s cubic-bezier(.3,1.5,.5,1)}
+#gcban i{display:block;font:italic 900 34px "Trebuchet MS",sans-serif;letter-spacing:1px}#gcban span{font:700 16px "Trebuchet MS",sans-serif}
+#gcban.drop{top:28%}#gcban.up{top:-120px;transition:top .4s ease-in}
+#sleepy{position:fixed;right:10px;top:64px;z-index:8;background:#33A11De8;color:#fff;font:700 15px "Trebuchet MS",sans-serif;padding:6px 12px;border-radius:14px;border:2px solid #1d5e10;display:none}
