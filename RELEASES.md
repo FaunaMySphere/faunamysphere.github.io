@@ -105,3 +105,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 ## v6.6 — Hills and terraces
 - Every zone except home has hills and terraces up to ~2.25 high in the same look. Neighbouring tiles differ by at most 0.75 and walking ramps smoothly, so no path is blocked. The gate, vendor, goal and project, plus the island edges, stay flat. Fauna, objects and the camera follow the slope; taps pick the raised tile. world7 grass, trees and decor are lifted onto the hill heights. Heights come from the zone itself, so nothing is added to the save.
 - 2026-10-25 5:48 PM EDT — v6.6.1 hotfix: reliable multiplayer discovery (net.js). Status messages now carry known-peer ids; any one-way link (A sees B, B not A) triggers an immediate re-announce, new peers get an instant reply (symmetric hello), guaranteed 2 s heartbeat (was random), 30 s peer timeout (was 15 s), re-announce burst after every zone change and on join/relay connect, auto-restart if PeerJS and relays both drop. SW cache fs-v661-mp1.
+
+## v6.8 — High graphics by default
+- Every device, phones included, now starts on High graphics; the automatic Low for weaker phones is gone. Low is kept only if the player chose it with the ⚙ button. An old Low setting that was picked automatically becomes High. Saves untouched.

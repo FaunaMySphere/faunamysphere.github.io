@@ -11,8 +11,10 @@ const G=window, QS=new URLSearchParams(location.search);
 const isPhone=matchMedia('(pointer:coarse)').matches||innerWidth<700;
 let Q=QS.get('q')||localStorage.getItem('fs_q')||(isPhone?'med':'high');if(!['low','med','high'].includes(Q))Q='med';
 // v6 graphics High/Low (localStorage fs_gfx6; not part of the save). Auto: Low on slow phones.
-const GFX=(()=>{let g=QS.get('gfx')||localStorage.getItem('fs_gfx6');if(g!=='high'&&g!=='low'){const hc=navigator.hardwareConcurrency||8,dm=navigator.deviceMemory||8;g=(hc<=4||dm<=3)?'low':'high';localStorage.setItem('fs_gfx6',g);localStorage.setItem('fs_gfx6_auto','1')}return g})();
-if(GFX==='low')Q='low';else if(Q==='low'&&!QS.get('q'))Q=isPhone?'med':'high';
+const GFX=(()=>{let g=QS.get('gfx');if(g==='high'||g==='low')return g;g=localStorage.getItem('fs_gfx6');
+ // v6.8: High is the default everywhere; Low only if the player explicitly chose it with the gear button (auto-Low is ignored)
+ if(g!=='low'||localStorage.getItem('fs_gfx6_auto')==='1'){g='high';localStorage.setItem('fs_gfx6','high');localStorage.removeItem('fs_gfx6_auto')}return g})();
+if(GFX==='low')Q='low';else if(!QS.get('q'))Q='high';
 const REAL=G.REAL=false;G.W7=GFX==='high'&&!QS.has('now7')&&localStorage.getItem('fs_w7')!=='0'; // v6.2 refined world (High graphics only)
  // v6 world look reverted (Leo); High/Low only changes quality
 const QP={low:{pr:1,shadow:0,grass:900,bloom:0,post:0,tex:128,weather:120},med:{pr:1.5,shadow:1024,grass:2600,bloom:1,post:0,tex:256,weather:220},high:{pr:2,shadow:2048,grass:6000,bloom:1,post:1,tex:512,weather:380}}[Q];
@@ -118,6 +120,11 @@ const HGT=(x,z)=>{if(!HMAP)return 0;const fi=x+C0,fj=z+C0,i0=Math.floor(fi),j0=M
  // terraces: snap within the inner 70% of a tile, ramp across tile edges
  const sm=t=>t<.1?0:t>.9?1:(t-.1)/.8;const U2=sm(u),V2=sm(v);return(a*(1-U2)+b*U2)*(1-V2)+(c*(1-U2)+d*U2)*V2};
 G.HGT=HGT;G.HT=HT;
+// v6.8: feet on the ground. GND = highest tile top under a small footprint (rises before a terrace edge, so no clipping into cliff faces).
+const GND=(x,z)=>{if(!HMAP)return 0;let m=0;for(const a of[-.22,.22])for(const b of[-.22,.22])m=Math.max(m,HT(Math.round(x+C0+a),Math.round(z+C0+b)));return m};
+function settle(o3,x,z,base){const u=o3.userData,t=GND(x,z)+(base||0);if(u.gy==null||Math.abs(u.gy-t)>3)u.gy=t;else if(t>=u.gy)u.gy+=(t-u.gy)*.6,u.gy=Math.max(u.gy,t-.04);else u.gy+=(t-u.gy)*.18;o3.position.y=u.gy;
+ if(HMAP){const yw=o3.rotation.y,dx=Math.sin(yw)*.45,dz=Math.cos(yw)*.45;const sl=HGT(x+dx,z+dz)-HGT(x-dx,z-dz);const lean=Math.max(-.32,Math.min(.32,-sl*.45));if(o3.rotation.order!=='YXZ')o3.rotation.order='YXZ';o3.rotation.x+=(lean-o3.rotation.x)*.12}else if(o3.rotation.x)o3.rotation.x*=.85}
+G.GND=GND;
 const W2=(i,j)=>new THREE.Vector3(i-C0,HGT(i-C0,j-C0),j-C0);
 function buildIsland(zid){scene.remove(island);island.traverse(o=>{if(o.geometry)o.geometry.dispose()});island=new THREE.Group();scene.add(island);
  const z=Z(zid),s=zs(zid),pal=(window.ZPAL&&ZPAL[zid])||BIOMES[z.biome],n=z.n;N0=n;C0=(n-1)/2;const tiles=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(s.tiles[i][j])tiles.push([i,j]);
@@ -392,7 +399,7 @@ function roamFrame(t){try{const on=typeof S!=='undefined'&&S.zone==='home'&&S.fa
  for(const[f,i]of want){let e=roam.get(i);const k=JSON.stringify(f.genes)+(f.level|0);if(!e||e.k!==k){if(e)scene.remove(e.f);const g=buildFauna({...f.genes,_lv:f.level||1});g.traverse(m=>{m.userData.roam=i});scene.add(g);e={f:g,k,pos:null,tgt:null,wait:t+Math.random()*3,emo:null,emoT:0};roam.set(i,e);
    const s=zs('home'),n=s.tiles.length;for(let q=0;q<20&&!e.pos;q++){const a=(Math.random()*n)|0,b=(Math.random()*n)|0;if(s.tiles[a]&&s.tiles[a][b]&&!s.objs.some(o=>o.i===a&&o.j===b))e.pos=W2(a,b)}e.pos=e.pos||W2(C0,C0)}
   let walk=false;if(t>e.wait){if(!e.tgt)roamPick(e);if(e.tgt){RV.copy(e.tgt).sub(e.pos);const d=RV.length();if(d<.05){e.tgt=null;e.wait=t+2+Math.random()*5;if(Math.random()<.35){e.emo=EMO[(Math.random()*EMO.length)|0];e.emoT=t}}else{RV.multiplyScalar(Math.min(d,.018)/d);e.pos.add(RV);walk=true;const yaw=Math.atan2(RV.x,RV.z);let dd=yaw-e.f.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));e.f.rotation.y+=dd*.2}}}
-  e.f.position.copy(e.pos);animFauna(e.f,t,{walk,zap:0,happy:false,sleep:false,trick:null})}}catch(err){}}
+  e.f.position.copy(e.pos);settle(e.f,e.pos.x,e.pos.z);animFauna(e.f,t,{walk,zap:0,happy:false,sleep:false,trick:null})}}catch(err){}}
 function roamOverlay(proj,t){for(const[i,e]of roam){if(!e.emo||t-e.emoT>2.5)continue;const[x,y]=proj(e.f.position.clone().add(new THREE.Vector3(0,1.1,0)));ctx2.font='20px sans-serif';ctx2.textAlign='center';ctx2.fillText(e.emo,x,y-(t-e.emoT)*8);ctx2.textAlign='left'}}
 G.roamHit=(px,py)=>{if(!roam.size)return null;setRay(px,py);const ms=[];for(const[,e]of roam)e.f.traverse(m=>{if(m.isMesh)ms.push(m)});const r=ray.intersectObjects(ms,false);return r.length?r[0].object.userData.roam:null};
 // ---------- v5 multiplayer: remote fauna ----------
@@ -400,7 +407,7 @@ const remote=new Map();
 function remoteFrame(t){const NM=window.NetMP;const want=NM?NM.visiblePeers():[];const ids=new Set(want.map(p=>p.id));
  for(const[id,e]of remote)if(!ids.has(id)){scene.remove(e.f);remote.delete(id)}
  for(const p of want){let e=remote.get(p.id);const k=JSON.stringify(p.genes)+(p.level>=20?'g':'');if(!e||e.k!==k){if(e)scene.remove(e.f);const f=buildFauna({...p.genes,_lv:p.level||1});scene.add(f);e={f,k,pos:W2(p.i,p.j)};remote.set(p.id,e)}
-  const tgt=W2(p.i,p.j),mv=tgt.clone().sub(e.pos);e.pos.lerp(tgt,.12);e.f.position.copy(e.pos);if(mv.lengthSq()>1e-4){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-e.f.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.f.rotation.y+=d*.2}
+  const tgt=W2(p.i,p.j),mv=tgt.clone().sub(e.pos);e.pos.lerp(tgt,.12);e.f.position.copy(e.pos);settle(e.f,e.pos.x,e.pos.z);if(mv.lengthSq()>1e-4){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-e.f.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.f.rotation.y+=d*.2}
   animFauna(e.f,t,{walk:mv.lengthSq()>4e-4,zap:0,happy:false,sleep:!!p.sleep,trick:p.trick||null})}}
 function remoteOverlay(proj){for(const[id,e]of remote){const p=window.NetMP&&NetMP.peers.get(id);if(!p)continue;const[x,y]=proj(e.f.position.clone().add(new THREE.Vector3(0,1.15,0)));
   ctx2.font='bold 13px "Trebuchet MS",sans-serif';const nm=p.name+' & '+p.fname;const w=ctx2.measureText(nm).width+12;ctx2.fillStyle='rgba(23,60,15,.85)';ctx2.beginPath();ctx2.roundRect(x-w/2,y-9,w,18,9);ctx2.fill();ctx2.fillStyle='#bfff8a';ctx2.fillText(nm,x,y+4);
@@ -451,7 +458,7 @@ function syncObjs(){const s=zs(S.zone),seen=new Set();
    const hit=mesh(BOX,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,colorWrite:false}),[.8,1.1,.8],[0,.55,0]);hit.userData.obj=o;g.add(hit);if(Q!=='low'&&o.type!=='gate'){const ao=new THREE.Mesh(AOG,AOM);ao.rotation.x=-Math.PI/2;ao.position.y=.012;ao.renderOrder=-1;g.add(ao)}
    if(isClickable(o)){const r=new THREE.Mesh(clickRingG,clickRingM);r.rotation.x=-Math.PI/2;r.position.y=.02;r.visible=false;g.add(r);g.userData.ring=r;const sk=Object.entries(SKILLS).find(([k,v])=>v.node===o.type);if(sk){r.material=clickRingM.clone();g.userData.nodeSkill=sk[0]}}
    g.position.copy(W2(o.i,o.j));scene.add(g);e={g,key,o,hit};objMap.set(o.id,e)}
-  e.o=o;e.hit.userData.obj=o;const tp=W2(o.i,o.j);e.g.position.lerp(tp,.12)}
+  e.o=o;e.hit.userData.obj=o;const tp=W2(o.i,o.j);e.g.position.lerp(tp,.12);if(o.type==='tox'&&HMAP){const py=e.g.position.y;settle(e.g,e.g.position.x,e.g.position.z);if(e.g.userData.blob)e.g.position.y=py}}
  for(const[id,e]of objMap)if(!seen.has(id)){scene.remove(e.g);objMap.delete(id)}}
 function clearObjs(){for(const[,e]of objMap)scene.remove(e.g);objMap.clear()}
 
@@ -519,7 +526,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  syncObjs();
  // fauna
  const lvB=f.level>=20?4:f.level>=15?3:f.level>=10?2:f.level>=5?1:0,key=JSON.stringify(f.genes)+lvB;if(key!==faunaKey){if(fauna)scene.remove(fauna);fauna=buildFauna({...f.genes,_lv:f.level,_hd:1});scene.add(fauna);faunaKey=key}
- const want=W2(rt.pos.i,rt.pos.j);const mv=want.clone().sub(fpos);fpos.lerp(want,.5);fpos.y=HGT(fpos.x,fpos.z);fauna.position.copy(fpos);
+ const want=W2(rt.pos.i,rt.pos.j);const mv=want.clone().sub(fpos);fpos.lerp(want,.5);fauna.position.copy(fpos);settle(fauna,fpos.x,fpos.z);fpos.y=fauna.position.y;
  if(mv.lengthSq()>1e-6&&rt.tgt){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-fauna.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));fauna.rotation.y+=d*.18}
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);
  if(zapA>0&&rt.tgtObj&&!rt.tgt){const tp=W2(rt.tgtObj.i,rt.tgtObj.j);const d=tp.clone().sub(fpos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-fauna.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));fauna.rotation.y+=dd*.3}
@@ -537,7 +544,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  for(const[,e]of objMap){const o=e.o,g=e.g,u=g.userData;objVisualState(o);
   if(u.ring){const near=Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<2.2,hov=rt.hover&&rt.hover[0]===o.i&&rt.hover[1]===o.j;u.ring.visible=near||hov;if(u.ring.visible){u.ring.scale.setScalar(1+Math.sin(t*4)*.05);if(u.nodeSkill)u.ring.material.emissive.set(o.ready&&SPECIES[f.genes.species].skill===u.nodeSkill?0x8bff4a:0xff3a2a)}}
   if(u.pulse)u.pulse.emissiveIntensity=1.6+Math.sin(t*3+o.i)*.8;
-  if(u.blob){const b0=u.b0||(u.b0=u.blob.scale.clone());const hp=o.type==='poll'?.6+.4*Math.min(1,(o.hp||1)/3):1;u.blob.scale.set(b0.x*hp*(1+Math.sin(t*4+o.j)*.06),b0.y*hp*(1-Math.sin(t*4+o.j)*.08),b0.z*hp);if(o.type==='tox'){g.position.y=HT(o.i,o.j)+Math.abs(Math.sin(t*3+o.i))*.05;const d=fpos.clone().sub(g.position);g.rotation.y=Math.atan2(d.x,d.z)}}
+  if(u.blob){const b0=u.b0||(u.b0=u.blob.scale.clone());const hp=o.type==='poll'?.6+.4*Math.min(1,(o.hp||1)/3):1;u.blob.scale.set(b0.x*hp*(1+Math.sin(t*4+o.j)*.06),b0.y*hp*(1-Math.sin(t*4+o.j)*.08),b0.z*hp);if(o.type==='tox'){g.position.y=(u.gy!=null?u.gy:HT(o.i,o.j))+Math.abs(Math.sin(t*3+o.i))*.05;const d=fpos.clone().sub(g.position);g.rotation.y=Math.atan2(d.x,d.z)}}
   if(u.spin){u.spin.rotation.y=t*1.5;u.spin.position.y=.9+Math.sin(t*2)*.05;(u.spin.material||u.spin.children[0].material).emissiveIntensity=o.alert?3.5+Math.sin(t*8):2}
   if(u.flame)u.flame.scale.set(1+Math.sin(t*20)*.1,1+Math.sin(t*13)*.2,1);
   if(u.egg)u.egg.visible=!!o.egg;if(u.treats)u.treats.forEach((m,k)=>m.visible=k<(o.count||0));if(u.eyes)u.eyes.emissiveIntensity=o.ready?3:.2;
@@ -658,6 +665,7 @@ B.tox=o=>{const g=t0(o);try{g.children.slice().forEach(c=>{if(c!==g.userData.blo
  const n=o.boss?9:((o.v||hsh(o.i,o.j,3)*3|0)%3===2?4:2),b=g.userData.blob;for(let k=0;k<n;k++){const row=n===9?Math.floor(k/3):n===4?Math.floor(k/2):0,cols=n===9?3:2,col=k%cols,x=(col-(cols-1)/2)*.32,y=.1+row*.28-(n===9?.28:n===4?.14:0),s=n===9?.16:.24;
   const e=new THREE.Group();e.position.set(x,y,Math.sqrt(Math.max(.05,1-x*x-y*y))*.97);e.add(mesh(SPHL,EW,[s,s,s*.5]));e.add(mesh(SPHL,EG,[s*.62,s*.62,s*.3],[0,0,s*.3]));e.add(mesh(SPHL,EK,[s*.28,s*.28,s*.15],[0,0,s*.45]));b.add(e)}
  if(n>=4){const gm=new THREE.MeshBasicMaterial({color:0x8dff5a,transparent:true,opacity:.18,depthWrite:false});for(let k=0;k<3;k++)g.add(mesh(SPHL,gm,[.14,.14,.14],[Math.sin(k*2.1)*.3,.75+k*.12,Math.cos(k*2.1)*.3]))}}catch(e){}return g}}
+G.GLB=B;G.GLfpos=()=>fpos;G.GLfauna=()=>fauna;
 // v4.13 (notes 26/27): distinct looks for Tusker (elephant), Dasher (deer), Bobbler (T-rex), Waddler (penguin), Flapper (crane), Thumper (kangaroo)
 Object.assign(SP,{
  elephant:{b:[.22,.21,.27],leg:.17,lr:.07,head:.16,neck:[.03,.4],snout:[.04,.06],ears:'side',tail:'thin'},
