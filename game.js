@@ -40,11 +40,13 @@ function checkEgg(){const f0=fa();if(f0&&S.zone==='home'&&S.player.pendingEggs){
 function layEgg(){if(S.player.eggs.length<6){S.player.eggs.push({id:'egg'+now()+Math.random(),genes:{...fa().genes,heatProof:false},parent:fa().name});toast('🥚 '+fa().name+' laid an egg! Hatch it in your Nest.');emit('egg')}else toast('Egg basket full (6).')}
 function gainXP(n){return;const f=fa();if(f.level>=20)return;f.xp+=n;while(f.level<20&&f.xp>=xpNeed(f.level)){f.xp-=xpNeed(f.level);f.level++;toast('⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');}}
 const xpNeed=l=>40+l*30;
+// v6.10: zaps do half damage per hit, so pollution takes ~2x as many zaps (energy and tox sting per hit halved to match)
+const ZAPF=.5;
 const R={
  adopt({species,name,color}){S.fauna.push(mkFauna({species,color,pattern:'Plain',tail:'Normal',eyes:'Round'},name))},
  zap({oid}){const f=fa(),s=zs(S.zone),o=s.objs.find(o=>o.id===oid),z=Z(S.zone);if(!o)return;
-  if(f.energy<3){if(!rt.sleep){rt.sleep=true;toast(f.name+' ran out of energy and is taking a quick nap… 💤');setTimeout(()=>{rt.sleep=false;f.energy=Math.max(f.energy,20);renderHUD()},10000)}return}f.energy=clamp(f.energy-3);rt.beam=now();o.hp-=f.level>=10?2:1;o.hp=Math.max(0,o.hp);emit('hit',o);
-  if(o.type==='tox'){f.happiness=clamp(f.happiness-enemyDmg(3));emit('hurt');if(f.happiness<=0)return tooSad()}
+  if(f.energy<3){if(!rt.sleep){rt.sleep=true;toast(f.name+' ran out of energy and is taking a quick nap… 💤');setTimeout(()=>{rt.sleep=false;f.energy=Math.max(f.energy,20);renderHUD()},10000)}return}f.energy=clamp(f.energy-ZAPF*3);rt.beam=now();if(o.hp0==null)Object.defineProperty(o,'hp0',{value:o.hp,writable:true,configurable:true});o.hp=Math.max(0,Math.round((o.hp-(f.level>=10?2:1)*ZAPF)*100)/100);emit('hit',o);
+  if(o.type==='tox'){f.happiness=clamp(f.happiness-enemyDmg(3*ZAPF));emit('hurt');if(f.happiness<=0)return tooSad()}
   if(o.hp>0)return;s.objs.splice(s.objs.indexOf(o),1);
   const tox=o.type==='tox',lux=(tox?12:4)+z.tier*3+Math.floor(Math.random()*4);gainLux(lux);emit('pop',{o,lux});gainXP((tox?30:10)+z.tier*5);
   S.stats.zap[S.zone]=(S.stats.zap[S.zone]||0)+1;if(tox){S.stats.tox++;S.stats.toxZ[S.zone]=(S.stats.toxZ[S.zone]||0)+1}
