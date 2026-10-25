@@ -111,3 +111,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 
 ## v6.9.1 — ⚙ button hotfix
 - Gear icon and High/Low label no longer overlap: gear above a small label inside the round button (all zones). Cache fs-v691-1.
+
+## v6.13 — Monsters (Leo-approved)
+- Six scary toon monsters (Shadow Stalker, Bramble Beast, Ice Wraith, Bog Lurker, Sand Scorpion, Cave Spider) with elite (2.4x) and boss (3x) variants; regular 1.8x. Horns/spikes/claws/fangs, haloed glowing eyes, smoky aura, breathing/twitch/loom idle, lunge attack, synthesized growls. EN/ES names, zappable, follow hill terrain, capped 7 (Low 4). Hearts sit above each monster. Cache fs-v613-1.
