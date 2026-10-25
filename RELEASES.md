@@ -1,0 +1,3 @@
+# Releases
+- 2026-10-25 1:05 PM EDT — v4.0.1 hotfix (live): hardened saving (IndexedDB mirror, persistent storage, flush on hide/close, boot guards), 💾 Saved indicator, Save & Backup panel (export/import code), naming applies on tap/Enter and persists after reload, SW cache fs-v4-1 no-cache. Live mobile-emulation tests passed (Lv14/Lux2030 kept after abrupt close; names Pip/Zippy kept after reload).
+- 2026-10-25 1:12 PM EDT — v4.1: v5 content (Wintergift, Sunken Probe, Parade Balloons 2, Abyss, Gobblefield zones; release popups; hatch bar; Lv20 gold ceremony), brighter graphics pass, FS hooks (fshooks.js) for the multiplayer/i18n worker, SW cache fs-v41-1. Save key unchanged.
