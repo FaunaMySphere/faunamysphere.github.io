@@ -221,7 +221,14 @@ B.decor=o=>{const it=o.item||'',g=new THREE.Group();
  else if(it==='d_birdbath'){g=new THREE.Group();const st=std(0xcfd2d6);g.add(mesh(CYL,st,[.08,.35,.08],[0,.175,0]));g.add(mesh(CYL,st,[.32,.06,.32],[0,.37,0]));g.add(mesh(CYL,std(0x4fb3e8,{roughness:.1}),[.26,.02,.26],[0,.405,0]))}
  else if(it==='d_pinwheel'){g=new THREE.Group();g.add(mesh(CYL,std(0xf4f4f0),[.025,.6,.025],[0,.3,0]));[0xff5f5f,0xffd84a,0x5fb0ff,0x7ad15a].forEach((c,k)=>{const m=mesh(BOX,std(c),[.04,.2,.08],[0,.6,0]);m.rotation.x=k*Math.PI/2;m.translateY(.1);g.add(m)})}
  else if(it==='d_totem'){g=new THREE.Group();[0xb5653a,0x2fd3c4,0xf6cf4a].forEach((c,k)=>g.add(mesh(BOX,std(c),[.3,.26,.3],[0,.13+k*.27,0])));[-1,1].forEach(s=>g.add(mesh(BOX,new THREE.MeshBasicMaterial({color:0x1a1a1a}),[.06,.06,.02],[s*.07,.72,.16])))}
- else g=bd0(o);g.rotation.y=((o.rot|0)%4)*Math.PI/2;return g}}
+ else if(it==='d_block'){g=new THREE.Group();g.add(mesh(BOX,std(new THREE.Color(o.col||'#c8a26a').getHex(),{roughness:.8}),[.96,.3,.96],[0,.15,0]))}
+ else g=bd0(o);
+ const VAR=[null,0xff6b6b,0x6bb5ff,0xffd84a,0xb07bff,0x6be08a,0xf4f4f0,0x333740];const vc=VAR[(o.v|0)%VAR.length];
+ if(vc!=null&&it!=='d_block'){const c=new THREE.Color(vc);g.traverse(m=>{if(m.isMesh&&m.material&&m.material.color&&!m.material.emissive?.getHex?.()){m.material=m.material.clone();m.material.color.lerp(c,.65)}})}
+ const out=new THREE.Group();out.add(g);g.position.y=(o.h|0)*.3;out.rotation.y=((o.rot|0)%4)*Math.PI/2;return out}}
+// v4.22 tile paint layer (S.home.paint {"i,j":"#hex"}): thin slabs, rebuilt only when the paint signature changes
+let paintG=null,paintSig='';function paintFrame(){try{const on=typeof S!=='undefined'&&S.zone==='home'&&builtZone==='home';const P=on&&S.home&&S.home.paint||{};const sig=on?JSON.stringify(P)+C0:'';if(sig===paintSig)return;paintSig=sig;if(paintG){scene.remove(paintG);paintG.traverse(m=>{if(m.material)m.material.dispose()})}paintG=new THREE.Group();scene.add(paintG);const mats={};
+ for(const k in P){const[i,j]=k.split(',').map(Number);const c=P[k];const m=mats[c]||(mats[c]=std(new THREE.Color(c).getHex(),{roughness:.85}));const sl=mesh(BOX,m,[.98,.02,.98],[0,0,0]);sl.position.copy(W2(i,j));sl.position.y=.012;paintG.add(sl)}}catch(e){}}
 
 // ---------- fauna ----------
 const SP={ // proportions (original designs)
@@ -348,6 +355,18 @@ B.snowman=o=>{const g=new THREE.Group(),m=std(0xf6fbff,{roughness:.6});g.add(mes
 B.pumpkin=o=>{const g=new THREE.Group();g.add(mesh(SPH,std(0xf08a1a,{roughness:.6}),[.2,.15,.2],[0,.15,0]));g.add(mesh(CYL,std(0x3a6a2a),[.02,.08,.02],[0,.32,0]));return g};
 B.hay=o=>{const g=new THREE.Group();g.add(mesh(CYL,std(0xe6c35a,{roughness:1}),[.25,.4,.25],[0,.25,0],[0,0,Math.PI/2]));return g};
 B.gift=o=>{const g=new THREE.Group(),c=[0xe02a3a,0x3a9a2a,0x2f55c8][(o.i+o.j)%3];g.add(mesh(BOX,std(c),[.3,.25,.3],[0,.125,0]));g.add(mesh(BOX,std(0xffe066),[.32,.26,.05],[0,.13,0]));g.add(mesh(BOX,std(0xffe066),[.05,.26,.32],[0,.13,0]));return g};
+
+// ---------- v4.21 roaming idle fauna at home (local only, not saved) ----------
+const roam=new Map();const RV=new THREE.Vector3();const EMO=['❤️','🎵','✨','💤','❗','😊','🍀'];
+function roamPick(e){try{const s=zs('home'),n=s.tiles.length;for(let k=0;k<12;k++){const i=(Math.random()*n)|0,j=(Math.random()*n)|0;if(s.tiles[i]&&s.tiles[i][j]&&!s.objs.some(o=>o.i===i&&o.j===j)){e.tgt=W2(i,j);return}}}catch(_){}e.tgt=null}
+function roamFrame(t){try{const on=typeof S!=='undefined'&&S.zone==='home'&&S.fauna&&builtZone==='home';const want=on?S.fauna.map((f,i)=>[f,i]).filter(([f,i])=>i!==S.active&&f).slice(0,9):[];const ids=new Set(want.map(([,i])=>i));
+ for(const[id,e]of roam)if(!ids.has(id)){scene.remove(e.f);roam.delete(id)}
+ for(const[f,i]of want){let e=roam.get(i);const k=JSON.stringify(f.genes)+(f.level|0);if(!e||e.k!==k){if(e)scene.remove(e.f);const g=buildFauna({...f.genes,_lv:f.level||1});g.traverse(m=>{m.userData.roam=i});scene.add(g);e={f:g,k,pos:null,tgt:null,wait:t+Math.random()*3,emo:null,emoT:0};roam.set(i,e);
+   const s=zs('home'),n=s.tiles.length;for(let q=0;q<20&&!e.pos;q++){const a=(Math.random()*n)|0,b=(Math.random()*n)|0;if(s.tiles[a]&&s.tiles[a][b]&&!s.objs.some(o=>o.i===a&&o.j===b))e.pos=W2(a,b)}e.pos=e.pos||W2(C0,C0)}
+  let walk=false;if(t>e.wait){if(!e.tgt)roamPick(e);if(e.tgt){RV.copy(e.tgt).sub(e.pos);const d=RV.length();if(d<.05){e.tgt=null;e.wait=t+2+Math.random()*5;if(Math.random()<.35){e.emo=EMO[(Math.random()*EMO.length)|0];e.emoT=t}}else{RV.multiplyScalar(Math.min(d,.018)/d);e.pos.add(RV);walk=true;const yaw=Math.atan2(RV.x,RV.z);let dd=yaw-e.f.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));e.f.rotation.y+=dd*.2}}}
+  e.f.position.copy(e.pos);animFauna(e.f,t,{walk,zap:0,happy:false,sleep:false,trick:null})}}catch(err){}}
+function roamOverlay(proj,t){for(const[i,e]of roam){if(!e.emo||t-e.emoT>2.5)continue;const[x,y]=proj(e.f.position.clone().add(new THREE.Vector3(0,1.1,0)));ctx2.font='20px sans-serif';ctx2.textAlign='center';ctx2.fillText(e.emo,x,y-(t-e.emoT)*8);ctx2.textAlign='left'}}
+G.roamHit=(px,py)=>{if(!roam.size)return null;setRay(px,py);const ms=[];for(const[,e]of roam)e.f.traverse(m=>{if(m.isMesh)ms.push(m)});const r=ray.intersectObjects(ms,false);return r.length?r[0].object.userData.roam:null};
 // ---------- v5 multiplayer: remote fauna ----------
 const remote=new Map();
 function remoteFrame(t){const NM=window.NetMP;const want=NM?NM.visiblePeers():[];const ids=new Set(want.map(p=>p.id));
@@ -475,7 +494,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  if(mv.lengthSq()>1e-6&&rt.tgt){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-fauna.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));fauna.rotation.y+=d*.18}
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);
  if(zapA>0&&rt.tgtObj&&!rt.tgt){const tp=W2(rt.tgtObj.i,rt.tgtObj.j);const d=tp.clone().sub(fpos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-fauna.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));fauna.rotation.y+=dd*.3}
- remoteFrame(t);animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});
+ remoteFrame(t);roamFrame(t);paintFrame();animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});
  if(rt.sleep&&Math.random()<.02)spawn({p:fpos.clone().add(new THREE.Vector3(.1,.7,0)),v:new THREE.Vector3(.1,.4,0),g:0,col:new THREE.Color(0xaad4ff),size:.14,decay:.008});
  // lightning beam from necklace gem
  const gr=fauna.userData.rig;
@@ -519,7 +538,7 @@ let sheetG=null;function sheet(t){if(!sheetG){sheetG=new THREE.Group();const ks=
  sheetG.children.forEach((f,i)=>animFauna(f,t+i,{walk:i%4===1,happy:i%4===2,sleep:i%4===3,zap:0}))}
 function applyEnvLite(z,nt){/* periodic day/night refresh */const k=z.id+'|'+nt.toFixed(2);if(applyEnvLite.k!==k){applyEnvLite.k=k;applyEnv(z,nt)}}
 function overlay(t,fade){const D=Math.min(2,devicePixelRatio||1);if(cv.width!==Math.round(W*D)){cv.width=Math.round(W*D);cv.height=Math.round(H*D)}ctx2.setTransform(D,0,0,D,0,0);ctx2.clearRect(0,0,W,H);
- ctx2.textAlign='center';ctx2.lineJoin='round';remoteOverlay(proj);
+ ctx2.textAlign='center';ctx2.lineJoin='round';remoteOverlay(proj);roamOverlay(proj,t);
  for(const[,e]of objMap){const o=e.o;if(o.type==='tox'){const[x,y,zz]=proj(e.g.position.clone().add(new THREE.Vector3(0,.95,0)));if(zz>1)continue;ctx2.font='bold 11px sans-serif';ctx2.fillStyle='#ff6b8b';ctx2.strokeStyle='#0008';ctx2.lineWidth=3;const s='♥'.repeat(o.hp);ctx2.strokeText(s,x,y);ctx2.fillText(s,x,y)}
   if(o.type==='goal'&&o.alert){const[x,y]=proj(e.g.position.clone().add(new THREE.Vector3(0,1.35,0)));ctx2.font='900 22px sans-serif';ctx2.fillStyle='#ffd84a';ctx2.strokeStyle='#5a3a00';ctx2.lineWidth=4;const b=Math.sin(t*6)*3;ctx2.strokeText('!',x,y+b);ctx2.fillText('!',x,y+b)}
   if(o.type==='project'&&o.need){const[x,y]=proj(e.g.position.clone().add(new THREE.Vector3(0,1.1,0)));ctx2.fillStyle='#0007';ctx2.fillRect(x-24,y-5,48,8);ctx2.fillStyle='#8f6';ctx2.fillRect(x-23,y-4,46*Math.min(1,(o.prog||0)/o.need),6)}}
