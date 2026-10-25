@@ -583,7 +583,16 @@ function toonOf(m){if(!m||m.userData.toon||m.isShaderMaterial||m.isMeshBasicMate
  if(m.userData.flat)t.color.set(m.userData.flat);
  if(m.onBeforeCompile&&String(m.onBeforeCompile).includes('uTime'))t.onBeforeCompile=m.onBeforeCompile;
  t.userData.toon=1;return t}
-function toonify(root){if(REAL&&root===scene){scene.children.forEach(c=>{if(c.userData.rig||c.userData.fauna||c.children.some(k=>k.userData&&k.userData.rig))toonify(c)});return}root.traverse(o=>{if(!o.isMesh||o.userData.outline||o.userData.noToon)return;
+const OUTM2=new THREE.MeshBasicMaterial({color:0x1d2416,side:THREE.BackSide});OUTM2.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=position+normal*(0.014/max(length(modelMatrix[0].xyz),0.05));')};
+function softOf(m){if(!m||m.userData.soft||m.isShaderMaterial||m.isMeshBasicMaterial||m.isPointsMaterial||m.isLineBasicMaterial||m.isSpriteMaterial)return m;
+ const t=new THREE.MeshStandardMaterial({color:m.color?m.color.clone():0xffffff,map:m.map||null,emissive:m.emissive?m.emissive.clone():0,emissiveIntensity:m.emissiveIntensity||1,transparent:m.transparent,opacity:m.opacity,side:m.side,alphaTest:m.alphaTest,depthWrite:m.depthWrite,vertexColors:m.vertexColors,roughness:.78,metalness:0});
+ if(m.userData.flat)t.color.set(m.userData.flat);if(m.onBeforeCompile&&String(m.onBeforeCompile).includes('uTime'))t.onBeforeCompile=m.onBeforeCompile;t.userData.soft=1;return t}
+// v6.3: in world7 zones, non-fauna objects get soft shading + thin outlines to match the refined world
+function softify(root){root.traverse(o=>{if(o.userData.outline&&o.material===OUTM){o.visible=false;return}if(!o.isMesh||o.userData.outline||o.userData.noToon||o.userData.sft)return;o.userData.sft=1;
+ if(Array.isArray(o.material))o.material=o.material.map(softOf);else o.material=softOf(o.material);o.castShadow=!!QP.shadow;
+ if(!o.isInstancedMesh&&o.geometry&&o.geometry.attributes.normal&&!(o.material&&o.material.transparent)&&!['PlaneGeometry','CircleGeometry','RingGeometry'].includes(o.geometry.type)){const ol=new THREE.Mesh(o.geometry,OUTM2);ol.userData.outline=1;ol.raycast=()=>{};o.add(ol)}})}
+function toonify(root){if(G.W7ON&&root===scene){scene.children.forEach(c=>{const f=c.userData.rig||c.userData.fauna||c.children.some(k=>k.userData&&k.userData.rig);if(f||c.userData.noSoft)toonify(c);else if(c!==island)softify(c)});return}
+ if(REAL&&root===scene){scene.children.forEach(c=>{if(c.userData.rig||c.userData.fauna||c.children.some(k=>k.userData&&k.userData.rig))toonify(c)});return}root.traverse(o=>{if(!o.isMesh||o.userData.outline||o.userData.noToon)return;
  if(Array.isArray(o.material))o.material=o.material.map(toonOf);else o.material=toonOf(o.material);
  o.castShadow=false;
  if(!o.userData.ol&&!o.isInstancedMesh&&o.geometry&&o.geometry.attributes.normal&&!(o.material&&o.material.transparent)&&o.geometry.type!=='PlaneGeometry'&&o.geometry.type!=='CircleGeometry'&&o.geometry.type!=='RingGeometry'){

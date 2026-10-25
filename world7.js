@@ -1,6 +1,14 @@
 // world7 PREVIEW (not shipped): refined realistic home + Rock Garden. High graphics only, opt-in via ?w7 or localStorage fs_w7=1.
 import * as THREE from 'three';
-const G=window,W=G.W6,ON={home:1,rockgarden:1};
+const G=window,W=G.W6;
+// per-biome look profiles (v6.3). gr=grass density, gh=grass height, fl=flower colours, tree=leaf|pine|null, nt=tree factor, bo=boulders, pe=pebbles, snow/sand turf, fr=fringe tint
+const PROF={home:{gr:1,gh:1,fl:[0xffffff,0xffd84a,0xff8fc0,0xb48cff,0xfff1a8],tree:'leaf',nt:.4,bu:6,mu:1,bo:4,pe:.8},
+ garden:{gr:.6,gh:.75,fl:[0xfff6e0,0xffd84a,0xb9a2ff],tree:'leaf',nt:.3,bu:3,mu:1,bo:10,pe:2.5,rock:1},
+ rock:{gr:.4,gh:.6,fl:[0xfff6e0,0xb9a2ff],tree:'leaf',nt:.2,bu:2,mu:0,bo:16,pe:3.5,rock:1},
+ forest:{gr:1.1,gh:1.15,fl:[0xffffff,0xb48cff,0xffd84a],tree:'leaf',nt:.9,bu:8,mu:3,bo:5,pe:.8,fern:1},
+ arctic:{gr:0,fl:null,tree:'pine',nt:.6,bu:0,mu:0,bo:8,pe:1.5,snow:1,roots:0},
+ beach:{gr:.25,gh:1.3,dry:1,fl:null,tree:null,nt:0,bu:0,mu:0,bo:3,pe:3,sand:1,roots:0,shells:1}};
+const PK=z=>PROF[z]||null;const zb=id=>{try{return Z(id).biome}catch(e){return null}};const ON=new Proxy({},{get:(t,id)=>!!PK(zb(id))});
 if(W&&G.W7){
 const {scene,QP,U}=W;
 let rs=1;const rnd=()=>{rs=(rs*16807)%2147483647;return(rs-1)/2147483646};
@@ -10,10 +18,12 @@ const C=(h)=>new THREE.Color(h);
 // ---------- textures ----------
 const cliff=new THREE.TextureLoader().load('tex/cliff.jpg');cliff.colorSpace=THREE.SRGBColorSpace;cliff.wrapS=cliff.wrapT=THREE.RepeatWrapping;cliff.anisotropy=8;
 const cliffSide=new THREE.TextureLoader().load('tex/cliff.jpg');cliffSide.colorSpace=THREE.SRGBColorSpace;cliffSide.wrapS=cliffSide.wrapT=THREE.RepeatWrapping;cliffSide.repeat.set(1,.5);
-const turfTex=(base)=>cvs(512,512,(x,w,h)=>{const b=C(base);x.fillStyle='#'+b.getHexString();x.fillRect(0,0,w,h);
+const turfTex=(base,kind)=>cvs(512,512,(x,w,h)=>{const b=C(base);x.fillStyle='#'+b.getHexString();x.fillRect(0,0,w,h);
  // soft painterly blotches (wrap-around so it tiles)
  for(let k=0;k<260;k++){const px=Math.random()*w,py=Math.random()*h,r=20+Math.random()*60,c=b.clone().offsetHSL((Math.random()-.5)*.04,(Math.random()-.5)*.1,(Math.random()-.5)*.09);
   for(const[dx,dy]of[[0,0],[w,0],[-w,0],[0,h],[0,-h]]){const g=x.createRadialGradient(px+dx,py+dy,0,px+dx,py+dy,r);g.addColorStop(0,`rgba(${c.r*255|0},${c.g*255|0},${c.b*255|0},.35)`);g.addColorStop(1,`rgba(${c.r*255|0},${c.g*255|0},${c.b*255|0},0)`);x.fillStyle=g;x.fillRect(px+dx-r,py+dy-r,2*r,2*r)}}
+ if(kind==='snow'){for(let k=0;k<2500;k++){x.fillStyle=`rgba(255,255,255,${.3+Math.random()*.6})`;x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*1.5,1+Math.random()*1.5)}for(let k=0;k<40;k++){x.strokeStyle='rgba(150,180,210,.18)';x.lineWidth=2+Math.random()*4;x.beginPath();const y0=Math.random()*h;x.moveTo(0,y0);x.bezierCurveTo(w*.3,y0+20,w*.6,y0-20,w,y0);x.stroke()}return}
+ if(kind==='sand'){for(let k=0;k<12000;k++){const c=b.clone().offsetHSL(0,(Math.random()-.5)*.1,(Math.random()-.5)*.2);x.fillStyle='#'+c.getHexString();x.fillRect(Math.random()*w,Math.random()*h,1,1)}for(let y0=0;y0<h;y0+=14+Math.random()*10){x.strokeStyle='rgba(120,90,50,.15)';x.lineWidth=2;x.beginPath();x.moveTo(0,y0);for(let px=0;px<=w;px+=16)x.lineTo(px,y0+Math.sin(px*.03+y0)*4);x.stroke()}return}
  // fine blade strokes
  for(let k=0;k<9000;k++){const c=b.clone().offsetHSL((Math.random()-.5)*.05,(Math.random()-.3)*.15,(Math.random()-.55)*.22);x.strokeStyle='#'+c.getHexString();x.globalAlpha=.55;x.lineWidth=1+Math.random();const px=Math.random()*w,py=Math.random()*h,l=3+Math.random()*7,a=-1.57+(Math.random()-.5)*.9;x.beginPath();x.moveTo(px,py);x.lineTo(px+Math.cos(a)*l,py+Math.sin(a)*l);x.stroke()}x.globalAlpha=1},true);
 const bark=cvs(128,256,(x,w,h)=>{x.fillStyle='#6b4b33';x.fillRect(0,0,w,h);for(let k=0;k<70;k++){x.strokeStyle=`hsla(${22+Math.random()*10},${25+Math.random()*15}%,${14+Math.random()*30}%,.85)`;x.lineWidth=1+Math.random()*3;x.beginPath();let px=Math.random()*w;x.moveTo(px,0);for(let py=0;py<=h;py+=10){px+=Math.random()*5-2.5;x.lineTo(px,py)}x.stroke()}
@@ -61,7 +71,7 @@ nr(skyG);
 let tAcc=0;(function tick(){requestAnimationFrame(tick);if(!skyG.visible)return;const cp=W.camera.position,d=cp.length();skyG.position.set(cp.x*.9,0,cp.z*.9);if(W.camera.far<d+320){W.camera.far=d+320;W.camera.updateProjectionMatrix()}
  const t=U.time.value*.006;clouds.forEach(c=>{const a=c.userData.a+t*(c.userData.y<0?.6:1);c.position.x=Math.cos(a)*c.userData.r;c.position.z=Math.sin(a)*c.userData.r});
  if(W.sun){const sp=W.sun.position.clone().normalize();sunGlow.position.copy(sp.multiplyScalar(180))}})();
-G.W6env=(z,nt)=>{const id=z.id||G.S?.zone,on=!!ON[id];skyG.visible=on;if(!on)return;const pal=G.ZPAL[id],day=1-Math.min(1,nt||0),night=C(0x0a1028);
+G.W6env=(z,nt)=>{const id=z.id||G.S?.zone,on=!!ON[id];skyG.visible=on;G.W7ON=on;if(!on)return;const pal=(G.ZPAL&&G.ZPAL[id])||BIOMES[zb(id)],day=1-Math.min(1,nt||0),night=C(0x0a1028);
  const hor=C(pal[5]).lerp(night,1-day),top=C(pal[4]).lerp(night,1-day);
  if(W.su){W.su.uTop.value.copy(top);W.su.uHor.value.copy(hor)}
  // soft depth fog, gently tinted by the zone horizon colour
@@ -72,13 +82,13 @@ G.W6env=(z,nt)=>{const id=z.id||G.S?.zone,on=!!ON[id];skyG.visible=on;if(!on)ret
  if(W.sun){W.sun.color.set(0xfff0d2).lerp(C(0x8090c0),1-day);W.sun.intensity=2.7*day+.35}
  if(W.hemi){W.hemi.color.copy(C(pal[4]).lerp(C(0xdcecff),.6));W.hemi.groundColor.copy(C(pal[0]).multiplyScalar(.55));W.hemi.intensity=.7+.75*day}};
 // ---------- island dressing ----------
-G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;if(!on)return;const s=G.zs(zid),n=W.N0,C0=W.C0,pal=G.ZPAL[zid],rock=zid==='rockgarden',hi=true;
+G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;G.W7ON=on;if(!on)return;const s=G.zs(zid),n=W.N0,C0=W.C0,pal=(G.ZPAL&&G.ZPAL[zid])||BIOMES[zb(zid)],P=PK(zb(zid)),rock=!!P.rock,hi=true;
  const tiles=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(s.tiles[i][j])tiles.push([i,j]);const TS=new Set(tiles.map(t=>t[0]+','+t[1]));
  rs=7+zid.length*13;
  const occ=new Map();(s.objs||[]).forEach(o=>{if(o.i!=null)occ.set(o.i+','+o.j,o.type||1)});(s.decor||[]).forEach(o=>occ.set(o.i+','+o.j,1));
  const near=(i,j,r)=>{for(let a=-r;a<=r;a++)for(let b=-r;b<=r;b++)if(occ.has((i+a)+','+(j+b)))return true;return false};
  // 1) re-skin ground: painterly turf top in exact zone colour, generated cliff strata on sides, darker cliff cones under
- const topC=C(pal[0]).offsetHSL(0,.04,rock?.1:.06);const tt=turfTex('#'+topC.getHexString());tt.repeat.set(1,1);
+ const topC=P.snow?C(pal[0]):P.sand?C(pal[0]).offsetHSL(0,.05,.07):C(pal[0]).offsetHSL(0,.04,rock?.1:.06);const tt=turfTex('#'+topC.getHexString(),P.snow?'snow':P.sand?'sand':'grass');tt.repeat.set(1,1);
  const topM=new THREE.MeshStandardMaterial({map:tt,roughness:1,color:0xffffff});
  const sideM=new THREE.MeshStandardMaterial({map:cliffSide,roughness:.95,color:C(pal[1]).lerp(C(0xffffff),.55)});
  const coneM=new THREE.MeshStandardMaterial({map:cliff,roughness:1,color:C(pal[1]).lerp(C(0xffffff),.35).multiplyScalar(.85)});
@@ -89,27 +99,27 @@ G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;if(!on)return;co
  const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),p=new THREE.Vector3(),sc=new THREE.Vector3(),col=new THREE.Color();
  // 2) grass clumps: dense, blended into turf (base = turf colour, tips lighter/yellower), wind
  const gm=W.windify(new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}),.05,.3);
- const per=rock?6:10,cnt=tiles.length*per;const gi=new THREE.InstancedMesh(clumpGeo,gm,cnt);
+ const per=Math.round(10*P.gr),cnt=tiles.length*per;const gi=new THREE.InstancedMesh(clumpGeo,gm,cnt);
  for(let k=0;k<cnt;k++){const[i,j]=tiles[k%tiles.length];const ob=occ.has(i+','+j);p.set(i-C0+rnd()-.5,0,j-C0+rnd()-.5);e.set(0,rnd()*6.28,0);q.setFromEuler(e);
-  const patch=Math.sin(p.x*.9+1)*Math.cos(p.z*.7)*.5+.5,h=((ob?.45:.7)+rnd()*.45+patch*.3)*(rock?.75:1);sc.set(.9+rnd()*.5,h,.9+rnd()*.5);m4.compose(p,q,sc);gi.setMatrixAt(k,m4);
-  col.copy(topC).offsetHSL((rnd()-.5)*.04+patch*.02,.04+rnd()*.06,.02+rnd()*.07+patch*.04);if(rock&&rnd()<.25)col.offsetHSL(.03,-.15,.05);gi.setColorAt(k,col)}
- gi.receiveShadow=!!QP.shadow;isl.add(nr(gi));
+  const patch=Math.sin(p.x*.9+1)*Math.cos(p.z*.7)*.5+.5,h=((ob?.45:.7)+rnd()*.45+patch*.3)*(P.gh||1);sc.set(.9+rnd()*.5,h,.9+rnd()*.5);m4.compose(p,q,sc);gi.setMatrixAt(k,m4);
+  col.copy(topC).offsetHSL((rnd()-.5)*.04+patch*.02,.04+rnd()*.06,.02+rnd()*.07+patch*.04);if(rock&&rnd()<.25)col.offsetHSL(.03,-.15,.05);if(P.dry)col.set(0xb5b46a).offsetHSL((rnd()-.5)*.04,0,rnd()*.1);gi.setColorAt(k,col)}
+ gi.receiveShadow=!!QP.shadow;if(cnt)isl.add(nr(gi));
  // 3) edges: overhanging grass lip + hanging moss fringe + roots
  const edges=[];tiles.forEach(([i,j])=>[[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{if(!TS.has((i+a)+','+(j+b)))edges.push([i,j,a,b])}));
  const fr=new THREE.PlaneGeometry(1.04,.32);fr.translate(0,-.16,0);
- const frM=new THREE.MeshLambertMaterial({map:fringe,alphaTest:.45,side:THREE.DoubleSide,color:C(pal[0]).multiplyScalar(.95)});
+ const frM=new THREE.MeshLambertMaterial({map:fringe,alphaTest:.45,side:THREE.DoubleSide,color:P.snow?C(0xf4fbff):P.sand?C(pal[1]).lerp(C(pal[0]),.5):C(pal[0]).multiplyScalar(.95)});
  const fi=new THREE.InstancedMesh(fr,frM,edges.length);
  edges.forEach(([i,j,a,b],k)=>{p.set(i-C0+a*.505,.005,j-C0+b*.505);e.set(0,Math.atan2(a,b),0);q.setFromEuler(e);sc.set(1,.6+rnd()*.7,1);m4.compose(p,q,sc);fi.setMatrixAt(k,m4)});isl.add(nr(fi));
- const lip=new THREE.InstancedMesh(clumpGeo,gm,edges.length*3);let li=0;edges.forEach(([i,j,a,b])=>{for(let u=0;u<3;u++){const o=(u+.5)/3-.5+(rnd()-.5)*.1;p.set(i-C0+a*.47+(b?o:0),0,j-C0+b*.47+(a?o:0));e.set(b*.6,rnd()*6,-a*.6);q.setFromEuler(e);const h=.9+rnd()*.6;sc.set(1.2,h,1.2);m4.compose(p,q,sc);lip.setMatrixAt(li,m4);col.copy(topC).offsetHSL(0,.06,.04+rnd()*.06);lip.setColorAt(li++,col)}});isl.add(nr(lip));
- // hanging roots: thin curved tubes under the rim
- {const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3(.03,-.25,.02),new THREE.Vector3(-.02,-.55,.05),new THREE.Vector3(.04,-.9,.03)]);const rg=new THREE.TubeGeometry(curve,8,.012,4);
+ const lip=new THREE.InstancedMesh(clumpGeo,gm,P.gr>.3?edges.length*3:0);let li=0;if(P.gr>.3)edges.forEach(([i,j,a,b])=>{for(let u=0;u<3;u++){const o=(u+.5)/3-.5+(rnd()-.5)*.1;p.set(i-C0+a*.47+(b?o:0),0,j-C0+b*.47+(a?o:0));e.set(b*.6,rnd()*6,-a*.6);q.setFromEuler(e);const h=.9+rnd()*.6;sc.set(1.2,h,1.2);m4.compose(p,q,sc);lip.setMatrixAt(li,m4);col.copy(topC).offsetHSL(0,.06,.04+rnd()*.06);lip.setColorAt(li++,col)}});isl.add(nr(lip));
+ // hanging roots: thin curved tubes under the rim (icicles in snow)
+ if(P.roots!==0){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3(.03,-.25,.02),new THREE.Vector3(-.02,-.55,.05),new THREE.Vector3(.04,-.9,.03)]);const rg=new THREE.TubeGeometry(curve,8,.012,4);
   const rm=new THREE.MeshLambertMaterial({color:0x5b4330});const nR=Math.floor(edges.length*1.1);const ri=new THREE.InstancedMesh(rg,rm,nR);
   for(let k=0;k<nR;k++){const[i,j,a,b]=edges[Math.floor(rnd()*edges.length)];const o=rnd()-.5;p.set(i-C0+a*.5+(b?o:0),-.12-rnd()*.15,j-C0+b*.5+(a?o:0));e.set(0,rnd()*6,0);q.setFromEuler(e);const L=.3+rnd()*.9;sc.set(1,L,1);m4.compose(p,q,sc);ri.setMatrixAt(k,m4)}isl.add(nr(ri))}
  // 4) flowers: real 3D heads in natural clusters + tiny meadow flecks
- const FG=[flowerGeo(5,.03,.017,.25),flowerGeo(8,.026,.01,.15),flowerGeo(6,.022,.013,.5)];const FC=rock?[0xfff6e0,0xffd84a,0xb9a2ff]:[0xffffff,0xffd84a,0xff8fc0,0xb48cff,0xfff1a8];
+ const FG=[flowerGeo(5,.03,.017,.25),flowerGeo(8,.026,.01,.15),flowerGeo(6,.022,.013,.5)];const FC=P.fl||[];
  const fm=W.windify(new THREE.MeshLambertMaterial({vertexColors:true}),.04,.3);
  const free=tiles.filter(([i,j])=>!occ.has(i+','+j));
- FG.forEach((geo,f)=>{const nc=Math.round(free.length*(rock?.1:.13)),per2=5,tot=nc*per2;const fi2=new THREE.InstancedMesh(geo,fm,tot);let k=0;
+ if(FC.length)FG.forEach((geo,f)=>{const nc=Math.round(free.length*(rock?.1:.13)),per2=5,tot=nc*per2;const fi2=new THREE.InstancedMesh(geo,fm,tot);let k=0;
   for(let c=0;c<nc;c++){const[i,j]=free[Math.floor(rnd()*free.length)];const cx=i-C0+rnd()-.5,cz=j-C0+rnd()-.5,hue=FC[Math.floor(rnd()*FC.length)];for(let u=0;u<per2;u++){p.set(cx+(rnd()-.5)*.35,0,cz+(rnd()-.5)*.35);e.set((rnd()-.5)*.3,rnd()*6,(rnd()-.5)*.3);q.setFromEuler(e);const sz=.8+rnd()*.6;sc.set(sz,sz*(.8+rnd()*.5),sz);m4.compose(p,q,sc);fi2.setMatrixAt(k,m4);col.set(hue).offsetHSL(0,0,(rnd()-.5)*.08);fi2.setColorAt(k++,col)}}
   isl.add(nr(fi2))});
  // 5) trees (proper 3D: flared trunk, branches, clustered leafy canopy with AO, leaf cards, thin outline)
@@ -126,23 +136,28 @@ G.W6build=zid=>{const isl=W.island,on=!!ON[zid];skyG.visible=on;if(!on)return;co
   // leaf cards scattered on canopy surface for a leafy silhouette
   const cp=cg.attributes.position,cnr=cg.attributes.normal,nc=60;const cards=new THREE.InstancedMesh(new THREE.PlaneGeometry(.22,.22),cardM,nc);
   for(let k=0;k<nc;k++){const vi=Math.floor(rnd()*cp.count);p.fromBufferAttribute(cp,vi);const nn=new THREE.Vector3().fromBufferAttribute(cnr,vi);if(nn.y<-.3){nn.y=-nn.y}p.addScaledVector(nn,.03);q.setFromUnitVectors(new THREE.Vector3(0,0,1),nn);sc.setScalar(.7+rnd()*.6);m4.compose(p,q,sc);cards.setMatrixAt(k,m4)}tr.add(cards);return tr};
- const nT=Math.min(rim.length,rock?3:Math.max(4,Math.round(n*.4)));const stp=Math.max(1,Math.floor(rim.length/Math.max(1,nT)));const treeSpots=[];
- for(let t=0;t<nT;t++){const[i,j]=rim[(t*stp+2)%rim.length];const tr=mkTree(1.05+rnd()*.5);tr.position.set(i-C0+(rnd()-.5)*.2,0,j-C0+(rnd()-.5)*.2);tr.rotation.y=rnd()*6;tr.scale.setScalar(.85+rnd()*.3);isl.add(nr(tr));treeSpots.push(tr.position.clone())}
+ const snowM=new THREE.MeshStandardMaterial({color:0xf6fbff,roughness:.6});const pineM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,color:0x2f6b4a});
+ const mkPine=(H)=>{const tr=new THREE.Group();const tg=new THREE.CylinderGeometry(.04,.08,H*.5,7);tg.translate(0,H*.25,0);const tk=new THREE.Mesh(tg,barkM);tr.add(tk);
+  for(let k=0;k<4;k++){const r=.42-k*.09,h=.42-k*.04,y=H*.3+k*.26;const g=new THREE.ConeGeometry(r,h,10,2);const pa=g.attributes.position;for(let v=0;v<pa.count;v++){if(pa.getY(v)<-h*.4){pa.setY(v,pa.getY(v)+Math.sin(v*1.7)*.03);pa.setX(v,pa.getX(v)*(1+Math.sin(v*2.3)*.08))}}g.computeVertexNormals();g.translate(0,y+h/2,0);shadeV(g,.5,1.1,y,y+h);
+   const cm=new THREE.Mesh(g,pineM);cm.castShadow=!!QP.shadow;tr.add(cm,new THREE.Mesh(g,olM));
+   if(P.snow){const sg=new THREE.ConeGeometry(r*.72,h*.5,10,1);sg.translate(0,y+h*.78,0);tr.add(new THREE.Mesh(sg,snowM))}}return tr};
+ const nT=P.tree?Math.min(rim.length,Math.max(2,Math.round(n*P.nt))):0;const stp=Math.max(1,Math.floor(rim.length/Math.max(1,nT)));const treeSpots=[];
+ for(let t=0;t<nT;t++){const[i,j]=rim[(t*stp+2)%rim.length];const tr=(P.tree==='pine'?mkPine:mkTree)(1.05+rnd()*.5);tr.position.set(i-C0+(rnd()-.5)*.2,0,j-C0+(rnd()-.5)*.2);tr.rotation.y=rnd()*6;tr.scale.setScalar(.85+rnd()*.3);isl.add(nr(tr));treeSpots.push(tr.position.clone())}
  // 6) bushes with blossoms, mushrooms near trees, mossy boulders, pebbles
  const bushM=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,color:leafBase.clone().offsetHSL(.02,0,.03)});
- const nB=rock?3:6;for(let b=0;b<nB&&rim.length;b++){const[i,j]=rim[(b*stp*2+Math.floor(stp/2)+5)%rim.length];const parts=[];for(let k=0;k<4;k++){const g=blob(.13+rnd()*.07,1,.12,k);g.translate((rnd()-.5)*.22,.1+rnd()*.06,(rnd()-.5)*.22);parts.push([g,C(0xffffff)])}const bgeo=merge(parts);shadeV(bgeo,.5,1.1,0,.3);
+ const nB=P.bu;for(let b=0;b<nB&&rim.length;b++){const[i,j]=rim[(b*stp*2+Math.floor(stp/2)+5)%rim.length];const parts=[];for(let k=0;k<4;k++){const g=blob(.13+rnd()*.07,1,.12,k);g.translate((rnd()-.5)*.22,.1+rnd()*.06,(rnd()-.5)*.22);parts.push([g,C(0xffffff)])}const bgeo=merge(parts);shadeV(bgeo,.5,1.1,0,.3);
   const bu=new THREE.Group();const bm=new THREE.Mesh(bgeo,bushM);bm.castShadow=!!QP.shadow;bu.add(bm,new THREE.Mesh(bgeo,olM));
   const bc=[0xff8fc0,0xffffff,0xffd84a][b%3];for(let k=0;k<7;k++){const f=new THREE.Mesh(new THREE.IcosahedronGeometry(.022,0),new THREE.MeshLambertMaterial({color:bc,emissive:bc,emissiveIntensity:.12}));const a=rnd()*6.28;f.position.set(Math.cos(a)*.16,.16+rnd()*.1,Math.sin(a)*.16);bu.add(f)}
   bu.position.set(i-C0+(rnd()-.5)*.3,0,j-C0+(rnd()-.5)*.3);isl.add(nr(bu))}
  {const stem=new THREE.CylinderGeometry(.012,.016,.07,6);stem.translate(0,.035,0);const cap=new THREE.SphereGeometry(.035,10,6,0,6.283,0,1.6);cap.scale(1,.7,1);cap.translate(0,.07,0);
   const sm=new THREE.MeshLambertMaterial({color:0xf3ead8}),cm=new THREE.MeshStandardMaterial({color:rock?0xc98b4a:0xd9463a,roughness:.5});
-  treeSpots.forEach(tp=>{const nm=2+Math.floor(rnd()*3);for(let k=0;k<nm;k++){const g=new THREE.Group();g.add(new THREE.Mesh(stem,sm),new THREE.Mesh(cap,cm));for(let d=0;d<4;d++){const dt=new THREE.Mesh(new THREE.SphereGeometry(.006,4,3),sm);const a=d*1.6+rnd();dt.position.set(Math.cos(a)*.022,.088,Math.sin(a)*.022);g.add(dt)}
+  if(P.mu)treeSpots.forEach(tp=>{const nm=Math.floor((1+rnd()*2)*P.mu);for(let k=0;k<nm;k++){const g=new THREE.Group();g.add(new THREE.Mesh(stem,sm),new THREE.Mesh(cap,cm));for(let d=0;d<4;d++){const dt=new THREE.Mesh(new THREE.SphereGeometry(.006,4,3),sm);const a=d*1.6+rnd();dt.position.set(Math.cos(a)*.022,.088,Math.sin(a)*.022);g.add(dt)}
    const a=rnd()*6.28,r=.18+rnd()*.15;g.position.set(tp.x+Math.cos(a)*r,0,tp.z+Math.sin(a)*r);g.scale.setScalar(.8+rnd()*.7);isl.add(nr(g))}})}
  const stoneM=new THREE.MeshStandardMaterial({vertexColors:true,map:cliff,roughness:.95,color:C(pal[2]).lerp(C(0xffffff),.3)});
- const mossy=(g)=>{const nn=g.attributes.normal,c=[];const moss=C(pal[0]).multiplyScalar(1.15);for(let k=0;k<nn.count;k++){const m=THREE.MathUtils.smoothstep(nn.getY(k),.45,.8);c.push(1+(moss.r*1.6-1)*m,1+(moss.g*1.6-1)*m,1+(moss.b*1.6-1)*m)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g};
- const nBo=rock?10:4;for(let b=0;b<nBo&&rim.length;b++){const[i,j]=rim[(b*3+1)%rim.length];const g=mossy(blob(.13+rnd()*(rock?.18:.08),1,.18,b));const m=new THREE.Mesh(g,stoneM);m.scale.y=.75;m.position.set(i-C0+(rnd()-.5)*.5,.04,j-C0+(rnd()-.5)*.5);m.rotation.y=rnd()*6;m.castShadow=!!QP.shadow;m.receiveShadow=true;const o=new THREE.Mesh(g,olM);m.add(o);isl.add(nr(m))}
- {const pg=new THREE.DodecahedronGeometry(.03,0);const pm=new THREE.MeshStandardMaterial({color:C(pal[2]).lerp(C(0xffffff),.25),roughness:.9,flatShading:true});const nP=Math.round(tiles.length*(rock?2.5:.8));const pi=new THREE.InstancedMesh(pg,pm,nP);
-  for(let k=0;k<nP;k++){const[i,j]=tiles[Math.floor(rnd()*tiles.length)];e.set(rnd()*3,rnd()*3,0);q.setFromEuler(e);const s2=.5+rnd()*1.3;sc.set(s2,s2*.55,s2);p.set(i-C0+rnd()-.5,.005,j-C0+rnd()-.5);m4.compose(p,q,sc);pi.setMatrixAt(k,m4);col.setScalar(.8+rnd()*.3);pi.setColorAt(k,col)}pi.receiveShadow=true;isl.add(nr(pi))}
+ const mossy=(g)=>{const nn=g.attributes.normal,c=[];const moss=P.snow?C(0.62,.64,.66):P.sand?C(.62,.62,.62):C(pal[0]).multiplyScalar(1.15);for(let k=0;k<nn.count;k++){const m=THREE.MathUtils.smoothstep(nn.getY(k),.45,.8);c.push(1+(moss.r*1.6-1)*m,1+(moss.g*1.6-1)*m,1+(moss.b*1.6-1)*m)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g};
+ const nBo=P.bo;for(let b=0;b<nBo&&rim.length;b++){const[i,j]=rim[(b*3+1)%rim.length];const g=mossy(blob(.13+rnd()*(rock?.18:.08),1,.18,b));const m=new THREE.Mesh(g,stoneM);m.scale.y=.75;m.position.set(i-C0+(rnd()-.5)*.5,.04,j-C0+(rnd()-.5)*.5);m.rotation.y=rnd()*6;m.castShadow=!!QP.shadow;m.receiveShadow=true;const o=new THREE.Mesh(g,olM);m.add(o);isl.add(nr(m))}
+ {const pg=new THREE.DodecahedronGeometry(.03,0);const pm=new THREE.MeshStandardMaterial({color:C(pal[2]).lerp(C(0xffffff),.25),roughness:.9,flatShading:true});const nP=Math.round(tiles.length*P.pe);const pi=new THREE.InstancedMesh(pg,pm,nP);
+  for(let k=0;k<nP;k++){const[i,j]=tiles[Math.floor(rnd()*tiles.length)];e.set(rnd()*3,rnd()*3,0);q.setFromEuler(e);const s2=.5+rnd()*1.3;sc.set(s2,s2*.55,s2);p.set(i-C0+rnd()-.5,.005,j-C0+rnd()-.5);m4.compose(p,q,sc);pi.setMatrixAt(k,m4);if(P.shells)col.set([0xfff0e6,0xffc9b8,0xf6e2c0,0xffffff][k%4]);else if(P.snow)col.set(0xd8ecff);else col.setScalar(.8+rnd()*.3);pi.setColorAt(k,col)}pi.receiveShadow=true;isl.add(nr(pi))}
 };
 if(W.zone)try{G.W6build(W.zone);G.W6env({id:W.zone},0)}catch(e){console.warn('w7',e)}
 }
