@@ -216,7 +216,7 @@ const TUT=[
  {t:"Now visit the Goal Station (green hologram ✓) and Claim your reward. Goals unlock new lands!",ok:()=>S.done.g_buy},
  {t:"Rock Island is open! Travel there and tap the pollution cubes to zap them for Lux.",ok:()=>(S.stats.zap.rockisland||0)>0},
  {t:"Wonderful! Zapping fills your egg meter 🥚, which lays eggs to hatch in your Nest. When your fauna gets tired, rest in the Den. Have fun, Caretaker!",last:1}];
-function tutTick(){const el=document.getElementById('tut');if(!fa()||S.tut>=TUT.length){el.classList.add('hidden');return}const st=TUT[S.tut];if(st.ok&&st.ok()){S.tut++;Sound.sfx('skill');save();return tutTick()}
+function tutTick(){const el=document.getElementById('tut');if(!el)return;if(!fa()||S.tut>=TUT.length){el.classList.add('hidden');return}const st=TUT[S.tut];if(st.ok&&st.ok()){S.tut++;Sound.sfx('skill');save();return tutTick()}
  if(el.dataset.step!=String(S.tut)){el.dataset.step=S.tut;el.querySelector('.tt').textContent=st.t;el.querySelector('#tutNext').textContent=st.last?'Got it!':'Skip tutorial';el.classList.remove('hidden');el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}}
 document.getElementById('tutNext').onclick=()=>{S.tut=TUT[S.tut]&&TUT[S.tut].last?S.tut+1:99;save();tutTick()};
 {const ac=document.getElementById('amelia');ac.width=ac.height=112;const c=ac.getContext('2d');c.scale(2,2);drawAmelia(c,28,30,.9)}

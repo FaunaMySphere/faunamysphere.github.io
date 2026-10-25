@@ -284,7 +284,7 @@ function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[
  // zapper necklace (user-recalled from the original): collar + glowing emitter gem
  const lvl=genes._lv||1,gc=lvl>=15?0xffc93a:lvl>=10?0xc06bff:lvl>=5?0x3fe0ff:0x8bff4a;
  const cy=a.head?a.b[1]*.35:-.02,cz=a.head?a.b[2]*.78:.0,cr=a.head?Math.max(a.b[0]*.62,a.head*.6):.2;
- const collar=mesh(new THREE.TorusGeometry(cr,lvl>=20?.06:.03,10,28),new THREE.MeshStandardMaterial({color:lvl>=20?0xffc93a:0xc9ced6,roughness:.25,metalness:.9}),[1,1,1],[0,cy,cz],[Math.PI/2-.5,0,0]);body.add(collar);
+ const collar=mesh(new THREE.TorusGeometry(cr,lvl>=20?.06:.03,10,28),new THREE.MeshStandardMaterial({color:lvl>=20?0xffc93a:((window.COLLARC&&COLLARC[genes.collar])||0xc9ced6),roughness:.25,metalness:.9}),[1,1,1],[0,cy,cz],[Math.PI/2-.5,0,0]);body.add(collar);
  for(let k=0;k<6;k++){const an=k/6*Math.PI-Math.PI/2+Math.PI/2;}
  const gem=new THREE.Mesh(new THREE.SphereGeometry(.055,16,12),glowM(0xa8ecff,3.2));gem.position.set(0,cy-cr*.45,cz+cr*.9);body.add(gem);const rim=mesh(new THREE.TorusGeometry(.06,.014,8,20),glowM(gc,2.2),[1,1,1],[0,cy-cr*.45,cz+cr*.9-.005]);body.add(rim);
  const cap=mesh(CYL,new THREE.MeshStandardMaterial({color:0xd8a84a,metalness:.9,roughness:.25}),[.03,.02,.03],[0,cy-cr*.45+.06,cz+cr*.88]);body.add(cap);
@@ -565,3 +565,11 @@ let trailT=0;const trailG=new THREE.CircleGeometry(.07,10);
 (function fxLoop(){requestAnimationFrame(fxLoop);const dt=.016;
  if(rt.tgt&&fa()&&performance.now()-trailT>110){trailT=performance.now();const m=new THREE.Mesh(trailG,ringM(0x6dff3a));m.rotation.x=-Math.PI/2;m.position.copy(mePosW()).add(new THREE.Vector3(0,.03,0));fxAdd(m,1.3,(o,k)=>{o.material.opacity=.85*(1-k)})}
  for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;const k=f.t/f.life;if(k>=1){scene.remove(f.m);f.m.traverse(x=>{x.geometry&&x.geometry!==trailG&&x.geometry.dispose()});FX.splice(i,1);continue}f.upd(f.m,k,f.t)}})();
+
+// ---- v4.7 Faunawear hats ----
+const _bf=buildFauna;buildFauna=function(genes){const f=_bf(genes);try{const rig=f.userData.rig;const hd=rig&&(rig.head||rig.body);if(genes.hat&&hd&&window.HATS&&HATS[genes.hat]){const h=HATS[genes.hat];const g=new THREE.Group();
+ const tm=c=>new THREE.MeshToonMaterial({color:c,gradientMap:TOONG});
+ if(h.kind==='flower'){for(let k=0;k<5;k++){const p=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),tm(h.c));p.scale.set(1,.45,1.6);p.position.set(Math.cos(k*1.256)*.07,0,Math.sin(k*1.256)*.07);p.rotation.y=-k*1.256;g.add(p)}const st=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.12,6),tm(0x3c8a2a));st.position.y=.06;g.add(st)}
+ else if(h.kind==='cap'){const c=new THREE.Mesh(new THREE.SphereGeometry(.13,14,10,0,6.283,0,1.4),tm(h.c));g.add(c);const b=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.015,16),tm(h.c2||h.c));b.position.set(0,0,.09);b.scale.set(1,1,.6);g.add(b)}
+ else{const c=new THREE.Mesh(new THREE.ConeGeometry(.1,.24,14),tm(h.c));c.position.y=.1;g.add(c);const p=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),tm(0xffffff));p.position.y=.23;g.add(p)}
+ const bb=new THREE.Box3().setFromObject(hd);const top=new THREE.Vector3();bb.getCenter(top);top.y=bb.max.y;hd.worldToLocal?0:0;hd.updateWorldMatrix(true,false);const inv=hd.matrixWorld.clone().invert();top.applyMatrix4(inv);g.position.copy(top);hd.add(g)}}catch(e){console.warn('hat',e)}return f};
