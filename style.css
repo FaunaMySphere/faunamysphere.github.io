@@ -48,7 +48,7 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #title{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
  background:radial-gradient(ellipse at 50% 40%,#06142a99 20%,#06142af2 100%);color:#fff;text-align:center;transition:opacity .9s,transform .9s}
 #title.hidden{display:none}#title.out{opacity:0;transform:scale(1.08);pointer-events:none}
-.tlogo{font:900 clamp(44px,11vw,104px)/1 "Trebuchet MS",system-ui;letter-spacing:-2px;filter:drop-shadow(0 6px 18px #0009);animation:tl 1.6s cubic-bezier(.2,.9,.2,1) both}
+.tlogo{font:900 clamp(36px,9vw,104px)/1 "Trebuchet MS",system-ui;letter-spacing:-2px;filter:drop-shadow(0 6px 18px #0009);animation:tl 1.6s cubic-bezier(.2,.9,.2,1) both}
 .tlogo span{background:linear-gradient(#fff,#bff1ff);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tlogo b{background:linear-gradient(#d4ff7a,#3fbf5a);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tsub{font:600 15px system-ui;opacity:.85;letter-spacing:3px;text-transform:uppercase;animation:tl 1.6s .3s both}

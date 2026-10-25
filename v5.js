@@ -222,7 +222,7 @@ document.getElementById('help').onclick=e=>{e.preventDefault();open('<h2>? Help<
 const sty0=Sound.style.bind(Sound);Sound.style=function(){const b=this.biome;if(window.S&&S.fauna&&S.fauna.length){if(b==='beach')return'tropical';if(b==='mesa')return'tribal';if(b==='sea')return'night'}return sty0()};
 const sur0=Sound.surface.bind(Sound);Sound.surface=function(){const b=this.biome;if(b==='beach'||b==='mesa'||b==='sea')return'sand';return sur0()};
 V5.migrate();if(fa())renderHUD();
-console.log('[FaunaSphere] v5 systems loaded');
+console.log('[FaunaMySphere] v5 systems loaded');
 
 // ===== v5 batch 12: Wintergift, Sunken Probe, Parade Balloons 2, release/hatch flow, Level 20 ceremony =====
 ZONES.push(
@@ -275,4 +275,4 @@ V5.gold=function(f){if(!f||f.gold)return;f.gold=1;f.genes.collar='gold';/* notes
  try{Sound.init();[523,659,784,1047,784,1047].forEach((n,i)=>Sound.tone(n,.35,'triangle',.07,i*.15))}catch(_){}save()};
 const lvl5=window.banner;setInterval(()=>{const f=fa();if(f&&f.level>=20&&!f.gold)V5.gold(f)},1000);
 for(const p of['snowman','pumpkin','hay','gift'])if(!PROPS.includes(p))PROPS.push(p);
-console.log('[FaunaSphere] v5 batch 12 loaded');
+console.log('[FaunaMySphere] v5 batch 12 loaded');

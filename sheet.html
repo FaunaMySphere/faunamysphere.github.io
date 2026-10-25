@@ -1,8 +1,8 @@
-<!doctype html><meta charset="utf-8"><title>FaunaSphere Revival – species sheet</title><body style="margin:0;background:linear-gradient(#bfe9ff,#eaffe0);font-family:Trebuchet MS,sans-serif">
+<!doctype html><meta charset="utf-8"><title>FaunaMySphere – species sheet</title><body style="margin:0;background:linear-gradient(#bfe9ff,#eaffe0);font-family:Trebuchet MS,sans-serif">
 <canvas id="c"></canvas><script src="data.js"></script><script src="art.js"></script><script>
 const c=document.getElementById('c'),x=c.getContext('2d'),W=1200,H=820,d=2;c.width=W*d;c.height=H*d;c.style.width=W+'px';x.scale(d,d);
 const ks=Object.keys(SPECIES),cols=Object.keys(COLORS);
-function f(t){x.clearRect(0,0,W,H);x.fillStyle='#2f6e48';x.font='bold 28px Trebuchet MS';x.fillText('FaunaSphere Revival — the 12 fauna (original art)',30,44);
+function f(t){x.clearRect(0,0,W,H);x.fillStyle='#2f6e48';x.font='bold 28px Trebuchet MS';x.fillText('FaunaMySphere — the 12 fauna (original art)',30,44);
  ks.forEach((k,i)=>{const cx=110+(i%6)*190,cy=200+Math.floor(i/6)*230;const g=x.createRadialGradient(cx,cy-40,10,cx,cy-40,90);g.addColorStop(0,'#fff');g.addColorStop(1,'#ffffff00');x.fillStyle=g;x.fillRect(cx-95,cy-130,190,190);
   drawFauna(x,{species:k,color:cols[(i*3)%cols.length],pattern:PATTERNS[i%5],tail:TAILS[i%3],eyes:EYES[i%3]},cx,cy,1.25,t+i*300,1,'',{walk:i%4===1,happy:i%4===2});
   x.fillStyle='#24323a';x.font='bold 18px Trebuchet MS';x.textAlign='center';x.fillText(SPECIES[k].name,cx,cy+28);x.font='13px Trebuchet MS';x.fillStyle='#567';x.fillText(SPECIES[k].animal+' · '+SKILLS[SPECIES[k].skill].verb,cx,cy+46);x.textAlign='left'});

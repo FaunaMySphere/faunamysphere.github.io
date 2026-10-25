@@ -530,7 +530,7 @@ const title=document.getElementById('title');
 if(title&&!QS.has('notitle')){titleOn=true;title.classList.remove('hidden');document.getElementById('play').onclick=()=>{Sound.init();Sound.sfx&&Sound.sfx('gate');vib(20);title.classList.add('out');titleOn=false;camS.dist=null;setTimeout(()=>title.remove(),900)}}else if(title)title.remove();
 const qb=document.getElementById('gfx');if(qb){qb.textContent='⚙ '+Q[0].toUpperCase()+Q.slice(1);qb.onclick=()=>{const n={low:'med',med:'high',high:'low'}[Q];G.GL.setQuality(n)}}
 const ld=document.getElementById('loading');if(ld){ld.classList.add('out');setTimeout(()=>ld.remove(),700)}
-console.log('[FaunaSphere] WebGL renderer active, quality='+Q);
+console.log('[FaunaMySphere] WebGL renderer active, quality='+Q);
 
 // ---- v4.3 art direction: flat toon shading + thick black outlines (original Flash look) ----
 const TOONG=(()=>{const d=new Uint8Array([150,150,150,255, 215,215,215,255, 255,255,255,255]);const t=new THREE.DataTexture(d,3,1,THREE.RGBAFormat);t.minFilter=t.magFilter=THREE.NearestFilter;t.needsUpdate=true;return t})();

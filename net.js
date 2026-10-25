@@ -70,7 +70,7 @@ const trv=R.travel;R.travel=p=>{trv(p);if(p.zone!=='visit'&&S.zones.visit&&S.zon
 const ui5=ui;ui=function(v,p={}){if(v==='mpCreate'){NetMP.create();setTimeout(()=>ui('friends'),2500);return}if(v==='mpLeave'){NetMP.leave();return ui('friends')}
  if(v==='mpJoin'){const c=(document.getElementById('jc')||{}).value||'';if(c.trim())NetMP.join(c);setTimeout(()=>ui('friends'),3000);return}
  if(v==='mpVisit'){close();return NetMP.visit(p.id)}if(v==='mpName'){const n=(document.getElementById('mn')||{}).value;if(n&&n.trim()){S.player.name=n.trim().slice(0,20);save();tick(true)}return ui('friends')}
- if(v==='mpCopy'){const u=location.origin+location.pathname+'?room='+NetMP.room;(navigator.share?navigator.share({title:'FaunaSphere',text:'Join my FaunaSphere room '+NetMP.room,url:u}):navigator.clipboard.writeText(u)).then(()=>toast('Link ready to share!')).catch(()=>prompt('Copy this link:',u));return}
+ if(v==='mpCopy'){const u=location.origin+location.pathname+'?room='+NetMP.room;(navigator.share?navigator.share({title:'FaunaMySphere',text:'Join my FaunaMySphere room '+NetMP.room,url:u}):navigator.clipboard.writeText(u)).then(()=>toast('Link ready to share!')).catch(()=>prompt('Copy this link:',u));return}
  if(v!=='friends')return ui5(v,p);cur={...p,v};const ps=[...NetMP.peers.values()];
  let h='<h2>👥 Friends</h2>';
  h+=`<div class="row"><div class="grow">Your name: <input id="mn" maxlength="20" value="${(S.player.name||'').replace(/"/g,'')}" placeholder="Caretaker name" style="width:150px"></div>${btn('Save','ui',{v:'mpName'})}</div>`;
@@ -79,4 +79,4 @@ const ui5=ui;ui=function(v,p={}){if(v==='mpCreate'){NetMP.create();setTimeout(()
  h+=`<div class="row"><div class="grow">🏝️ Amelia's Faunasphere (guide NPC)</div>${btn('Visit','visit',{who:'Amelia'})}</div>`;open(h)};
 // auto-join from link
 const rq=QS.get('room');if(rq){const go=()=>{if(fa())NetMP.join(rq);else setTimeout(go,1500)};setTimeout(go,1200)}
-console.log('[FaunaSphere] multiplayer ready');
+console.log('[FaunaMySphere] multiplayer ready');
