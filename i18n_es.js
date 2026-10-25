@@ -35,6 +35,6 @@ window.I18N_ES={
 window.I18N_ES_RX=[
 [/^Room (\w+) · (\d+) online( · (\d+) here)?$/,(m,a,b,c,d)=>`Sala ${a} · ${b} en línea${d?' · '+d+' aquí':''}`],
 [/^(.+)'s Faunasphere$/,(m,a)=>`Faunasfera de ${a}`],[/^(.+)'s Caretaker$/,(m,a)=>`Cuidador de ${a}`],
-[/^Your Fauna \((\d+)\/(\d+)\)$/,(m,a,b)=>`Tu Fauna (${a}/${b})`],[/^Online \((\d+)\)$/,(m,a)=>`En línea (${a})`],
+[/^Your Fauna \((\d+)\/(\d+)(\))?$/,(m,a,b,c)=>`Tu Fauna (${a}/${b}${c||''}`],[/^Online \((\d+)\)$/,(m,a)=>`En línea (${a})`],
 [/^Visit (.+)'s Faunasphere — their Totem gave you 15 Lux and a Treat!$/,(m,a)=>`Visitaste la Faunasfera de ${a}: ¡su Tótem te dio 15 Lux y una Golosina!`],
 [/^(\d+) Lux$/,(m,a)=>`${a} Lux`],[/^(\d+)s$/,(m,a)=>`${a} s`]];

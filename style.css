@@ -53,7 +53,7 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 .tlogo b{background:linear-gradient(#d4ff7a,#3fbf5a);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tsub{font:600 15px system-ui;opacity:.85;letter-spacing:3px;text-transform:uppercase;animation:tl 1.6s .3s both}
 .tfoot{position:absolute;bottom:18px;font:12px system-ui;opacity:.6}
-.tglow{position:absolute;width:60vmin;height:60vmin;border-radius:50%;background:radial-gradient(#8fff6a33,#0000 70%);animation:pulse 3s ease-in-out infinite}
+.tglow{pointer-events:none;position:absolute;width:60vmin;height:60vmin;border-radius:50%;background:radial-gradient(#8fff6a33,#0000 70%);animation:pulse 3s ease-in-out infinite}
 .btn.big{font-size:22px;padding:14px 56px;border-radius:999px;animation:tl 1.6s .6s both;box-shadow:0 0 0 4px #ffffff33,0 10px 30px #0006}
 @keyframes tl{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
 @keyframes pulse{50%{transform:scale(1.15);opacity:.7}}
