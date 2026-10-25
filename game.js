@@ -1,3 +1,4 @@
+const QS=new URLSearchParams(location.search);
 'use strict';
 // ===== Multiplayer-ready architecture =====
 // All state lives in S (plain JSON). All mutations go through dispatch(action) -> reducers.
@@ -14,6 +15,7 @@ function newState(){return{v:2,player:{id:'ct-'+Math.random().toString(36).slice
  tf:{},tut:0,projects:{rockgarden:{prog:0,need:10},village:{prog:0,need:20}},friends:[],visited:{},lastTick:now()}}
 const save=()=>{S.lastTick=now();localStorage.setItem(KEY,JSON.stringify(S))};
 const fa=()=>S.fauna[S.active];const Z=id=>ZONES.find(z=>z.id===id);
+function banner(t){const b=document.getElementById('banner');if(!b)return;b.textContent=t;b.classList.remove('hidden','show');void b.offsetWidth;b.classList.add('show');clearTimeout(banner.t);banner.t=setTimeout(()=>b.classList.add('hidden'),2500)}
 function toast(m){const d=document.createElement('div');d.textContent=m;const t=document.getElementById('toast');t.prepend(d);setTimeout(()=>d.remove(),4000);while(t.children.length>4)t.lastChild.remove()}
 // ===== Zone generation =====
 function genZone(z){const r=rng(z.id),n=z.n,tiles=[],objs=[];let id=0;
@@ -28,21 +30,26 @@ function genZone(z){const r=rng(z.id),n=z.n,tiles=[],objs=[];let id=0;
 function zs(id){if(!S.zones[id]){const z=Z(id);S.zones[id]=genZone(z);for(let k=0;k<z.poll;k++)spawnPoll(id);for(let k=0;k<z.tox;k++)spawnTox(id)}return S.zones[id]}
 function freeTile(id){const s=S.zones[id];for(let k=0;k<300;k++){const i=1+Math.floor(Math.random()*(s.tiles.length-2)),j=1+Math.floor(Math.random()*(s.tiles.length-2));if(s.tiles[i][j]&&!s.objs.some(o=>o.i===i&&o.j===j)&&!(id===S.zone&&Math.round(rt.pos.i)===i&&Math.round(rt.pos.j)===j))return[i,j]}return null}
 function spawnPoll(id){const s=S.zones[id],z=Z(id),p=freeTile(id);if(p)s.objs.push({id:id+'_'+s.nextId++,type:'poll',i:p[0],j:p[1],hp:1+Math.floor(Math.random()*Math.min(3,1+z.tier)),v:Math.floor(Math.random()*3)})}
-function spawnTox(id){const s=S.zones[id],z=Z(id),p=freeTile(id);if(p)s.objs.push({id:id+'_'+s.nextId++,type:'tox',i:p[0],j:p[1],hp:2+z.tier})}
+function spawnTox(id){const s=S.zones[id],z=Z(id),p=freeTile(id);if(p)s.objs.push({id:id+'_'+s.nextId++,type:'tox',i:p[0],j:p[1],hp:2+z.tier,v:Math.floor(Math.random()*4)})}
 // ===== Reducers (pure game rules; dispatch is the single entry point) =====
-function gainLux(n){S.player.lux+=n;S.player.eggMeter+=n*.6;checkEgg()}
-function checkEgg(){while(S.player.eggMeter>=100){S.player.eggMeter-=100;if(S.player.eggs.length<6){S.player.eggs.push({id:'egg'+now()+Math.random(),genes:{...fa().genes,heatProof:false},parent:fa().name});toast('🥚 '+fa().name+' laid an egg! Hatch it in your Nest.');emit('egg')}else toast('Egg basket full (6).')}}
-function gainXP(n){const f=fa();if(f.level>=20)return;f.xp+=n;while(f.level<20&&f.xp>=xpNeed(f.level)){f.xp-=xpNeed(f.level);f.level++;toast('⭐ '+f.name+' reached level '+f.level+'!');emit('level');S.player.eggMeter+=40;checkEgg()}}
+// Egg Meter = level meter (sources): Lux fills it, x1.0–1.4 by energy+happiness; full = level up + egg (eggs only laid at home)
+function gainLux(n){S.player.lux+=n;const f=fa();if(!f)return;const mult=1+.4*((f.energy+f.happiness)/200);if(f.level<20)S.player.eggMeter+=n*mult*100/(30+f.level*25);checkEgg()}
+function checkEgg(){const f0=fa();if(f0&&S.zone==='home'&&S.player.pendingEggs){const k=S.player.pendingEggs;S.player.pendingEggs=0;for(let i=0;i<k;i++)layEgg()}
+ while(S.player.eggMeter>=100){S.player.eggMeter-=100;const f=fa();if(f.level<20){f.level++;toast('⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');if(f.level===20){addItem('trophy');setTimeout(()=>open('<h2>🏆 Level 20!</h2><p>'+f.name+' made it to Level 20! What an accomplishment! Their zapper collar turned gold, and a Level 20 Fauna Trophy is in your Goods.</p>'),1500)}}
+  if(f.level>=20)S.player.eggMeter=0;if(S.zone!=='home'){S.player.pendingEggs=(S.player.pendingEggs||0)+1;toast('An egg is on the way — it will be laid when you return home.');continue}layEgg()}}
+function layEgg(){if(S.player.eggs.length<6){S.player.eggs.push({id:'egg'+now()+Math.random(),genes:{...fa().genes,heatProof:false},parent:fa().name});toast('🥚 '+fa().name+' laid an egg! Hatch it in your Nest.');emit('egg')}else toast('Egg basket full (6).')}
+function gainXP(n){return;const f=fa();if(f.level>=20)return;f.xp+=n;while(f.level<20&&f.xp>=xpNeed(f.level)){f.xp-=xpNeed(f.level);f.level++;toast('⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');}}
 const xpNeed=l=>40+l*30;
 const R={
  adopt({species,name,color}){S.fauna.push(mkFauna({species,color,pattern:'Plain',tail:'Normal',eyes:'Round'},name))},
  zap({oid}){const f=fa(),s=zs(S.zone),o=s.objs.find(o=>o.id===oid),z=Z(S.zone);if(!o)return;
-  if(f.energy<3)return toast(f.name+' is out of energy. Feed or rest in the Den.');f.energy=clamp(f.energy-3);rt.beam=now();o.hp--;emit('hit',o);
+  if(f.energy<3){if(!rt.sleep){rt.sleep=true;toast(f.name+' ran out of energy and is taking a quick nap… 💤');setTimeout(()=>{rt.sleep=false;f.energy=Math.max(f.energy,20);renderHUD()},10000)}return}f.energy=clamp(f.energy-3);rt.beam=now();o.hp-=f.level>=10?2:1;o.hp=Math.max(0,o.hp);emit('hit',o);
   if(o.type==='tox'){f.happiness=clamp(f.happiness-3);emit('hurt');if(f.happiness<=0)return tooSad()}
   if(o.hp>0)return;s.objs.splice(s.objs.indexOf(o),1);
   const tox=o.type==='tox',lux=(tox?12:4)+z.tier*3+Math.floor(Math.random()*4);gainLux(lux);emit('pop',{o,lux});gainXP((tox?30:10)+z.tier*5);
   S.stats.zap[S.zone]=(S.stats.zap[S.zone]||0)+1;if(tox){S.stats.tox++;S.stats.toxZ[S.zone]=(S.stats.toxZ[S.zone]||0)+1}
-  let msg=(tox?'Zapped a toxic creature! ':'Zapped pollution! ')+'+'+lux+' Lux';
+  let msg='Zapped '+(tox?TOX_NAMES[(o.v||0)%4]:POLL_NAMES[(o.v||0)%3])+'! +'+lux+' Lux';if(!tox&&Math.random()<.3){addItem('silt');msg+=' · +1 Silt'}
+  if(S.zone==='rockgarden'||S.zone==='rockisland'){const need=['totem_base','totem_coffer','totem_lowman'].filter(k=>!S.player.inv[k]&&!(S.flags&&S.flags.totemGrid));if(need.length&&Math.random()<.45){const k=need[0];addItem(k);msg+=' · found a '+ITEMS[k].name+'!'}}
   if(Math.random()<.18){const it=pick(['treat','clover','stone','berry']);addItem(it);msg+=' · found '+ITEMS[it].name}toast(msg);
   if(!s.objs.some(o=>o.type==='poll'||o.type==='tox')){S.stats.cleared[S.zone]=1;gainLux(25);toast('🌈 '+z.name+' is clean! +25 Lux. Pollution creeps back over time…')}},
  skill({oid}){const f=fa(),o=zs(S.zone).objs.find(o=>o.id===oid);const need=Object.entries(SKILLS).find(([k,v])=>v.node===o.type)[0];
@@ -54,24 +61,26 @@ const R={
   if(it.type==='gene'){Object.assign(f.genes,it.gene);toast(f.name+' ate '+it.name+'. Something changed!');if(item==='gene_heat')S.flags={...S.flags,heat:1};return}
   const fav=SPECIES[f.genes.species].fav===item?2:1;S.tf.fed=1;emit('eat',{fav:fav>1});f.energy=clamp(f.energy+it.e*fav);f.happiness=clamp(f.happiness+it.h*fav);toast(f.name+(fav>1?' LOVES ':' eats ')+it.name+'!')},
  combine({r}){const rc=RECIPES[r];if(!Object.entries(rc.in).every(([k,v])=>(S.player.inv[k]||0)>=v))return toast('Missing ingredients.');for(const[k,v]of Object.entries(rc.in))S.player.inv[k]-=v;addItem(rc.out);toast('Made '+ITEMS[rc.out].name+'!')},
- buy({item,price,cur}){if(cur==='bux')return toast('Bux was the premium currency. This revival has no payments.');if(S.player.lux<price)return toast('Not enough Lux.');S.player.lux-=price;addItem(item);S.stats.buys++;emit('coin');toast('Bought '+ITEMS[item].name+'.')},
- claim({gid}){const g=GOALS.find(g=>g.id===gid);if(S.done[gid]||!g.check(S))return;S.done[gid]=1;gainLux(g.lux);emit('goal');if(g.item)addItem(g.item);
+ buy({item,price,cur}){if(cur==='bux')return toast('Bux was the premium currency. This revival has no payments.');if(S.player.lux<price)return toast('Not enough Lux.');S.player.lux-=price;addItem(item);S.stats.buys++;if(item==='helianth')S.stats.helianth=(S.stats.helianth||0)+1;emit('coin');toast('Bought '+ITEMS[item].name+'.')},
+ claim({gid}){const g=GOALS.find(g=>g.id===gid);if(S.done[gid]||!g.check(S))return;S.done[gid]=1;if(g.take){g.take.forEach(k=>S.player.inv[k]=Math.max(0,(S.player.inv[k]||1)-1));S.flags={...S.flags,totemGrid:1}}gainLux(g.lux);emit('goal');banner('GOAL COMPLETE');if(g.item)addItem(g.item);
   ZONES.filter(z=>z.unlock===gid).forEach(z=>{S.unlocked[z.id]=1;toast('🔓 New land unlocked: '+z.name+'!')});toast('Goal complete! +'+g.lux+' Lux'+(g.item?' + '+ITEMS[g.item].name:''))},
  travel({zone}){const z=Z(zone);if(!S.unlocked[zone])return toast('Locked — complete Goal Station goals to open the way.');if(z.heat&&!fa().genes.heatProof)return toast('Too scorching for '+fa().name+'! Feed Heat Proof Gene Food first.');
-  S.zone=zone;zs(zone);Sound.biome=z.biome;cam.x=null;parts.length=0;const g=S.zones[zone].objs.find(o=>o.type==='gate');rt.pos={i:g.i-1,j:g.j};rt.cam=null;rt.tgt=null;rt.sleep=false;rt.decor=null},
+  S.zone=zone;zs(zone);Sound.biome=z.biome;cam.x=null;parts.length=0;const g=S.zones[zone].objs.find(o=>o.type==='gate');rt.pos={i:g.i-1,j:g.j};rt.cam=null;rt.tgt=null;rt.sleep=false;rt.decor=null;if(zone==='home')setTimeout(checkEgg,800)},
  rest(){rt.sleep=true;toast(fa().name+' curls up in the Den. 💤')},
  collectTreats(){const t=S.home.treat;if(!t.count)return toast('The Treat Tree is still growing treats.');addItem('treat',t.count);S.tf.treat=1;emit('skill',{o:zs('home').objs.find(o=>o.type==='treetree'),l:0});toast('Picked '+t.count+' Treats!');t.count=0;t.last=now()},
- totem(){const t=S.home.totem;if(now()-t.last<3e5)return toast('Totem is crafting… ready in '+Math.ceil((3e5-(now()-t.last))/6e4)+' min.');t.last=now();addItem('component');gainLux(5);toast('Totem made a Totem Component ⚙️')},
- donate({proj}){const p=S.projects[proj];if(!S.player.inv.component)return toast('You need Totem Components (from the Totem in your Faunasphere).');S.player.inv.component--;p.prog++;gainXP(15);toast('Donated! Project '+p.prog+'/'+p.need);
+ totem(){const t=S.home.totem;if(now()-t.last<3e5)return toast('Totem is crafting… ready in '+Math.ceil((3e5-(now()-t.last))/6e4)+' min.');t.last=now();addItem('component');gainLux(5);toast('Your Totem produced a Biorock Disc 💿')},
+ donate({proj}){const p=S.projects[proj];if(!S.player.inv.component)return toast('You need Biorock Discs (from the Totem in your Faunasphere).');S.player.inv.component--;p.prog++;gainXP(15);toast('Donated! Project '+p.prog+'/'+p.need);
   if(p.prog>=p.need){p.prog=0;p.done=(p.done||0)+1;addItem(proj==='village'?'gene_teal':'d_lantern');gainLux(100);toast('🎉 Community project complete! Reward added to your Bag.')}},
  incubate({egg,fid}){const n=S.home.nest;if(n.egg)return;const e=S.player.eggs.find(e=>e.id===egg);if(!e)return;S.player.eggs=S.player.eggs.filter(x=>x!==e);n.egg=e;n.inc=S.fauna[fid].genes;n.at=now()+3e4;toast('Egg placed in the Nest. It will hatch soon!')},
  hatch({name}){const n=S.home.nest;if(!n.egg||now()<n.at)return;if(S.fauna.length>=3)return toast('All 3 fauna slots are full. Release one in the Fauna panel first.');
   const a=n.egg.genes,b=n.inc,mix=k=>Math.random()<.5?a[k]:b[k],g={species:mix('species'),color:mix('color'),pattern:mix('pattern'),tail:mix('tail'),eyes:mix('eyes')};
   if(Math.random()<.25)g.species=pick(Object.keys(SPECIES));if(Math.random()<.15)g.color=pick(Object.keys(COLORS));if(Math.random()<.15)g.pattern=pick(PATTERNS);if(Math.random()<.1)g.tail=pick(TAILS);if(Math.random()<.1)g.eyes=pick(EYES);
-  S.fauna.push(mkFauna(g,name||'Hatchling'));n.egg=null;emit('egg');toast('🐣 A '+SPECIES[g.species].name+' hatched!')},
+  S.fauna.push(mkFauna(g,name||'Hatchling'));n.egg=null;emit('egg');Sound.sfx('hatch');banner('EGG HATCHED');toast('🐣 A '+SPECIES[g.species].name+' hatched!');setTimeout(()=>ui('cert',{fid:S.fauna.length-1}),900)},
+ rename({fid,name}){const f=S.fauna[fid];if(f&&name)f.name=String(name).slice(0,16)},
+ goodie({k}){const day=new Date().toDateString();if(S.goodie===day)return;S.goodie=day;const it=pick(['treat','berry','clover','tart','namechanger','d_flower','gene_pink','helianth']);addItem(it);emit('coin');toast('Daily Goodie Grab: you got '+ITEMS[it].name+'!')},
  setActive({fid}){if(S.zone!=='home')return toast('You can switch fauna on your home island.');S.active=fid;rt.sleep=false},
  release({fid}){if(S.fauna.length<=1||!confirm('Release '+S.fauna[fid].name+'? This cannot be undone.'))return;S.fauna.splice(fid,1);S.active=0},
- place({item,i,j}){if(!S.player.inv[item])return;S.player.inv[item]--;S.home.decor.push({item,i,j});syncHomeDecor()},
+ place({item,i,j}){if(!S.player.inv[item])return;if(S.player.lux<25)return toast('Placing a decoration costs 25 Lux.');S.player.lux-=25;S.player.inv[item]--;S.home.decor.push({item,i,j});syncHomeDecor()},
  pickup({idx}){const d=S.home.decor.splice(idx,1)[0];addItem(d.item);syncHomeDecor()},
  visit({who}){const k=who+new Date().toDateString();if(!S.visited[k]){S.visited[k]=1;gainLux(15);addItem('treat');toast('Visited '+who+'\'s Faunasphere — their Totem gave you 15 Lux and a Treat!')}else toast('You already visited '+who+' today.')}};
 function mkFauna(genes,name){return{id:'f'+now()+Math.floor(Math.random()*999),name:String(name).slice(0,16),genes,level:1,xp:0,happiness:85,energy:85,born:now()}}
@@ -116,7 +125,7 @@ function emit(ev,d={}){if(typeof parts==='undefined')return;const[mx,my]=mePos()
  if(ev==='hurt'){Sound.sfx('hurt');floatText(mx,my-56,'-3 ♥','#ff7a8a')}
  if(ev==='coin')Sound.sfx('coin');if(ev==='goal'){Sound.sfx('level');rt.happyT=now();burst(mx,my-40,24,'#ffe25a',3)}}
 // --- atmosphere ---
-const QS=new URLSearchParams(location.search);
+
 function nightAmt(){if(QS.has('night'))return 1;if(QS.has('day'))return 0;const h=new Date().getHours()+new Date().getMinutes()/60;if(h>=20.5||h<5)return 1;if(h>=18.5)return(h-18.5)/2;if(h<7)return(7-h)/2;return 0}
 function drawSky(pal,z,nt){const g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,shade(pal[4],-nt*.6));g.addColorStop(1,shade(pal[5],-nt*.5));cx.fillStyle=g;cx.fillRect(0,0,W,H);
  if(nt>.3||z.biome==='dungeon'){cx.fillStyle='#fff';for(let k=0;k<60;k++){cx.globalAlpha=(.3+.7*Math.abs(Math.sin(T/900+k)))*(z.biome==='dungeon'?.3:nt);cx.fillRect(hash(k,1)*W,hash(k,2)*H*.6,1.5,1.5)}cx.globalAlpha=1}
@@ -201,10 +210,10 @@ cv.addEventListener('wheel',e=>{e.preventDefault();cam.zoom=clamp(cam.zoom*(e.de
 const TUT=[
  {t:"Hi, I'm Amelia! Welcome, Caretaker. This world is overrun by living pollution, and your fauna can help clean it. Tap the ground to walk.",ok:()=>S.tf.moved},
  {t:"Fauna love Treats! Tap the pink Treat Tree to pick some.",ok:()=>S.tf.treat},
- {t:"Open your Bag 🎒 and Feed a Treat. Happiness is your fauna's health, and Energy powers zapping.",ok:()=>S.tf.fed},
+ {t:"Open Goods 🎒 and Feed a Treat. Happiness is your fauna's health, and Energy powers zapping.",ok:()=>S.tf.fed},
  {t:"Step into the glowing World Gate and travel to The Rock Garden.",ok:()=>S.zone==='rockgarden'||S.done.g_buy},
- {t:"This is the Rock Garden. Buy something at the striped Vendor Station.",ok:()=>S.stats.buys>0},
- {t:"Now visit the yellow Goal Station ★ and Claim your reward. Goals unlock new lands!",ok:()=>S.done.g_buy},
+ {t:"This is the Rock Garden. Go Shopping! Buy a Helianth at the Lux Store stall.",ok:()=>S.stats.buys>0},
+ {t:"Now visit the Goal Station (green hologram ✓) and Claim your reward. Goals unlock new lands!",ok:()=>S.done.g_buy},
  {t:"Rock Island is open! Travel there and tap the pollution cubes to zap them for Lux.",ok:()=>(S.stats.zap.rockisland||0)>0},
  {t:"Wonderful! Zapping fills your egg meter 🥚, which lays eggs to hatch in your Nest. When your fauna gets tired, rest in the Den. Have fun, Caretaker!",last:1}];
 function tutTick(){const el=document.getElementById('tut');if(!fa()||S.tut>=TUT.length){el.classList.add('hidden');return}const st=TUT[S.tut];if(st.ok&&st.ok()){S.tut++;Sound.sfx('skill');save();return tutTick()}
@@ -215,31 +224,40 @@ document.getElementById('mute').onclick=()=>{Sound.init();Sound.setMuted(!Sound.
 setInterval(tutTick,500);
 // ===== HUD & UI =====
 function bar(l,v,c){return`<span>${l}</span><div class="bar"><i style="width:${v}%;background:${c}"></i></div>`}
-function renderHUD(){const f=fa();if(!f)return;document.getElementById('who').textContent=`${f.name} · ${SPECIES[f.genes.species].name} Lv ${f.level}`;
- document.getElementById('cur').innerHTML=`<span>✨ ${S.player.lux} Lux</span><span title="Premium currency (placeholder)">💎 ${S.player.bux} Bux</span>`;
+let pfKey='';function renderHUD(){const f=fa();if(!f)return;document.getElementById('who').textContent=`${f.name} · Lv ${f.level}`;
+ const k=JSON.stringify(f.genes);if(k!==pfKey){pfKey=k;const pf=document.getElementById('pf');if(pf){pf.innerHTML='';pf.appendChild(faunaPortrait(f.genes))}}
+ const sb=(c,v,t)=>{const e=document.querySelector('.mb.'+c);if(!e)return;e.querySelector('i').style.width=v+'%';e.title=t;e.classList.toggle('low',v<20&&c!=='xp')};
+ sb('en',f.energy,`Energy ${Math.round(f.energy*11)}/1,100`);sb('hp',f.happiness,`Happiness ${Math.round(f.happiness*11)}/1,100`);sb('xp',f.level>=20?100:S.player.eggMeter,'Egg Meter (level progress)');
+ const ed=document.getElementById('edit');if(ed){ed.classList.toggle('on',!!rt.decor);ed.querySelector('span').textContent=rt.decor?'DONE':'EDIT'}
+ document.getElementById('cur').innerHTML=`<span title="Lux"><b style="color:#9dff3a">●</b> ${S.player.lux.toLocaleString()}</span><span title="Bux (placeholder, no payments)"><b style="color:#f2c230">■</b> ${S.player.bux}</span>`;
  document.getElementById('bars').innerHTML=bar('😊 Happiness',f.happiness,f.happiness<25?'#e55':'#ff8fb1')+bar('⚡ Energy',f.energy,f.energy<20?'#e55':'#ffc93c')+bar('⭐ XP',f.level>=20?100:f.xp/xpNeed(f.level)*100,'#7ad');
- const eg=document.getElementById('egg');eg.style.setProperty('--p',Math.floor(S.player.eggMeter)+'%');eg.innerHTML=`<div>🥚<b>${Math.floor(S.player.eggMeter)}%</b></div>`;document.getElementById('zoneName').textContent=Z(S.zone).name+(rt.decor?' — tap tiles to place':'')}
+ const eg=document.getElementById('egg');eg.style.setProperty('--p',Math.floor(S.player.eggMeter)+'%');eg.innerHTML=`<div><b>${Math.floor(S.player.eggMeter)}%</b></div>`;document.getElementById('zoneName').textContent=Z(S.zone).name+(rt.decor?' — tap tiles to place':'')}
 const M=document.getElementById('modal'),MB=document.getElementById('mb');
-function open(h){MB.innerHTML=h;M.classList.remove('hidden')}function close(){M.classList.add('hidden')}
+function open(h){if(M.classList.contains('hidden'))Sound.sfx('whoosh');MB.innerHTML=h;M.classList.remove('hidden')}function close(){if(!M.classList.contains('hidden'))Sound.sfx('whoosh');M.classList.add('hidden')}
 document.getElementById('x').onclick=close;M.onclick=e=>{if(e.target===M)close()};
 document.querySelectorAll('[data-ui]').forEach(b=>b.onclick=()=>{Sound.init();Sound.sfx('click');ui(b.dataset.ui)});
 MB.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,p=JSON.parse(b.dataset.p||'{}');
  if(a==='ui')return ui(p.v,p);if(a==='decorate'){rt.decor=p.item;close();if(S.zone!=='home')dispatch('travel',{zone:'home'});toast('Tap a tile to place '+ITEMS[p.item].name+'. Tap placed decor to pick it up.');return}
- Sound.sfx('click');if(a==='hatch')p.name=(document.getElementById('hn')||{}).value;if(a==='travel'){close();return startTravel(p.zone)}dispatch(a,p);if(!['travel'].includes(a))ui(cur.v,cur)});
+ Sound.sfx('click');if(a==='cartAdd'){rt.cart=(rt.cart||[]).concat(p.k);return ui('vendor')}if(a==='cartDel'){rt.cart.splice(p.i,1);return ui('vendor')}if(a==='cartBuy'){const st=VENDORS[S.zone]||[];(rt.cart||[]).forEach(k=>{const e=st.find(x=>x[0]===k);if(e)dispatch('buy',{item:k,price:e[1],cur:e[2]})});rt.cart=[];return ui('vendor')}
+ if(a==='goodie'){dispatch('goodie',p);return close()}if(a==='rename2'){const n=prompt('New name for '+fa().name+'?');if(n&&S.player.inv.namechanger){S.player.inv.namechanger--;dispatch('rename',{fid:S.active,name:n})}return ui('bag')}
+ if(a==='hatch')p.name=(document.getElementById('hn')||{}).value;if(a==='travel'){close();return startTravel(p.zone)}dispatch(a,p);if(!['travel'].includes(a))ui(cur.v,cur)});
 const btn=(label,a,p={},dis)=>`<button class="btn" data-a="${a}" data-p='${JSON.stringify(p)}' ${dis?'disabled':''}>${label}</button>`;
 let cur={};
 function ui(v,p={}){cur={...p,v};const f=fa(),inv=S.player.inv;
  if(v==='map'){open('<h2>🗺️ World Map</h2><p class="small">Travel between floating lands through the World Gate.</p>'+ZONES.map(z=>{const lock=!S.unlocked[z.id];return`<div class="row"><div class="grow"><b>${z.name}</b><br><span class="small">${lock?'🔒 '+(GOALS.find(g=>g.id===z.unlock)||{}).text:z.heat?'🔥 Scorching — needs Heat Proof':'Biome: '+z.biome}</span></div>${btn(S.zone===z.id?'Here':'Go','travel',{zone:z.id},lock||S.zone===z.id)}</div>`}).join(''));}
- if(v==='fauna'){open('<h2>🐾 Your Fauna ('+S.fauna.length+'/3)</h2><p class="small">Switch fauna on your home island.</p><div class="grid" id="fg"></div>');const fg=document.getElementById('fg');
+ if(v==='fauna'){Sound.sfx('moan');open('<h2>🐾 Your Fauna ('+S.fauna.length+'/3)</h2><p class="small">Switch fauna on your home island.</p><div class="grid" id="fg"></div>');const fg=document.getElementById('fg');
   S.fauna.forEach((x,k)=>{const d=document.createElement('div');d.className='card'+(k===S.active?' sel':'');d.appendChild(faunaPortrait(x.genes));const sp=SPECIES[x.genes.species];
    d.insertAdjacentHTML('beforeend',`<b>${x.name}</b><br>${sp.name} Lv${x.level}<br><span class="small">${x.genes.color} · ${x.genes.pattern} · ${x.genes.tail} tail · ${x.genes.eyes} eyes${x.genes.heatProof?' · 🔥':''}<br>Skill: ${SKILLS[sp.skill].verb} · Loves ${ITEMS[sp.fav].name}<br>😊${Math.round(x.happiness)} ⚡${Math.round(x.energy)}</span><br>`+btn('Active','setActive',{fid:k},k===S.active)+(S.fauna.length>1?btn('Release','release',{fid:k}):''));fg.appendChild(d)})}
- if(v==='bag'){const rows=Object.entries(inv).filter(([k,n])=>n>0).map(([k,n])=>{const it=ITEMS[k];return`<div class="row"><span style="font-size:22px">${it.icon}</span><div class="grow">${it.name} ×${n}<br><span class="small">${it.type==='food'?'+'+it.e+'⚡ +'+it.h+'😊':it.type}</span></div>${it.type==='food'||it.type==='gene'?btn('Feed','feed',{item:k}):''}${it.type==='decor'?btn('Place','decorate',{item:k}):''}</div>`}).join('')||'<p>Empty</p>';
-  open('<h2>🎒 Bag</h2>'+rows+'<h3>Combine foods</h3>'+RECIPES.map((r,k)=>`<div class="row"><div class="grow">${Object.keys(r.in).map(x=>ITEMS[x].name).join(' + ')} → ${ITEMS[r.out].name}</div>${btn('Combine','combine',{r:k})}</div>`).join('')+`<h3>Eggs (${S.player.eggs.length})</h3><p class="small">${S.player.eggs.map(e=>'🥚 from '+e.parent).join(', ')||'Fill the egg meter by earning Lux.'}</p>`)}
- if(v==='goals'||v==='goal'){const list=v==='goal'?GOALS.filter(g=>g.zone===S.zone):GOALS;open('<h2>⭐ '+(v==='goal'?'Goal Station':'All Goals')+'</h2>'+list.map(g=>{const ok=g.check(S),d=S.done[g.id];return`<div class="row"><div class="grow">${d?'✅':ok?'🎁':'▫️'} ${g.text}<br><span class="small">${Z(g.zone).name} · +${g.lux} Lux${g.item?' + '+ITEMS[g.item].name:''}</span></div>${d?'':btn('Claim','claim',{gid:g.id},!ok||(v==='goals'&&S.zone!==g.zone))}</div>`}).join('')+(v==='goals'?'<p class="small">Claim at the Goal Station in each land.</p>':''))}
- if(v==='vendor'){const st=VENDORS[S.zone]||[];open('<h2>🛒 Vendor Station</h2>'+st.map(([k,p,c])=>`<div class="row"><span style="font-size:22px">${ITEMS[k].icon}</span><div class="grow">${ITEMS[k].name}<br><span class="small">${c==='bux'?p+' Bux (premium, disabled)':p+' Lux'}</span></div>${btn('Buy','buy',{item:k,price:p,cur:c},c==='bux')}</div>`).join(''))}
+ if(v==='bag'){const rows=Object.entries(inv).filter(([k,n])=>n>0).map(([k,n])=>{const it=ITEMS[k];return`<div class="row"><span style="font-size:22px">${it.icon}</span><div class="grow">${it.name} ×${n}<br><span class="small">${it.type==='food'?'+'+it.e+'⚡ +'+it.h+'😊':it.type}</span></div>${it.type==='food'||it.type==='gene'?btn('Feed','feed',{item:k}):''}${it.type==='decor'?btn('Place','decorate',{item:k}):''}${k==='namechanger'?btn('Use','rename2',{}):''}</div>`}).join('')||'<p>Empty</p>';
+  open('<h2>🎒 Goods</h2>'+rows+'<h3>Combine foods</h3>'+RECIPES.map((r,k)=>`<div class="row"><div class="grow">${Object.keys(r.in).map(x=>ITEMS[x].name).join(' + ')} → ${ITEMS[r.out].name}</div>${btn('Combine','combine',{r:k})}</div>`).join('')+`<h3>Eggs (${S.player.eggs.length})</h3><p class="small">${S.player.eggs.map(e=>'🥚 from '+e.parent).join(', ')||'Fill the egg meter by earning Lux.'}</p>`)}
+ if(v==='goals'||v==='goal'){const list=v==='goal'?GOALS.filter(g=>g.zone===S.zone):GOALS;open('<h2>⭐ '+(v==='goal'?'Goal Station':'All Goals')+'</h2>'+list.map(g=>{const ok=g.check(S),d=S.done[g.id];return`<div class="row"><div class="grow">${g.giver?`<b>${g.giver==='Esteban'?'🧑‍🔬':'⛏️'} ${g.giver}${g.giver==='Prospector'?' (E.P.)':''}:</b> `:''}${d?'✅':ok?'🎁':'▫️'} ${g.text}${g.say&&!d?`<br><i class="small">“${g.say}”</i>`:''}<br><span class="small">${Z(g.zone).name} · +${g.lux} Lux${g.item?' + '+ITEMS[g.item].name:''}</span></div>${d?'':btn('Claim','claim',{gid:g.id},!ok||(v==='goals'&&S.zone!==g.zone))}</div>`}).join('')+(v==='goals'?'<p class="small">Claim at the Goal Station in each land.</p>':''))}
+ if(v==='goodie'){open('<h2>🎁 Daily Goodie Grab</h2><p>Pick one sack — a surprise awaits, once a day!</p><div style="text-align:center">'+[0,1,2].map(k=>`<span class="sack" data-a="goodie" data-p='{"k":${k}}'>💰</span>`).join('')+'</div>');return}
+ if(v==='cert'){const x=S.fauna[p.fid];if(!x)return;const sp=SPECIES[x.genes.species];open(`<div class="cert"><h3>CERTIFICATE OF BIRTH</h3><div id="cpf"></div><p>Species: <b>${sp.name}</b> · Ability: <b>${SKILLS[sp.skill].verb}</b><br>Color: ${x.genes.color} · Pattern: ${x.genes.pattern} · Eyes: ${x.genes.eyes} · Tail: ${x.genes.tail}${x.genes.heatProof?' · Heat Proof':''}</p><input id="cn" placeholder="Name your fauna" maxlength="16" value="${x.name}"><br><br><button class="btn" id="csign">Sign certificate</button></div>`);document.getElementById('cpf').appendChild(faunaPortrait(x.genes));document.getElementById('csign').onclick=()=>{dispatch('rename',{fid:p.fid,name:document.getElementById('cn').value.trim()||x.name});close()};return}
+ if(v==='vendor'){const st=VENDORS[S.zone]||[];rt.cart=rt.cart||[];const tot=rt.cart.reduce((a,k)=>a+(st.find(x=>x[0]===k)||[0,0])[1],0);
+  open('<h2>🛒 Lux Store</h2><div class="grid">'+st.map(([k,p,c])=>`<div class="card"><div style="font-size:30px">${ITEMS[k].icon}</div><b>${ITEMS[k].name}</b><br><span class="small">${c==='bux'?p+' Bux (disabled)':p+' Lux'}</span><br>${btn('Add','cartAdd',{k},c==='bux')}</div>`).join('')+'</div><h3>🛒 Shopping Cart</h3>'+(rt.cart.map((k,i)=>`<div class="row"><div class="grow">${ITEMS[k].icon} ${ITEMS[k].name}</div>${btn('✕','cartDel',{i})}</div>`).join('')||'<p class="small">Your cart is empty.</p>')+`<p><b>Total: ${tot} Lux</b> (you have ${S.player.lux})</p>`+btn('Buy!','cartBuy',{},!rt.cart.length||tot>S.player.lux))}
  if(v==='project'){const p=S.projects[S.zone];open(`<h2>⚙️ Community Project</h2><p>Caretakers pool Totem Components to build machines that improve the world. Progress: <b>${p.prog}/${p.need}</b> (completed ${p.done||0}×)</p><p class="small">You have ${inv.component||0} components. Collect them from the Totem on your home island.</p>`+btn('Donate 1','donate',{proj:S.zone},!inv.component))}
  if(v==='nest'){const n=S.home.nest;let h='<h2>🪺 Nest</h2>';if(n.egg){const left=Math.max(0,Math.ceil((n.at-now())/1000));h+=left?`<p>Incubating egg from ${n.egg.parent}… ${left}s</p>`+btn('Refresh','ui',{v:'nest'}):'<p>The egg is ready to hatch!</p><input id="hn" placeholder="Name your new fauna" maxlength="16">'+btn('Hatch','hatch',{})+(S.fauna.length>=3?'<p class="small">All 3 slots full — release a fauna first.</p>':'')}
-  else h+='<p class="small">The layer and the incubating fauna each contribute genes. Babies may look different from both!</p>'+(S.player.eggs.length?S.player.eggs.map(e=>`<div class="row"><div class="grow">🥚 Egg from ${e.parent} (${SPECIES[e.genes.species].name})</div>${S.fauna.map((x,k)=>btn('Incubate w/ '+x.name,'incubate',{egg:e.id,fid:k})).join('')}</div>`).join(''):'<p>No eggs yet. Earn Lux to fill the egg meter.</p>');open(h)}
+  else h+='<p class="small">Place an egg in the Nest and Incubate. The layer and the incubating fauna each contribute genes — babies may even be a different species!</p>'+(S.player.eggs.length?'<p class="small">Possible species: '+[...new Set([...S.player.eggs.map(e=>SPECIES[e.genes.species].name),...S.fauna.map(x=>SPECIES[x.genes.species].name),'Oinker','Scratcher','Sniffer'])].join(', ')+'</p>':'')+(S.player.eggs.length?S.player.eggs.map(e=>`<div class="row"><div class="grow">🥚 Egg laid by: ${e.parent} (${SPECIES[e.genes.species].name})</div>${S.fauna.map((x,k)=>btn('Incubate with '+x.name,'incubate',{egg:e.id,fid:k})).join('')}</div>`).join(''):'<p>No eggs yet. Earn Lux to fill the egg meter.</p>');open(h)}
  if(v==='decor'){const ds=Object.entries(inv).filter(([k,n])=>n>0&&ITEMS[k].type==='decor');open('<h2>🪴 Decorate your Faunasphere</h2>'+(ds.map(([k,n])=>`<div class="row"><span style="font-size:22px">${ITEMS[k].icon}</span><div class="grow">${ITEMS[k].name} ×${n}</div>${btn('Place','decorate',{item:k})}</div>`).join('')||'<p>No decorations yet. Buy some at a Vendor Station.</p>')+(rt.decor?btn('Stop decorating','ui',{v:'stopdecor'}):''))}
  if(v==='stopdecor'){rt.decor=null;close()}
  if(v==='friends'){open(`<h2>👥 Friends</h2><p>Your Caretaker ID: <b>${S.player.id}</b></p><p class="small">Online friends and co-op zapping come in a later version. For now, the state is ready to sync (every action goes through dispatch(), and there's a Net.send hook).</p><div class="row"><div class="grow">🏝️ Amelia's Faunasphere (guide NPC)</div>${btn('Visit','visit',{who:'Amelia'})}</div>`)}}
@@ -253,9 +271,22 @@ function adoptScreen(){let sel='hoofer';const col=pick(['Tan','Cocoa','Cream','S
 let last=now();function loop(){const t=now(),dt=Math.min(100,t-last);last=t;if(fa()){step(dt);simulate(dt);draw()}requestAnimationFrame(loop)}
 function boot(){S.tf=S.tf||{};if(S.tut==null)S.tut=99;Sound.biome=Z(S.zone).biome;zs('home');syncHomeDecor();const g=S.zones[S.zone]?S.zones[S.zone].objs.find(o=>o.type==='gate'):null;if(g)rt.pos={i:g.i-1,j:g.j};
  const off=Math.min(now()-S.lastTick,8*36e5);simulate(Math.max(0,off));renderHUD();setInterval(()=>{save();renderHUD()},1000);
+ if(!S.unlocked.amelia)S.unlocked.amelia=1;if(S.done.g_buy&&S.goodie!==new Date().toDateString()&&!QS.has('nogoodie'))setTimeout(()=>{if(M.classList.contains('hidden'))ui('goodie')},1800);
  toast(S.done.g_buy?'Welcome back, Caretaker!':'Tip: walk into the World Gate (glowing ring) to visit the Rock Garden.')}
 S=JSON.parse(localStorage.getItem(KEY)||'null');if(!S){const o=JSON.parse(localStorage.getItem('faunasphere_save_v2')||'null');if(o&&o.fauna&&o.fauna.length){o.zones={};o.tut=99;S=o}}resize();
 // migrate: species stored in genes
 if(S&&S.fauna.length)boot();else{S=newState();adoptScreen()}
-requestAnimationFrame(loop);
+requestAnimationFrame(loop);setTimeout(()=>{const l=document.getElementById("loading");if(l)l.remove()},6000);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+// ===== v4 reliable saving =====
+const safeSave=()=>{try{if(S&&S.fauna&&S.fauna.length)save()}catch(e){}};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')safeSave()});
+addEventListener('pagehide',safeSave);addEventListener('beforeunload',safeSave);document.addEventListener('freeze',safeSave);
+setInterval(safeSave,5000);
+
+document.getElementById('edit').onclick=()=>{Sound.init();Sound.sfx('click');if(rt.decor){rt.decor=null;toast('Done editing.');renderHUD();return}if(S.zone!=='home'){toast('You can edit your own sphere. Travel home first.');return}ui('decor')};
+
+document.getElementById('help').onclick=e=>{e.preventDefault();open('<h2>? Help</h2><p>Click pollution to zap it with your collar. Use Goods 🎒 to feed, Goals to claim rewards, Map 🌐 to travel through World Gates. Earning Lux fills the Egg Meter — a full meter lays an egg for your Nest. EDIT decorates your sphere (25 Lux per item).</p>')};
+setInterval(()=>{const f=fa(),h=document.getElementById('hi');if(f&&h)h.firstChild.nodeValue='Hi, '+(S.player.name||f.name+"'s Caretaker")+' | '},2000);
+
+document.getElementById('chatf').onsubmit=e=>{e.preventDefault();const i=document.getElementById('chatin'),t=i.value.trim();if(!t)return;rt.say={text:t.slice(0,80),at:now()};i.value='';Sound.init();Sound.tone(1320,.25,'sine',.06);Sound.tone(1760,.3,'sine',.03,.05);i.blur()};
