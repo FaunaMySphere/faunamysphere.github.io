@@ -190,3 +190,14 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 /* v6.9.1: gear above a small label, inside the round button */
 #gfx{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1;overflow:hidden;flex-shrink:0}
 #gfx i{font-style:normal;font-size:12px;line-height:12px}#gfx span{font:800 8px system-ui;line-height:9px;letter-spacing:-.2px}
+/* v6.11 player level */
+#plv{display:flex;align-items:center;gap:4px;cursor:pointer;max-width:120px;margin-bottom:2px}
+#plv b{background:#ffcf3a;color:#5a3a00;border-radius:8px;padding:0 5px;font-size:11px;white-space:nowrap;box-shadow:0 1px 0 #a87a00}
+#plv div{flex:1;min-width:40px;height:6px;background:#0003;border-radius:4px;overflow:hidden}
+#plv i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe25a,#ff9f1a);transition:width .4s}
+.plvlist{display:flex;flex-direction:column;gap:6px}.plvrow{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;background:#e9f7d8;color:#1f4a10;text-shadow:none}.plvrow *{text-shadow:none;color:inherit}
+.plvrow.lk{background:#2a3a24;color:#cfd8c8}.plvrow small{margin-left:auto}
+.plvcel{text-align:center}.plvcel #plvpf{display:flex;justify-content:center}
+.plvfx{position:fixed;left:50%;top:40%;width:0;height:0;pointer-events:none;z-index:9999}
+.plvfx i{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--c);transform:rotate(var(--a)) translateX(0);animation:plvb 1.2s ease-out forwards}
+@keyframes plvb{to{transform:rotate(var(--a)) translateX(140px);opacity:0}}
