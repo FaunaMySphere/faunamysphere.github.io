@@ -122,3 +122,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 - Balance: regular HP 3 (tier>=3: 4) = 6-8 zaps; spiders 2; elites x2, bosses x3. Only the 2 nearest monsters attack, max one monster hit per 1.8s; monsters no longer use the classic tox drift/sting.
 - Perf: monster models built once per type, same-material parts merged, shared materials (~22 draw objects per monster vs 35), animation skipped far from the fauna. Caps: High 12, Low 6.
 - New-worlds helper: FSmonAssign(zoneId,[types],{count}) / FS_MON_ZONES; biome table FS_MON_BIOME. Cache fs-v615-1.
+
+## v6.16 — PvP battles
+- 2026-10-25 EDT — Challenge a player in a shared world (tap them or Friends → ⚔️ Battle). Accept/Decline pop-up (auto-declines in 15 s), no battles at home or visiting, setting to block challenges. 60 s fight with ring + HP bars, Attack (0.7 s cd), Dodge (5 s cd), Trick special (8 s cd). Challenger authoritative; inputs rate/damage-checked both sides. Loser sent home via faint flow (EN/ES toast), winner gets banner, jingle, +150 XP and +20 Lux (max 5 rewarded wins/hour). Timeout: more HP wins, tie sends nobody home. Disconnect/leave forfeits after grace. Save: S.pvp {w,l,tie,block,rw}. New pvp.js; net.js +1 line (pvp* message types). sw fs-v616-1
