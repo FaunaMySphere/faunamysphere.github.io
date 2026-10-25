@@ -1,6 +1,6 @@
 // Per-zone palettes from VIDEO_NOTES 13-18: top, side, rock/accent, water, sky top, sky horizon
 window.ZPAL={
- home:['#739E33','#4E463A','#8C8E8B','#3D8FB3','#5FB4E8','#BFE6F7'],
+ home:['#7CA836','#7C7D81','#999999','#3D8FB3','#F3B5A4','#F0B9A6'],
  rockgarden:['#668936','#847250','#8C8E8B','#3D8FB3','#5FB4E8','#BFE6F7'],
  amph:['#5E8639','#7A5A38','#7A7A7A','#3D8FB3','#5FB4E8','#BFE6F7'],
  ruins:['#5E8B2D','#7A5A38','#999999','#3D8FB3','#A0D8EF','#F6D6DE'],

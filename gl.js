@@ -451,7 +451,7 @@ function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun
  hemi.color.set(pal[4]).lerp(new THREE.Color(0x203060),nt);hemi.groundColor.set(pal[1]);hemi.intensity=dun?.35:THREE.MathUtils.lerp(2.3,.7,nt);hemi.color.set(0xffffff).lerp(new THREE.Color(0x203060),nt);hemi.groundColor.set(0xd8d0c0);
  const fogC=dun?new THREE.Color(0x14111c):new THREE.Color(pal[5]).lerp(new THREE.Color(pal[4]),.15).lerp(new THREE.Color(0x0a1028),nt*.9);
  scene.background=dun?fogC:new THREE.Color(pal[5]).lerp(new THREE.Color(pal[4]),.15).lerp(new THREE.Color(0x0a1028),nt*.9);scene.fog=new THREE.Fog(fogC,(camS.dist||20)*1.6,(camS.dist||20)*4);
- if(!dun&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
+ if(!dun&&!(window.ZPAL&&ZPAL[z.id])&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
  stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt);
  if(bloom)bloom.strength=dun||nt>.5?.6:.3;
  setWeather({sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null))}

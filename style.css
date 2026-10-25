@@ -154,3 +154,10 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #rarepop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:21;background:#33A11Df2;color:#fff;border:3px solid #ffe25a;border-radius:18px;padding:12px 26px;text-align:center;font:700 15px "Trebuchet MS",sans-serif;opacity:0;pointer-events:none;transition:opacity .35s;text-shadow:0 1px 0 #0006}
 #rarepop.on{opacity:1}#rarepop b{display:block;font:italic 900 24px "Trebuchet MS";color:#ffe25a}#rarepop .ri{font-size:44px}
 @media (max-width:600px){#microbox{top:86px;font-size:11px;max-width:180px;padding:4px 8px}}
+/* v4.9 exact UI greens from notes 22: #3CC300 with #1A5900 borders/shadow, white bold text with dark drop shadow */
+#top,#bar,#hud{background:linear-gradient(#3CC300f0,#2fa000f0);border-color:#1A5900}
+.sheet{background:linear-gradient(#3CC300f2,#2b9800f2);border-color:#1A5900}
+#zoneName,#tut,#toast div,#microbox,#sleepy,#gcban{background-color:#3CC300e6;border-color:#1A5900}
+#gcban{background:#3CC300d0}
+#top,#bar,#hud,.sheet,#microbox,#toast div,#zoneName{font-weight:700;text-shadow:0 2px 0 #1A5900}
+.dlg,.gpop{background:linear-gradient(#ffffff,#e4e4e4)!important;color:#223!important;text-shadow:none!important}
