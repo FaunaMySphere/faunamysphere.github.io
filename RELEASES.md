@@ -85,3 +85,4 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 ## v6.1 — Bigger worlds, step 1 (2x area)
 - content23.js: every zone except home is 2x the area, with more trees, rocks and dig spots. Old saves grow in place (objects shift with the grid, progress kept). Same toon look.
 - Frame times with the CPU slowed 4x, Rock Garden (avg ms): 1x 114, 2x 134, 3x 151, 4x 245, 5x 232. Next step: 3x; 4x+ is where phones would struggle.
+- 2026-10-25 5:17 PM EDT — v6.1.1: faint → home. When the active fauna's happiness (the stat monster hits drain) reaches 0 outside home, it plays a short sleep-faint + moan, shows "💫 Your fauna fainted and was sent home" (ES: Tu fauna se desmayó y fue enviada a casa), travels home via the 🏠 Home path (peers see it leave), monster damage is 0 during the transition, happiness restored to 25. Never triggers at home/visit. New file faint.js (replaces tooSad). SW cache fs-v611-1. Saves untouched.
