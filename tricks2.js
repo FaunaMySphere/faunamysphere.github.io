@@ -58,7 +58,7 @@ function rootMove(f,te,k){const o={py:0,px:0,ry:0,rz:0,s:1};if(!k)return o;const
  return o}
 function applyRoot(f,o){if(!f)return;o.py*=1.5;o.px*=1.3;const u=f.userData;f.position.y+=o.py;f.position.x+=o.px*Math.cos(f.rotation.y);f.position.z-=o.px*Math.sin(f.rotation.y);
  f.rotation.y+=o.ry-(u._ry||0);u._ry=o.ry;f.rotation.z+=o.rz-(u._rz||0);u._rz=o.rz;const bs=u._bs||(u._bs=f.scale.x);if(o.s!==1||u._sc){f.scale.setScalar(bs*o.s);u._sc=o.s!==1}}
-window.FSTrickAnim=function(k,te,r,b,L,y,t,f){const _o=rootMove(f,te,k);applyRoot(f,_o);if(k&&f&&typeof rt!=="undefined"&&rt.trick&&rt.trick.k===k)window.__tko=_o;if(!k)return;const H=r.head,lg=r.legs,tl=r.tail;
+window.FSTrickAnim=function(k,te,r,b,L,y,t,f){if(r.ears&&r.ears.length){const ph=(t+(r._eo||(r._eo=Math.random()*9)))%4.3,tw=ph<.25?Math.sin(ph/.25*Math.PI)*.35:0;r.ears.forEach((e,i)=>{const u=e.userData;if(u.bz===undefined)u.bz=e.rotation.z;e.rotation.z=u.bz+(i?tw:-tw*.6)})}const _o=rootMove(f,te,k);applyRoot(f,_o);if(k&&f&&typeof rt!=="undefined"&&rt.trick&&rt.trick.k===k)window.__tko=_o;if(!k)return;const H=r.head,lg=r.legs,tl=r.tail;
  if(DANCES.includes(k)){const bt=te*SONG[k].bpm/60,ph=bt*PI*2,bar=Math.floor(bt/4)%2;
   if(k==='wiggle'){b.rotation.z=sn(ph)*.25;b.rotation.y=sn(ph/2)*.3;y=L+ab(sn(ph))*.06;if(H)H.rotation.z=-sn(ph)*.3;if(tl)tl.rotation.y=sn(ph*2)*.8;lg.forEach((l,i)=>l.rotation.x=sn(ph+i)*.4)}
   else if(k==='twirl'){const sp=(bt%4)<2?(bt%2)/2*PI*2:0;b.rotation.y=sp+(bar?PI:0)*0;b.rotation.z=sn(ph)*.08;y=L+ab(sn(ph/2))*.12;if(H)H.rotation.x=-.2;lg.forEach((l,i)=>l.rotation.x=(i%2?1:-1)*.5*ab(sn(ph)))}

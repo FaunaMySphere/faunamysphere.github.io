@@ -322,7 +322,7 @@ function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[
  if(T)body.add(tg);rig.tail=tg;
  // contact shadow blob for low quality
  const blob=mesh(new THREE.CircleGeometry(.28,20),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.28,depthWrite:false}),[1,1,1],[0,.012,0],[-Math.PI/2,0,0]);root.add(blob);
- shadowify(body);root.scale.setScalar(1.25);root.userData.rig=rig;root.userData.lift=body.position.y;return root}
+ if(window.FSFaunaHD)window.FSFaunaHD(root,rig,genes,sp.animal,a,THREE,!!genes._hd);shadowify(body);root.scale.setScalar(1.25);root.userData.rig=rig;root.userData.lift=body.position.y;return root}
 function animFauna(f,t,st){const TK=st.trick!==undefined?st.trick:(f===fauna&&(typeof rt!=="undefined")?rt.trick:null);const r=f.userData.rig,b=r.body,L=f.userData.lift;const br=Math.sin(t*2.2)*.025;
  b.scale.set(1-br*.4,1+br,1-br*.4);let y=L;
  if(st.walk){const ph=t*11;r.legs.forEach((l,k)=>{l.rotation.x=Math.sin(ph+(k===0||k===3?0:Math.PI))*.6});y+=Math.abs(Math.sin(ph))*.025;b.rotation.z=Math.sin(ph)*.04}
@@ -491,7 +491,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  if(((t*10)|0)%50===0)applyEnvLite(z,nt);
  syncObjs();
  // fauna
- const lvB=f.level>=20?4:f.level>=15?3:f.level>=10?2:f.level>=5?1:0,key=JSON.stringify(f.genes)+lvB;if(key!==faunaKey){if(fauna)scene.remove(fauna);fauna=buildFauna({...f.genes,_lv:f.level});scene.add(fauna);faunaKey=key}
+ const lvB=f.level>=20?4:f.level>=15?3:f.level>=10?2:f.level>=5?1:0,key=JSON.stringify(f.genes)+lvB;if(key!==faunaKey){if(fauna)scene.remove(fauna);fauna=buildFauna({...f.genes,_lv:f.level,_hd:1});scene.add(fauna);faunaKey=key}
  const want=W2(rt.pos.i,rt.pos.j);const mv=want.clone().sub(fpos);fpos.lerp(want,.5);fauna.position.copy(fpos);
  if(mv.lengthSq()>1e-6&&rt.tgt){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-fauna.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));fauna.rotation.y+=d*.18}
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);
@@ -572,7 +572,7 @@ function toonOf(m){if(!m||m.userData.toon||m.isShaderMaterial||m.isMeshBasicMate
  if(m.userData.flat)t.color.set(m.userData.flat);
  if(m.onBeforeCompile&&String(m.onBeforeCompile).includes('uTime'))t.onBeforeCompile=m.onBeforeCompile;
  t.userData.toon=1;return t}
-function toonify(root){root.traverse(o=>{if(!o.isMesh||o.userData.outline)return;
+function toonify(root){root.traverse(o=>{if(!o.isMesh||o.userData.outline||o.userData.noToon)return;
  if(Array.isArray(o.material))o.material=o.material.map(toonOf);else o.material=toonOf(o.material);
  o.castShadow=false;
  if(!o.userData.ol&&!o.isInstancedMesh&&o.geometry&&o.geometry.attributes.normal&&!(o.material&&o.material.transparent)&&o.geometry.type!=='PlaneGeometry'&&o.geometry.type!=='CircleGeometry'&&o.geometry.type!=='RingGeometry'){
