@@ -438,7 +438,7 @@ function syncObjs(){const s=zs(S.zone),seen=new Set();
 function clearObjs(){for(const[,e]of objMap)scene.remove(e.g);objMap.clear()}
 
 // ---------- camera ----------
-const camS={yaw:Math.PI/4,pitch:.92,dist:null,t:new THREE.Vector3(),drag:null,intro:1};
+const camS={yaw:Math.PI/4,pitch:G.W7?.82:.92,dist:null,t:new THREE.Vector3(),drag:null,intro:1};
 let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);R.setSize(W,H,false);glc.style.width=W+'px';glc.style.height=H+'px';camera.aspect=W/H;camera.updateProjectionMatrix();if(composer){composer.setPixelRatio(PR);composer.setSize(W,H)}if(finalPass)finalPass.uniforms.uRes.value.set(W*PR,H*PR);pMat.uniforms.uPR.value=PR*H/800;wMatAdd.uniforms.uPR.value=wMatN.uniforms.uPR.value=PR*H/800}
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
