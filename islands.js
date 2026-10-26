@@ -88,8 +88,9 @@ function build(){const sc=G.GL&&G.GL.scene;if(!sc||typeof S==='undefined'||!S.zo
   // baked atmospheric perspective: farther ring = more haze + less contrast
   const ca=geo.attributes.color.array,h=.05+far*.1;for(let i=0;i<ca.length;i+=3){ca[i]+= (fogC.r-ca[i])*h;ca[i+1]+=(fogC.g-ca[i+1])*h;ca[i+2]+=(fogC.b-ca[i+2])*h}
   const g=new THREE.Group();g.add(new THREE.Mesh(geo,mat));if(glows.length&&lvl!=='low')g.add(new THREE.Mesh(merge(glows),gmat));
-  const a=k/cnt*6.283+(rnd()-.5)*.3,R=n*(.95+far*.3+rnd()*.15),sz=n*(.125+rnd()*.06)*(1-far*.2);
-  g.position.set(Math.cos(a)*R,-n*(.15+far*.22+rnd()*.15),Math.sin(a)*R);g.scale.setScalar(sz);g.rotation.y=rnd()*6.28;g.userData={y0:g.position.y,ph:k*1.7,id:T.id};
+  // v7.6.1: islands ~3x bigger (props scale with the group); pushed further out + lower so they clear the home base, camera and each other
+  const SC=3,a=k/cnt*6.283+(rnd()-.5)*.3,R=n*(1.65+far*.65+rnd()*.12),sz=n*(.125+rnd()*.06)*(1-far*.2)*SC;
+  g.position.set(Math.cos(a)*R,-n*(.45+far*.3+rnd()*.12),Math.sin(a)*R);g.scale.setScalar(sz);g.rotation.y=rnd()*6.28;g.userData={y0:g.position.y,ph:k*1.7,id:T.id};
   isl.push(g);grp.add(g)}
  sc.add(grp);return true}
 function nm(id){const z=(G.ZONES||[]).find(z=>z.id===id);return z?z.name:id}
