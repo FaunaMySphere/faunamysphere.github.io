@@ -455,7 +455,7 @@ function newW(init){const R2=N0*.75;const o={x:(Math.random()-.5)*R2*2,y:init?Ma
 
 // ---------- lightning (pool of glowing segments) ----------
 const segG=new THREE.BoxGeometry(1,1,1);segG.translate(0,0,.5);const SEGS=[];const segM=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}),segO=new THREE.MeshBasicMaterial({color:0x8bff4a,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false});
-const boltG=new THREE.Group();scene.add(boltG);for(let k=0;k<30;k++){const c=new THREE.Mesh(segG,segM),o=new THREE.Mesh(segG,segO);boltG.add(c,o);SEGS.push([c,o])}
+const boltG=new THREE.Group();scene.add(boltG);for(let k=0;k<30;k++){const c=new THREE.Mesh(segG,segM),o=new THREE.Mesh(segG,segO);c.visible=o.visible=false;boltG.add(c,o);SEGS.push([c,o])}boltG.visible=false;
 let boltFlick=0;function bolt(a,b,amt,col){if(!a){boltG.visible=false;return}boltG.visible=true;segO.color.set(col);segO.opacity=.45*amt;segM.opacity=Math.min(1,amt*1.4);
  let si=0;const put=(p,q,w)=>{if(si>=SEGS.length)return;const[c,o]=SEGS[si++];for(const m of[c,o]){m.visible=true;m.position.copy(p);m.lookAt(q);const L=p.distanceTo(q);m.scale.set(w*(m===o?4:1),w*(m===o?4:1),L)}};
  const path=(p,q,n,jit,w,branch)=>{let prev=p.clone();for(let k=1;k<=n;k++){const u=k/n;const pt=p.clone().lerp(q,u);if(k<n)pt.add(new THREE.Vector3((Math.random()-.5)*jit,(Math.random()-.5)*jit,(Math.random()-.5)*jit));put(prev,pt,w);
