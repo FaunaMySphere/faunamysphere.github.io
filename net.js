@@ -24,6 +24,7 @@ let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(
  const pv=+m.v||1;if(pv>NET_V&&!updHint){updHint=1;toast(es()?'🔄 Un amigo tiene una versión más nueva. Por favor actualiza (recarga la app).':'🔄 A friend has a newer version. Please update (reload the app).')}
  else if(pv<NET_V&&!m._h){m.old=1}}catch(_){}}
 function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if(seen.has(k))return;seen.add(k);if(seen.size>4000)seen.clear()}let p=NetMP.peers.get(m.id);
+ if(typeof m.t==='string'&&m.t.slice(0,2)==='hv'){if(window.FSVisit)try{FSVisit.msg(m,p)}catch(e){console.warn('visit',e)}return}
  if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
  else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere')return;
  if(m.t&&m.t.slice(0,4)==='gift'&&window.FSGift){FSGift.on(m,p);return}
@@ -31,7 +32,7 @@ function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if
  if(m.t==='say'){p.say={text:String(m.text).slice(0,80),at:Date.now()+CHAT_MS-6000,chat:1};Sound.tone&&Sound.tone(1320,.2,'sine',.04);chatLog(p.name,m.text)}
  if(m.t==='trick'){p.trick={k:m.k,t0:now()}}
  if(m.t==='bye'){NetMP.peers.delete(m.id);if(!NetMP.isWorld())toast((p?p.name:'A friend')+' left the room.')}
- if(m.t==='sphereReq'){const h=zs('home');const keep=h.objs.filter(o=>o.type==='gate'||o.type==='decor'||o.type==='pullytree'||PROPS.includes(o.type)).map(o=>({...o,type:o.type==='pullytree'?'d_tree':o.type}));send({t:'sphere',to:m.id,owner:me().name,data:{tiles:h.tiles,objs:keep,nextId:999}})}
+ if(m.t==='sphereReq'&&!S.visitsOff){const h=zs('home');const keep=h.objs.filter(o=>o.type==='gate'||o.type==='decor'||o.type==='pullytree'||PROPS.includes(o.type)).map(o=>({...o,type:o.type==='pullytree'?'d_tree':o.type}));send({t:'sphere',to:m.id,owner:me().name,data:{tiles:h.tiles,objs:keep,nextId:999}})}
  if(m.t==='sphere'&&NetMP.pendingVisit===m.id){NetMP.pendingVisit=null;const z=Z('visit');z.n=m.data.tiles.length;z.name=m.owner+"'s Faunasphere";S.zones.visit=m.data;S.unlocked.visit=1;S.v5.visitId=m.id;if(S.zone==='visit'){S.zone='home';}startTravel('visit');setTimeout(()=>dispatch('visit',{who:m.owner}),1200)}}
 
 // ---- Relay fallback (works when WebRTC/UDP is blocked): tiny ephemeral messages over public Nostr relays (wss/443) ----
