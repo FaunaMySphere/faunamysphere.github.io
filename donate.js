@@ -6,5 +6,5 @@ function mk(){if(document.getElementById('donq'))return;const a=document.createE
  a.innerHTML='<img alt="XRP QR" src="data:image/svg+xml;charset=utf-8,'+encodeURIComponent(SVG)+'"><span></span>';
  a.addEventListener('click',()=>{try{navigator.clipboard&&navigator.clipboard.writeText(A)}catch(e){}try{toast(es()?'Dirección XRP copiada':'XRP address copied')}catch(e){}});
  document.body.appendChild(a);lab();pos()}
-function lab(){const s=document.querySelector('#donq span');if(s){const t=es()?'Donar XRP':'Donate XRP';if(s.textContent!==t)s.textContent=t}}
+function lab(){const s=document.querySelector('#donq span');if(s){const t=es()?'Dona XRP para mejorar el juego':'Donate XRP to make the game better';if(s.textContent!==t)s.textContent=t}}
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',mk);else mk();setInterval(()=>{lab();pos()},2000);addEventListener('resize',pos)})();

@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FaunaMySphere</title>
+<style>body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#1d4a5e;color:#fff;font:16px sans-serif;text-align:center}</style></head>
+<body><div id="m">Moving your save… / Moviendo tu partida…</div>
+<script>
+// v7.4: receives the save from the old address (leonisbel.github.io/faunasphere) and merges it WITHOUT ever replacing a better save.
+(async()=>{const K='faunasphere_save_v3',go=r=>{try{sessionStorage.setItem('fs_moved',r)}catch(e){}location.replace('./')};
+ try{const h=location.hash.slice(1),m=/^d=(z|r)\.(.+)$/.exec(h);history.replaceState(null,'',location.pathname);if(!m)return go('none');
+  const b64=m[2].replace(/-/g,'+').replace(/_/g,'/'),bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  let txt;if(m[1]==='z'){txt=await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text()}else txt=new TextDecoder().decode(u);
+  const P=JSON.parse(txt),ls=P.ls||{};const inc=ls[K];if(!inc)return go('none');const I=JSON.parse(inc);if(!I||!Array.isArray(I.fauna))return go('none');
+  const score=s=>{try{return s.fauna.reduce((a,f)=>a+(f.level|0),0)*1000+s.fauna.length}catch(e){return 0}};
+  const cur=localStorage.getItem(K);let E=null;try{E=JSON.parse(cur||'null')}catch(e){}
+  let take=!E||!Array.isArray(E.fauna)||!E.fauna.length;
+  if(!take){const a=score(I),b=score(E);take=a>b||(a===b&&(I.lastTick||0)>(E.lastTick||0))}
+  if(take){if(cur)localStorage.setItem(K+'_premig',cur);localStorage.setItem(K,inc);
+   for(const k in ls)if(k!==K&&/^fs_/.test(k)&&(k==='fs_mpid'||localStorage.getItem(k)==null))localStorage.setItem(k,ls[k]);
+   await new Promise(res=>{try{const r=indexedDB.open('faunasphere',1);r.onupgradeneeded=()=>r.result.createObjectStore('s');r.onsuccess=()=>{try{const t=r.result.transaction('s','readwrite');t.objectStore('s').put(inc,K);t.oncomplete=res;t.onerror=res}catch(e){res()}};r.onerror=res}catch(e){res()}});
+   return go('ok')}
+  localStorage.setItem(K+'_fromold',inc);return go('kept')}catch(e){console.warn(e);go('err')}})();
+</script></body></html>
