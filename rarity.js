@@ -175,6 +175,15 @@ try{const es={'Mythic':'Mítica','MYTHIC':'MÍTICA','MYTHIC!':'¡MÍTICA!','GOLD
  'Fawn':'Cervato','Chestnut':'Castaño','Ash':'Ceniza','Sandstone':'Arenisca','Bark':'Corteza','Fern':'Helecho','Pebble':'Guijarro','Honey':'Miel','Russet':'Rojizo','Driftwood':'Madera de deriva','Sage':'Salvia','Clay':'Arcilla','Peach':'Durazno','Butter':'Mantequilla','Baby Blue':'Azul bebé','Lavender':'Lavanda','Blush':'Rubor','Pistachio':'Pistacho','Seafoam':'Espuma de mar','Lemon Ice':'Hielo de limón','Periwinkle':'Vincapervinca',
  'Neon Pink':'Rosa neón','Neon Orange':'Naranja neón','Electric Blue':'Azul eléctrico','Toxic Green':'Verde tóxico','Laser Purple':'Morado láser','Hot Cyan':'Cian intenso','Volt Yellow':'Amarillo voltio','Ink':'Tinta','Wine':'Vino','Forest':'Bosque','Navy':'Azul marino','Obsidian':'Obsidiana','Garnet':'Granate','Diamond White':'Blanco diamante','Ice Prism':'Prisma de hielo','Pure Gold':'Oro puro','Rose Gold':'Oro rosa','Snow':'Nieve'};
  K(VAR).forEach(v=>{es[VAR[v].name]=VAR[v].es;es[VAR[v].name.toUpperCase()]=VAR[v].es.toUpperCase()});Object.assign(window.I18N_ES||{},es)}catch(e){}
+// ===== v7.5.1: hatches look special far more often (Leo). Only affects NEW hatches; existing fauna keep their genes. =====
+// Old odds: Common 59.8% with 60% classic base colour and 40% plain pattern -> most hatches looked basic.
+{const NP={common:30,uncommon:34,rare:21,epic:10,legendary:4.3,mythic:.7};TIERS.forEach(t=>{if(NP[t.id]!=null)t.p=NP[t.id]});
+ Object.assign(TP.common,{f:['natural','pastel'],base:.25,pat:['spots','patches','socks','stripes','mask','rosette','none'],tri:.15,grad:.35});
+ TP.uncommon.f=['natural','pastel','neon'];TP.uncommon.tri=.25;TP.uncommon.grad=.5;
+ const NV={diamond:.25,gold:.8,rainbow:.6,crystal:.8,shadow:.8,albino:1.5,melanistic:1.5};for(const v in NV)if(VAR[v])VAR[v].p=NV[v];
+ // common used "rnd()<.6 base" check: P.base is truthy -> patch rarGenes' base chance via wrapper
+ const RG=rarGenes;rarGenes=window.rarGenes=function(tier,vid,par){const g=RG(tier,vid,par);if(tier==='common'&&!vid&&BASE.includes(g.color)&&rnd()>.42){g.color=famPick(TP.common.f)}return g};
+ window._rarRoll=()=>roll();window._rarSim=(n=200)=>{const out={tier:{},variant:{},distinct:0,species:{}};for(let k=0;k<n;k++){const id=roll(),t=TB[id]||TB.common,tier=t.real||id,g=rarGenes(tier,t.vid||null,null);out.tier[tier]=(out.tier[tier]|0)+1;if(t.vid)out.variant[t.vid]=(out.variant[t.vid]|0)+1;if(!(BASE.includes(g.color)&&g.pat2==='none'&&!g.grad))out.distinct++}return out};}
 })();
 // v6.19: Mythic badge stands out (cheap CSS only: sparkle mark + glow ring)
 try{const s9=document.createElement('style');s9.textContent=`.rbadge.mythic{box-shadow:0 0 0 1px #fff,0 0 7px #ff3df2;text-shadow:0 1px 0 #6a1d7a}.rbadge.mythic::before{content:"✦ "}.rbadge.mythic::after{content:" ✦"}`;document.head.appendChild(s9)}catch(e){}
