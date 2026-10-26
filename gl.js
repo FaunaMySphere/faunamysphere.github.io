@@ -28,16 +28,18 @@ document.body.classList.add('webgl');
 // v7.4.1: PCs report devicePixelRatio 1, so High rendered at 1x and looked blurry next to phones (2x). Desktops on High/Med now render at 1.5x (supersampled).
 const maxPR=()=>isPhone?Math.min(devicePixelRatio||1,QP.pr):Math.min(QP.pr,Math.max(devicePixelRatio||1,Q==='low'?1:1.5));let PR=maxPR();R.setPixelRatio(PR);
 R.toneMapping=THREE.NoToneMapping;R.toneMappingExposure=1.0;R.outputColorSpace=THREE.SRGBColorSpace;
+// pc-brightness-fix: on landscape desktops the camera sat 1.3x farther (v7.4.1), so the island was small and the pale horizon band of the sky filled the frame -> washed-out, low-contrast PC image vs the deep-blue portrait phone view; plus no MSAA in the composer. Desktop (non-phone, High/Med): camera back to 1.0x, sky gradient lifted toward the top colour, exposure x0.92, 4x MSAA composer target, max anisotropy. Phones untouched. A/B: ?pcfix=0 disables; ?pcexp=<k>; ?pctm=aces.
+const PCX=G.FS_PCX=!isPhone&&Q!=='low'&&QS.get('pcfix')!=='0';const PCEXP=PCX?(+QS.get('pcexp')||.92):1;if(PCX&&QS.get('pctm')==='aces')R.toneMapping=THREE.ACESFilmicToneMapping;
 if(false){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,400);
 const hemi=new THREE.HemisphereLight(0xcfe9ff,0x5a4630,1.1);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1d8,2.6);sun.castShadow=!!QP.shadow;
 if(QP.shadow){sun.shadow.mapSize.set(QP.shadow,QP.shadow);sun.shadow.bias=-.0006;sun.shadow.normalBias=.02;sun.shadow.radius=4;const c=sun.shadow.camera;c.left=c.bottom=-12;c.right=c.top=12;c.near=1;c.far=60}
 scene.add(sun,sun.target);
-const su={sunPosition:{value:new THREE.Vector3(0,1,0)},uTop:{value:new THREE.Color()},uHor:{value:new THREE.Color()},uSunC:{value:new THREE.Color(1,.9,.7)}};
+const su={uLift:{value:PCX?.22:0},sunPosition:{value:new THREE.Vector3(0,1,0)},uTop:{value:new THREE.Color()},uHor:{value:new THREE.Color()},uSunC:{value:new THREE.Color(1,.9,.7)}};
 const sky=new THREE.Mesh(new THREE.SphereGeometry(250,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:su,
  vertexShader:`varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`uniform vec3 sunPosition,uTop,uHor,uSunC;varying vec3 vD;void main(){float h=clamp(vD.y,-.3,1.);vec3 c=mix(uHor,uTop,pow(max(h,0.),.6));c=mix(c,uHor*.8,smoothstep(0.,-.3,h));
+ fragmentShader:`uniform vec3 sunPosition,uTop,uHor,uSunC;uniform float uLift;varying vec3 vD;void main(){float h=clamp(vD.y,-.3,1.);vec3 c=mix(uHor,uTop,clamp(pow(max(h,0.),.6)+uLift,0.,1.));c=mix(c,uHor*.8,smoothstep(0.,-.3,h));
  float s=max(dot(vD,normalize(sunPosition)),0.);c+=uSunC*(pow(s,600.)*1.2+pow(s,12.)*.25);gl_FragColor=vec4(c,1.);}`}));scene.add(sky);
 const pmrem=new THREE.PMREMGenerator(R);
 // stars
@@ -57,7 +59,7 @@ const FinalShader={uniforms:{tDiffuse:{value:null},uV:{value:.32},uDof:{value:QP
   float d=distance(vUv,vec2(.5));c.rgb*=1.-uV*smoothstep(.35,.85,d);
   c.rgb+=(h(vUv*uRes+uTime)-.5)*.018;
   c.rgb=mix(c.rgb,uFadeCol,uFade);gl_FragColor=c;}`};
-if(QP.bloom){composer=new EffectComposer(R);composer.addPass(new RenderPass(scene,camera));
+if(QP.bloom){composer=new EffectComposer(R,PCX&&R.capabilities.isWebGL2?new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}):undefined);composer.addPass(new RenderPass(scene,camera));
  bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.55,.45,1.0);composer.addPass(bloom);
  composer.addPass(new OutputPass());finalPass=new ShaderPass(FinalShader);composer.addPass(finalPass)}
 
@@ -82,7 +84,7 @@ function genTex(kind,base){const key=kind+base;if(texCache[key])return texCache[
   H[y*N+x]=h;const k=.62+h*.45,i=(y*N+x)*4;img.data[i]=Math.min(255,b[0]*k);img.data[i+1]=Math.min(255,b[1]*k);img.data[i+2]=Math.min(255,b[2]*k);img.data[i+3]=255}
  ctx.putImageData(img,0,0);
  if(kind==='grass'){for(let q=0;q<N*3;q++){const x=hsh(q,1,5)*N,y=hsh(q,2,5)*N;ctx.strokeStyle=`rgba(${b[0]*1.3|0},${b[1]*1.35|0},${b[2]*1.1|0},.35)`;ctx.lineWidth=N/256;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(hsh(q,3,5)-.5)*N/40,y-N/40);ctx.stroke()}}
- const map=new THREE.CanvasTexture(cvs);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.anisotropy=4;
+ const map=new THREE.CanvasTexture(cvs);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.anisotropy=PCX?R.capabilities.getMaxAnisotropy():4;
  const nc=document.createElement('canvas');nc.width=nc.height=N;const nx=nc.getContext('2d'),ni=nx.createImageData(N,N),st=kind==='stone'||kind==='rock'?4:2.2;
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const g=(a,b)=>H[((b+N)%N)*N+((a+N)%N)];const dx=(g(x+1,y)-g(x-1,y))*st,dy=(g(x,y+1)-g(x,y-1))*st,l=Math.hypot(dx,dy,1),i=(y*N+x)*4;
   ni.data[i]=(-dx/l*.5+.5)*255;ni.data[i+1]=(-dy/l*.5+.5)*255;ni.data[i+2]=(1/l*.5+.5)*255;ni.data[i+3]=255}
@@ -488,7 +490,7 @@ let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
- const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit*(asp>1.2&&!isPhone?1.3:1)/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=false;
+ const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit*(asp>1.2&&!isPhone&&!PCX?1.3:1)/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=false;
  const follow=portrait?(HW?.55:1):clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15+fpos.y*follow;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
  if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
  let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if((titleOn||!fa())&&!(G.editCam&&S.zone==="home")){yaw+=t*.12;d*=1.15;pitch=.55}
@@ -536,7 +538,7 @@ function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun
  const fogC=dun?new THREE.Color(0x14111c):new THREE.Color(pal[5]).lerp(new THREE.Color(pal[4]),.15).lerp(new THREE.Color(0x0a1028),nt*.9);
  scene.background=dun?fogC:new THREE.Color(pal[5]).lerp(new THREE.Color(pal[4]),.15).lerp(new THREE.Color(0x0a1028),nt*.9);scene.fog=new THREE.Fog(fogC,(camS.dist||20)*1.6,(camS.dist||20)*4);
  if(!dun&&!(window.ZPAL&&ZPAL[z.id])&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
- stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt);
+ stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=(dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt))*PCEXP;
  if(bloom)bloom.strength=dun||nt>.5?.6:.3;
  setWeather('weather' in z?z.weather:{sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
 function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);G._dt=dt;lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
