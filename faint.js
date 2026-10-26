@@ -2,7 +2,7 @@
 (function(){
 const MSG='Your fauna fainted and was sent home';
 try{Object.assign(window.I18N_ES||{},{[MSG]:'Tu fauna se desmayó y fue enviada a casa'})}catch(e){}
-const tr=s=>{try{return typeof t==='function'?t(s):window.T?window.T(s):s}catch(e){return s}};
+const tr=s=>{try{return typeof t==='function'?t(s):s}catch(e){return s}};
 let busy=false;
 function faint(){if(busy)return;const f=fa();if(!f||S.zone==='home'||S.zone==='visit')return;busy=true;window.__faint=1;
  try{Sound.sfx('moan')}catch(e){}
