@@ -77,7 +77,10 @@ function openBuild(){closeM();ov=document.createElement('div');ov.id='buildm';ov
   if(b.dataset.own){const[k,s]=b.dataset.own.split(':');inv[b.dataset.own]--;if(!inv[b.dataset.own])delete inv[b.dataset.own];closeM();place(k,+s)}}}
 G.FSbuild=openBuild;
 // edit-mode integration: 🏠 Build button, 🎨 cycles house colour style
-function integ(){const A=G.FSarr;if(!A||!A.addBarBtn)return setTimeout(integ,250);A.addBarBtn((bar,btn)=>btn(bar,'🏠 '+t('Build'),openBuild,'arrbuild'));A.styleFns.push(o=>{if(o.type==='house'){const K=KINDS[o.kind];o.style=((o.style|0)+1)%K.styles.length}})}integ();
+function integ(){const A=G.FSarr;if(!A||!A.addBarBtn)return setTimeout(integ,250);A.styleFns.push(o=>{if(o.type==='house'){const K=KINDS[o.kind];o.style=((o.style|0)+1)%K.styles.length}})}integ();
+// v7.5.3: 🏠 BUILD button beside EDIT at home (not in edit toolbar, hidden away from home / on visits)
+function homeBtn(){const ed=document.getElementById('edit');if(!ed)return setTimeout(homeBtn,400);const b=document.createElement('button');b.id='buildbtn';b.className='rbtn';b.title='Build';b.innerHTML='<i>🏠</i><span></span>';ed.parentNode.insertBefore(b,ed);
+ b.onclick=e=>{e.stopPropagation();(G.FSbuild||openBuild)()};setInterval(()=>{try{const sp=b.querySelector('span'),l=t('BUILD');if(sp.textContent!==l)sp.textContent=l;const show=typeof S!=='undefined'&&S.zone==='home';b.style.display=show?'':'none';const mc=document.getElementById('mpcount'),tp=document.getElementById('top');if(mc&&tp&&innerWidth<560){const y=show?(tp.getBoundingClientRect().bottom+4)+'px':'';if(mc.style.top!==y){mc.style.top=y||'calc(env(safe-area-inset-top) + 4px)';mc.style.left=show?'44%':'50%'}}}catch(e){}},300)}homeBtn();
 // fauna walk around houses (never through): block footprint, slide along walls, retarget taps inside a house
 function inHouse(i,j,pad){const s=S.zones&&S.zones.home;if(!s||S.zone!=='home')return null;for(const o of s.objs){if(o.type!=='house')continue;const n=(KINDS[o.kind]||KINDS.cottage).fp;if(i>o.i-.5-pad&&i<o.i+n-.5+pad&&j>o.j-.5-pad&&j<o.j+n-.5+pad)return o}return null}
 G.FSinHouse=inHouse;
@@ -90,4 +93,4 @@ function hookStep(){if(typeof G.step!=='function')return setTimeout(hookStep,300
  for(const c of[[x0,z0],[x1,z0],[x0,z1],[x1,z1]]){if(inHouse(c[0],c[1],.2))continue;let ok=true;for(let u=.1;u<1;u+=.1)if(inHouse(p0.i+(c[0]-p0.i)*u,p0.j+(c[1]-p0.j)*u,.2)){ok=false;break}if(!ok)continue;const d=Math.hypot(c[0]-p0.i,c[1]-p0.j)+Math.hypot(F[0]-c[0],F[1]-c[1]);if(d<bd&&Math.hypot(c[0]-p0.i,c[1]-p0.j)>.15){bd=d;best=c}}
  if(best){if(!rt._wp){rt._fin=rt.tgt;rt._wp=1}rt.tgt=best}};
  try{step=G.step}catch(e){}}hookStep();
-try{Object.assign(G.I18N_ES=G.I18N_ES||{},{"Build":"Construir","Build a House":"Construye una casa","Buy":"Comprar","Place yours":"Coloca la tuya","Fauna walk around it":"La fauna camina alrededor","No room! Move some things first.":"¡No hay espacio! Mueve algunas cosas primero.","Not enough Bux.":"No tienes suficientes Bux.","Not enough Lux.":"No tienes suficiente Lux."})}catch(e){}
+try{Object.assign(G.I18N_ES=G.I18N_ES||{},{"Build":"Construir","BUILD":"CONSTRUIR","Build a House":"Construye una casa","Buy":"Comprar","Place yours":"Coloca la tuya","Fauna walk around it":"La fauna camina alrededor","No room! Move some things first.":"¡No hay espacio! Mueve algunas cosas primero.","Not enough Bux.":"No tienes suficientes Bux.","Not enough Lux.":"No tienes suficiente Lux."})}catch(e){}
