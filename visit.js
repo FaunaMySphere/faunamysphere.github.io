@@ -5,7 +5,7 @@
 (()=>{if(!window.NetMP)return;
 const ES=()=>window.LANG==='es',T=(en,es)=>ES()?es:en,esc=s=>String(s==null?'':s).replace(/[<>&"']/g,'');
 const V=window.FSVisit={on:false,owner:null,name:'',real:null,offline:false,rx:new Map(),pend:null,sentSig:new Map(),lastSnapAt:0};
-const RZ=new Map();const tx=m=>{const q=NetMP.peers.get(m.to),rz=RZ.get(m.to);if(rz&&rz.at>Date.now()-20000)m._z=rz.z;else if(q&&q.zk)m._z=q.zk;NetMP.send(m)};
+const RZ=new Map();const tx=m=>{if(m.t==='hvReq'||m.t==='hvNo'){m._z='all';NetMP.send(m);return}const q=NetMP.peers.get(m.to),rz=RZ.get(m.to);if(rz&&rz.at>Date.now()-20000)m._z=rz.z;else if(q&&q.zk)m._z=q.zk;NetMP.send(m)};
 const MAXRAW=900000,CH=12000,MAXN=60;
 // ---------- compression ----------
 async function pack(str){if(window.CompressionStream){const st=new Blob([str]).stream().pipeThrough(new CompressionStream('deflate-raw'));const b=new Uint8Array(await new Response(st).arrayBuffer());let o='';for(let i=0;i<b.length;i+=8192)o+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return'z'+btoa(o)}return'u'+btoa(unescape(encodeURIComponent(str)))}
