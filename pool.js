@@ -42,6 +42,7 @@ function hookBuild(){if(typeof G.FSbuild!=='function')return setTimeout(hookBuil
  inner.querySelectorAll('[data-pool]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const c=b.dataset.pool,P=S.player;
   if(c==='own'){P.pools=Math.max(0,(P.pools|0)-1)}else{if((P[c]|0)<PRICE[c]){toast(t(c==='bux'?'Not enough Bux.':'Not enough Lux.'));return}P[c]-=PRICE[c]}ov.remove();place()}))}}
 hookBuild();
+function openPool(){try{G.FSbuild();const c=document.getElementById('poolcard');if(c){c.scrollIntoView({block:'center'});c.style.boxShadow='0 0 0 3px #ffd84a'}}catch(e){}}G.FSopenPool=openPool;
 // ---------- bathing ----------
 let B=null;G.FSbath=()=>B;
 function bathe(o){const f=fa();if(!f)return;const now=Date.now();const left=(f.bathT|0)+CD-now;if(left>0){toast((es()?'🛁 '+f.name+' está limpio. Otra vez en ':'🛁 '+f.name+' is still squeaky clean. Again in ')+Math.ceil(left/1000)+'s');return}
@@ -54,8 +55,8 @@ function hookInteract(){if(typeof G.interact!=='function')return setTimeout(hook
  if(G.FSarr&&FSarr.on)return i0.apply(this,arguments);if(B)return;rt.tgtObj=o;try{Sound.sfx('click')}catch(e){}walkTo(o,()=>bathe(o))};try{interact=G.interact}catch(e){}}hookInteract();
 // Bathe button when near a pool
 let bb=null;function near(){if(S.zone!=='home'||!rt||!rt.pos)return null;const s=zs('home');let best=null;for(const o of s.objs)if(o.type==='pool'&&Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<1.8)best=o;return best}
-setInterval(()=>{try{const o=(!B&&!(G.FSarr&&FSarr.on)&&typeof S!=='undefined')?near():null;if(!bb){bb=document.createElement('button');bb.id='bathebtn';bb.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:40;border:3px solid #fff;border-radius:16px;background:#2aa6d8;color:#fff;font:800 16px inherit;padding:8px 16px;box-shadow:0 3px 0 #0004;display:none';
- bb.onclick=e=>{e.stopPropagation();const p=near();if(p)bathe(p)};document.body.appendChild(bb)}bb.textContent='🛁 '+t('Bathe');bb.style.display=o?'block':'none'}catch(e){}},400);
+setInterval(()=>{try{const o=(!B&&!(G.FSarr&&FSarr.on)&&typeof S!=='undefined')?near():null;if(!bb){bb=document.createElement('button');bb.id='bathebtn';bb.style.cssText='position:fixed;left:50%;bottom:205px;transform:translateX(-50%);z-index:40;border:3px solid #fff;border-radius:16px;background:#2aa6d8;color:#fff;font:800 16px inherit;padding:8px 16px;box-shadow:0 3px 0 #0004;display:none';
+ bb.onclick=e=>{e.stopPropagation();if(bb.dataset.k==='new'){openPool();return}const p=near();if(p)bathe(p)};document.body.appendChild(bb)}const hp=!o&&!B&&S.zone==='home'&&!(G.FSarr&&FSarr.on)&&!document.getElementById('buildm')&&!zs('home').objs.some(x=>x.type==='pool')&&!(typeof MB!=='undefined'&&MB&&MB.offsetParent);bb.dataset.k=o?'bathe':hp?'new':'';bb.textContent=o?'🛁 '+t('Bathe'):'🛁 '+t('New: Pool!');bb.style.display=(o||hp)?'block':'none'}catch(e){}},400);
 // per-frame: water shimmer + bathing animation (called from gl.js after animFauna)
 const rings=[];let RG=null,RM=null;
 function ringAt(scene,p){if(!RG){RG=new THREE.RingGeometry(.12,.16,16);RM=null}let r=rings.find(x=>!x.visible);if(!r){if(rings.length>=4)return;r=new THREE.Mesh(RG,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false}));r.rotation.x=-Math.PI/2;rings.push(r);scene.add(r)}
@@ -87,4 +88,4 @@ G.FSpoolFrame=function(fm,tm,dt,spawn){for(const m of WM)if(m.map)m.map.offset.s
  if(e>DUR-.35&&!B.sp){B.sp=1;const n=low?6:12;for(let q=0;q<n;q++)spawn({p:P(fm.position.x+(Math.random()-.5)*.6,fm.position.y+.2+Math.random()*.6,fm.position.z+(Math.random()-.5)*.6),v:P(0,.6,0),g:.3,col:new THREE.Color(1,.97,.55),size:.11,decay:.03});try{Sound.sfx('happy')}catch(_){}}
  if(e>=DUR)finish()};
 function splash(spawn,p,sp,k){const low=(G.GL&&G.GL.Q)==='low',n=Math.round((low?8:16)*k);for(let q=0;q<n;q++){const a=Math.random()*Math.PI*2,s=.8+Math.random()*1.4;spawn({p:new THREE.Vector3(p.x,p.y+.15,p.z),v:new THREE.Vector3(Math.cos(a)*s,1.6+Math.random()*1.5,Math.sin(a)*s),g:-8,col:new THREE.Color(.72,.92,1),size:.07,decay:.04})}ringAt(sp,new THREE.Vector3(p.x,p.y+.18,p.z))}
-try{Object.assign(G.I18N_ES=G.I18N_ES||{},{"Pool":"Piscina","Bathe":"Bañar","Tap it to bathe your fauna":"Tócala para bañar a tu fauna"})}catch(e){}
+try{Object.assign(G.I18N_ES=G.I18N_ES||{},{"Pool":"Piscina","Bathe":"Bañar","New: Pool!":"¡Nuevo: Piscina!","Tap it to bathe your fauna":"Tócala para bañar a tu fauna"})}catch(e){}
