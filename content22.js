@@ -54,14 +54,14 @@ const drawBar=()=>{bar.innerHTML='';btn(bar,'↶ '+t('Undo'),undo,'arrundo');con
 const selAct=(fn,fixOk)=>{if(!A.sel.length)return;pushU();A.sel.forEach(k=>{const d=get(k);if(d&&(fixOk||!isF(k)))fn(d,isF(k))});commit()};
 const BC=()=>window.BCOL||['#c8a26a','#9aa3ad','#e07a5f','#81b29a','#f2cc8f','#6d6875','#f4f1de','#3d405b'];
 A.styleFns=[];// (obj)=>bool handlers for 🎨 on fixtures (houses)
-function renderTB(){tb.innerHTML='';if(!A.on||!A.sel.length||A.g&&A.g.drag){tb.style.display='none';return}const one=A.sel.length===1?get(A.sel[0]):null;const anyD=A.sel.some(k=>!isF(k)),onlyF=!anyD;const house=A.sel.some(k=>isF(k)&&get(k)&&get(k).type==='house');
+function renderTB(){tb.innerHTML='';if(!A.on||!A.sel.length||A.g&&A.g.drag){tb.style.display='none';return}const one=A.sel.length===1?get(A.sel[0]):null;const anyD=A.sel.some(k=>!isF(k)),onlyF=!anyD;const house=A.sel.some(k=>isF(k)&&get(k)&&(get(k).type==='house'||get(k).type==='pool'));
  btn(tb,'✥ '+t('Move'),()=>{A.move=true;toast(t('Tap a tile to move it there, or drag it.'))},'tbmove');
- if(anyD||house)btn(tb,'↻ '+t('Rotate'),()=>selAct((d,f)=>{if(!f||d.type==='house')d.rot=((d.rot|0)+1)%4},true),'tbrot');
+ if(anyD||house)btn(tb,'↻ '+t('Rotate'),()=>selAct((d,f)=>{if(!f||d.type==='house'||d.type==='pool')d.rot=((d.rot|0)+1)%4},true),'tbrot');
  if(A.sel.some(k=>!isF(k)&&D()[k]&&D()[k].item.includes('fence')))btn(tb,(one&&(one.rot|0)%2)?'↕':'↔',()=>selAct(d=>{if(d.item.includes('fence'))d.rot=((d.rot|0)%2)?0:1}),'tborient');
  if(anyD){btn(tb,'▲',()=>selAct(d=>d.h=Math.min(6,(d.h|0)+1)),'tbup');btn(tb,'▼',()=>selAct(d=>d.h=Math.max(0,(d.h|0)-1)),'tbdown')}
  if(anyD||house)btn(tb,'🎨',()=>selAct((d,f)=>{if(f){A.styleFns.forEach(fn=>{try{fn(d)}catch(e){}})}else if(d.item==='d_block'){const c=BC();d.col=c[(c.indexOf(d.col)+1)%c.length]}else d.v=((d.v|0)+1)%8},true),'tbcol');
  if(one&&!isF(A.sel[0])&&S.player.inv[one.item]>0)btn(tb,'⧉ '+t('Copy'),()=>{const s=[[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];for(const[a,b]of s){const i=one.i+a,j=one.j+b;if(tileOk(i,j)&&!at(i,j).length){pushU();S.player.inv[one.item]--;if(!S.player.inv[one.item])delete S.player.inv[one.item];D().push({...one,i,j,h:0});A.sel=[D().length-1];commit();return}}toast(t('No free tile next to it.'))},'tbdup');
- if(anyD||house)btn(tb,'📦 '+t('Store'),()=>{pushU();A.sel.filter(isF).forEach(r=>{const o=get(r);if(o&&o.type==='house'&&window.FShouse)FShouse.store(o)});[...A.sel.filter(k=>!isF(k))].sort((a,b)=>b-a).forEach(k=>{const d=D().splice(k,1)[0];if(d)addItem(d.item)});A.sel=[];commit();toast(t('Stored in your inventory.'))},'tbstore');
+ if(anyD||house)btn(tb,'📦 '+t('Store'),()=>{pushU();A.sel.filter(isF).forEach(r=>{const o=get(r);if(o&&o.type==='house'&&window.FShouse)FShouse.store(o);if(o&&o.type==='pool'&&window.FSpool)FSpool.store(o)});[...A.sel.filter(k=>!isF(k))].sort((a,b)=>b-a).forEach(k=>{const d=D().splice(k,1)[0];if(d)addItem(d.item)});A.sel=[];commit();toast(t('Stored in your inventory.'))},'tbstore');
  if(anyD)btn(tb,'🗑',()=>{if(!confirm(t('Delete this item for good? (📦 Store keeps it in your inventory.)')))return;pushU();[...A.sel.filter(k=>!isF(k))].sort((a,b)=>b-a).forEach(k=>D().splice(k,1));A.sel=A.sel.filter(isF);commit();toast(t('Deleted.'))},'tbdel');
  btn(tb,'✔',()=>{A.sel=[];A.move=false},'tbok');
  tb.style.display='flex';posTB()}

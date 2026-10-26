@@ -539,7 +539,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);G._d
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);
  const pz=G.zapAt&&now()-G.zapAt.t<300&&remote.get(G.zapAt.id),pzp=G.zapAt&&now()-G.zapAt.t<300&&window.NetMP&&NetMP.peers.get(G.zapAt.id),zp=pz?pz.pos.clone():pzp?W2(pzp.i,pzp.j):G.zapAt&&now()-G.zapAt.t<300?null:rt.tgtObj?(objMap.get(rt.tgtObj.id)?objMap.get(rt.tgtObj.id).g.position.clone():W2(rt.tgtObj.i,rt.tgtObj.j)):null;
  if(zapA>0&&zp&&(!rt.tgt||pz)){const tp=zp;const d=tp.clone().sub(fpos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-fauna.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));fauna.rotation.y+=dd*.3}
- remoteFrame(t);roamFrame(t);paintFrame();ghostFrame();animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});
+ remoteFrame(t);roamFrame(t);paintFrame();ghostFrame();animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});if(G.FSpoolFrame)try{G.FSpoolFrame(fauna,t,dt,spawn)}catch(_){}
  if(rt.sleep&&Math.random()<.02)spawn({p:fpos.clone().add(new THREE.Vector3(.1,.7,0)),v:new THREE.Vector3(.1,.4,0),g:0,col:new THREE.Color(0xaad4ff),size:.14,decay:.008});
  // lightning beam from necklace gem
  const gr=fauna.userData.rig;
@@ -678,7 +678,7 @@ B.tox=o=>{const g=t0(o);try{g.children.slice().forEach(c=>{if(c!==g.userData.blo
  const n=o.boss?9:((o.v||hsh(o.i,o.j,3)*3|0)%3===2?4:2),b=g.userData.blob;for(let k=0;k<n;k++){const row=n===9?Math.floor(k/3):n===4?Math.floor(k/2):0,cols=n===9?3:2,col=k%cols,x=(col-(cols-1)/2)*.32,y=.1+row*.28-(n===9?.28:n===4?.14:0),s=n===9?.16:.24;
   const e=new THREE.Group();e.position.set(x,y,Math.sqrt(Math.max(.05,1-x*x-y*y))*.97);e.add(mesh(SPHL,EW,[s,s,s*.5]));e.add(mesh(SPHL,EG,[s*.62,s*.62,s*.3],[0,0,s*.3]));e.add(mesh(SPHL,EK,[s*.28,s*.28,s*.15],[0,0,s*.45]));b.add(e)}
  if(n>=4){const gm=new THREE.MeshBasicMaterial({color:0x8dff5a,transparent:true,opacity:.18,depthWrite:false});for(let k=0;k<3;k++)g.add(mesh(SPHL,gm,[.14,.14,.14],[Math.sin(k*2.1)*.3,.75+k*.12,Math.cos(k*2.1)*.3]))}}catch(e){}return g}}
-G.GLB=B;G.GLfpos=()=>fpos;G.GLfauna=()=>fauna;
+G.GLB=B;G.GLW2=(i,j)=>W2(i,j);G.GLfpos=()=>fpos;G.GLfauna=()=>fauna;
 // v4.13 (notes 26/27): distinct looks for Tusker (elephant), Dasher (deer), Bobbler (T-rex), Waddler (penguin), Flapper (crane), Thumper (kangaroo)
 Object.assign(SP,{
  elephant:{b:[.22,.21,.27],leg:.17,lr:.07,head:.16,neck:[.03,.4],snout:[.04,.06],ears:'side',tail:'thin'},
