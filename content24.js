@@ -12,8 +12,8 @@ window.FS_MON=MON;
 const PRE={elite:['Elite ','Élite '],boss:['Boss ','Jefe ']};
 try{const es=window.I18N_ES||(window.I18N_ES={});for(const k in MON){es[MON[k].en]=MON[k].es;es[PRE.elite[0]+MON[k].en]=MON[k].es+' '+'de élite';es[PRE.boss[0]+MON[k].en]='Jefe '+MON[k].es}
  Object.assign(es,{'appeared!':'¡apareció!','spat at you!':'¡te escupió!','lunged at you!':'¡se abalanzó sobre ti!','rose from the mud!':'¡surgió del lodo!','defeated!':'¡derrotado!'})}catch(e){}
-const tr=s=>{try{return typeof t==='function'?t(s):s}catch(e){return s}};
-const nameOf=o=>tr((o.el===2?PRE.boss[0]:o.el===1?PRE.elite[0]:'')+MON[o.mon].en);
+const tr=s=>{try{return typeof t==='function'?t(s):window.T?window.T(s):s}catch(e){return s}};
+const nameOf=o=>{const M=MON[o.mon]||{en:'Monster',es:'Monstruo'},es=(window.LANG||'').startsWith('es');if(es){const b=M.es||tr(M.en);return o.el===2?PRE.boss[1]+b:o.el===1?PRE.elite[1]+b:b}return tr((o.el===2?PRE.boss[0]:o.el===1?PRE.elite[0]:'')+M.en)};
 window.FSmonName=nameOf;
 // v6.14 zone assignment table. New worlds: FSmonAssign('zoneid',['spider','stalker'],{count:6}) or add to FS_MON_ZONES before entering.
 const BIOME={forest:['bramble','stalker'],garden:['bramble','stalker'],arctic:['wraith','stalker'],swamp:['lurker','bramble'],scorch:['scorpion','stalker'],beach:['scorpion','lurker'],mesa:['scorpion','stalker'],

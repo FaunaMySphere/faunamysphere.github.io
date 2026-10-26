@@ -570,7 +570,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);last
  if(finalPass){finalPass.uniforms.uTime.value=t%10;finalPass.uniforms.uFade.value=fade;composer.render(dt)}else R.render(scene,camera);
  overlay(t,fade);
  // adaptive resolution
- fpsAcc+=dt;fpsN++;if(fpsAcc>2.5){const fps=fpsN/fpsAcc;G.GLfps=fps;fpsAcc=0;fpsN=0;const tgt=isPhone?30:50,nowT=performance.now();if(nowT-(G._prT||0)<12000||(G._prN||0)>=4){}else if(fps<tgt&&PR>.75){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.max(.75,PR-.2);R.setPixelRatio(PR);size()}else if(fps>tgt+15&&PR<Math.min(devicePixelRatio||1,QP.pr)){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.min(QP.pr,PR+.1);R.setPixelRatio(PR);size()}}}
+ fpsAcc+=dt;fpsN++;if(fpsAcc>2.5){const fps=fpsN/fpsAcc;G.GLfps=fps;fpsAcc=0;fpsN=0;const tgt=isPhone?30:50,nowT=performance.now();if(nowT-(G._prT||0)<12000||(G._prN||0)>=4){}else if(fps<tgt&&PR>.75){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.max(G._prMin||.75,PR-.2);R.setPixelRatio(PR);size()}else if(fps>tgt+15&&PR<Math.min(devicePixelRatio||1,QP.pr)){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.min(QP.pr,PR+.1);R.setPixelRatio(PR);size()}}}
 let sheetG=null;function sheet(t){if(!sheetG){sheetG=new THREE.Group();const ks=Object.keys(SPECIES),cols=Object.keys(COLORS);ks.forEach((k,i)=>{const f=buildFauna({species:k,color:cols[i%cols.length],pattern:PATTERNS[i%PATTERNS.length],tail:TAILS[i%3],eyes:EYES[i%3]});f.position.set((i%6)-2.5,0,Math.floor(i/6)*1.3-.6);f.rotation.y=.6;f.scale.setScalar(1.05);sheetG.add(f)});scene.add(sheetG);fauna.visible=false;clearObjs();island.visible=false;camS.yaw=Math.PI/4*0+0.0001;camS.pitch=.5}
  sheetG.children.forEach((f,i)=>animFauna(f,t+i,{walk:i%4===1,happy:i%4===2,sleep:i%4===3,zap:0}))}
 function applyEnvLite(z,nt){/* periodic day/night refresh */const k=z.id+'|'+nt.toFixed(2);if(applyEnvLite.k!==k){applyEnvLite.k=k;applyEnv(z,nt)}}
@@ -589,6 +589,8 @@ function overlay(t,fade){const D=Math.min(2,devicePixelRatio||1);if(cv.width!==M
 G.rebuildIsland=()=>{curZone=null};G.draw=frame;
 G.W6={scene,camera,sun,hemi,su,sky,U,R,QP,get island(){return island},get N0(){return N0},get C0(){return C0},get zone(){return builtZone},hsh,fbm,vnoise,windify,get camDist(){return camS.dist}};
 if(G.W7)import('./world7.js').catch(e=>console.warn('w7',e));
+// v6.22: graduated performance steps used by perf621.js before the auto-drop to Low (session only, no save change)
+G.FSperfStep=n=>{try{if(n>=1){G._prMin=.6;if(PR>.6){PR=.6;R.setPixelRatio(PR);size()}}if(n>=2&&R.shadowMap.enabled){R.shadowMap.enabled=false;sun.castShadow=false;scene.traverse(o=>{if(o.material){const m=Array.isArray(o.material)?o.material:[o.material];m.forEach(x=>x.needsUpdate=true)}})}if(n>=3){G._prMin=.5;if(PR>.5){PR=.5;R.setPixelRatio(PR);size()}}}catch(e){console.warn('perfstep',e)}};
 G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reload()},get fps(){return G.GLfps},renderer:R};
 // keep rendering behind the adopt/title screens when no fauna yet
 (function idle(){if(!fa()){try{const z=Z(S.zone);if(curZone!==S.zone){curZone=S.zone;zs(S.zone);buildIsland(S.zone);applyEnv(z,0);camS.dist=null}syncObjs();U.time.value=performance.now()/1000;updCamera(.016,U.time.value);composer?composer.render():R.render(scene,camera)}catch(e){console.error(e)}}requestAnimationFrame(idle)})();
