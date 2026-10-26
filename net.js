@@ -18,7 +18,7 @@ function deliver(m,fromConn){ // host relays
 let SQ=0;const seen=new Set();function send(m){m.id=m.id||NetMP.myId;m.sq=m.sq||(++SQ+'_'+Date.now()%1e6);relayPub(m);if(NetMP.isHost)deliver(m,null);else if(NetMP.hostConn&&NetMP.hostConn.open)NetMP.hostConn.send(m);
  // v6.19: challenges/visit requests are re-sent (same sq, receiver dedupes) so one sent around a Find players reconnect is not lost
  if(!m._rs&&RESEND[m.t]){const mm=Object.assign({},m,{_rs:1});[2500,5500,9000].forEach(d=>setTimeout(()=>{try{relayPub(mm);if(NetMP.isHost)deliver(mm,null);else if(NetMP.hostConn&&NetMP.hostConn.open)NetMP.hostConn.send(mm)}catch(_){}},d))}}
-const RESEND={pvpAsk:1,pvpAns:1,pvpGo:1,hvReq:1,hvNo:1};
+const RESEND={giftResp:1,pvpAsk:1,pvpAns:1,pvpGo:1,hvReq:1,hvNo:1};
 NetMP.send=send;
 function es(){return(window.I18N&&I18N.lang==='es')||window.LANG==='es'}
 let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(!SPECIES[m.genes.species]){m.oddSp=m.genes.species;m.genes={...m.genes,species:Object.keys(SPECIES)[0]}}}
@@ -30,7 +30,7 @@ function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if
  if(typeof m.t==='string'&&m.t.slice(0,2)==='mk'){if(window.FSMkt)try{FSMkt.on(m,p)}catch(e){console.warn('mkt',e)}return} // v7.0 marketplace
  if(typeof m.t==='string'&&m.t.slice(0,2)==='hv'){if(window.FSVisit)try{FSVisit.msg(m,p)}catch(e){console.warn('visit',e)}return}
  if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
- else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere')return;
+ else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere'&&m.t!=='giftOffer'&&m.t!=='giftResp')return;
  if(m.t&&m.t.slice(0,4)==='gift'&&window.FSGift){FSGift.on(m,p);return}
  if(m.t&&m.t.slice(0,3)==='pvp'&&window.FSPvP){FSPvP.on(m,p);return}
  if(m.t==='say'){p.say={text:String(m.text).slice(0,80),at:Date.now()+CHAT_MS-6000,chat:1};Sound.tone&&Sound.tone(1320,.2,'sine',.04);chatLog(p.name,m.text)}

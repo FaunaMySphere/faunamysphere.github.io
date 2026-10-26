@@ -139,3 +139,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 - Fighting: zaps aim at the battle opponent (no longer at the last tapped object), beam follows moving targets/monsters, fauna turns to the target, hit flash + knockback, attacker beam visible on the victim screen, HP synced as before.
 - Multiplayer: max 10 players per world server; newcomers overflow to Server 2, 3...; server label in the player counter (EN/ES); smoother remote movement; lower render caps (9/7/4).
 - sw fs-v73-1
+
+## v7.3.1 (2026-10-26)
+- Fix: Give to friend picker was instantly replaced by the Fauna list (menu re-draw), so no gift could be sent. Gift messages now use the shared channel so friends in another zone or at home receive them; accept reply re-sent for reliability. sw fs-v731-1
