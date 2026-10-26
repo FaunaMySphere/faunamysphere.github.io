@@ -18,6 +18,9 @@ if(GFX==='low')Q='low';else if(!QS.get('q'))Q='high';
 const REAL=G.REAL=false;G.W7=GFX==='high'&&!QS.has('now7')&&localStorage.getItem('fs_w7')!=='0'; // v6.2 refined world (High graphics only)
  // v6 world look reverted (Leo); High/Low only changes quality
 const QP={low:{pr:1,shadow:0,grass:900,bloom:0,post:0,tex:128,weather:120},med:{pr:1.5,shadow:1024,grass:2600,bloom:1,post:0,tex:256,weather:220},high:{pr:2,shadow:2048,grass:6000,bloom:1,post:1,tex:512,weather:380}}[Q];
+// v7.7: PC-only Ultra tier (desktop + High only; never phones). Opt-in via fs_ultra=1 (set by ultra77.js after an FPS check) or ?ultra.
+const ULTRA=G.FS_ULTRA=!isPhone&&GFX==='high'&&!QS.has('v77off')&&(QS.has('ultra')||localStorage.getItem('fs_ultra')==='1');
+if(ULTRA)Object.assign(QP,{pr:2,shadow:4096,grass:12000,tex:1024,weather:500});
 
 // ---------- renderer ----------
 const stage=document.getElementById('stage'),cv=document.getElementById('cv');
@@ -26,15 +29,15 @@ let R;
 try{R=new THREE.WebGLRenderer({canvas:glc,antialias:Q!=='low',powerPreference:'high-performance'});}catch(e){console.warn('WebGL unavailable, staying on 2D',e);glc.remove();throw new Error('no-webgl-fallback-2d')}
 document.body.classList.add('webgl');
 // v7.4.1: PCs report devicePixelRatio 1, so High rendered at 1x and looked blurry next to phones (2x). Desktops on High/Med now render at 1.5x (supersampled).
-const maxPR=()=>isPhone?Math.min(devicePixelRatio||1,QP.pr):Math.min(QP.pr,Math.max(devicePixelRatio||1,Q==='low'?1:1.5));let PR=maxPR();R.setPixelRatio(PR);
+const maxPR=()=>isPhone?Math.min(devicePixelRatio||1,QP.pr):Math.min(QP.pr,Math.max(devicePixelRatio||1,ULTRA?2:Q==='low'?1:1.5));let PR=maxPR();R.setPixelRatio(PR);
 R.toneMapping=THREE.NoToneMapping;R.toneMappingExposure=1.0;R.outputColorSpace=THREE.SRGBColorSpace;
 // pc-brightness-fix: on landscape desktops the camera sat 1.3x farther (v7.4.1), so the island was small and the pale horizon band of the sky filled the frame -> washed-out, low-contrast PC image vs the deep-blue portrait phone view; plus no MSAA in the composer. Desktop (non-phone, High/Med): camera back to 1.0x, sky gradient lifted toward the top colour, exposure x0.92, 4x MSAA composer target, max anisotropy. Phones untouched. A/B: ?pcfix=0 disables; ?pcexp=<k>; ?pctm=aces.
 const PCX=G.FS_PCX=!isPhone&&Q!=='low'&&QS.get('pcfix')!=='0';const PCEXP=PCX?(+QS.get('pcexp')||.92):1;if(PCX&&QS.get('pctm')==='aces')R.toneMapping=THREE.ACESFilmicToneMapping;
-if(false){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
+if(ULTRA){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,400);
 const hemi=new THREE.HemisphereLight(0xcfe9ff,0x5a4630,1.1);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1d8,2.6);sun.castShadow=!!QP.shadow;
-if(QP.shadow){sun.shadow.mapSize.set(QP.shadow,QP.shadow);sun.shadow.bias=-.0006;sun.shadow.normalBias=.02;sun.shadow.radius=4;const c=sun.shadow.camera;c.left=c.bottom=-12;c.right=c.top=12;c.near=1;c.far=60}
+if(QP.shadow){sun.shadow.mapSize.set(QP.shadow,QP.shadow);sun.shadow.bias=-.0006;sun.shadow.normalBias=.02;sun.shadow.radius=4;const c=sun.shadow.camera;c.left=c.bottom=ULTRA?-16:-12;c.right=c.top=ULTRA?16:12;c.near=1;c.far=60}
 scene.add(sun,sun.target);
 const su={uLift:{value:PCX?.22:0},sunPosition:{value:new THREE.Vector3(0,1,0)},uTop:{value:new THREE.Color()},uHor:{value:new THREE.Color()},uSunC:{value:new THREE.Color(1,.9,.7)}};
 const sky=new THREE.Mesh(new THREE.SphereGeometry(250,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:su,
@@ -59,7 +62,7 @@ const FinalShader={uniforms:{tDiffuse:{value:null},uV:{value:.32},uDof:{value:QP
   float d=distance(vUv,vec2(.5));c.rgb*=1.-uV*smoothstep(.35,.85,d);
   c.rgb+=(h(vUv*uRes+uTime)-.5)*.018;
   c.rgb=mix(c.rgb,uFadeCol,uFade);gl_FragColor=c;}`};
-if(QP.bloom){composer=new EffectComposer(R,PCX&&R.capabilities.isWebGL2?new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}):undefined);composer.addPass(new RenderPass(scene,camera));
+if(QP.bloom){composer=new EffectComposer(R,PCX&&R.capabilities.isWebGL2?new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}):undefined);composer.addPass(new RenderPass(scene,camera));if(ULTRA&&G.FS_SSAO){try{const ao=new G.FS_SSAO(scene,camera,256,256);ao.kernelRadius=.35;ao.minDistance=.004;ao.maxDistance=.025;composer.addPass(ao);G.FS_aoPass=ao}catch(e){console.warn('ssao',e)}}
  bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.55,.45,1.0);composer.addPass(bloom);
  composer.addPass(new OutputPass());finalPass=new ShaderPass(FinalShader);composer.addPass(finalPass)}
 
@@ -492,7 +495,7 @@ const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
  const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit*(asp>1.2&&!isPhone&&!PCX?1.3:1)/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=false;
  const follow=portrait?(HW?.55:1):clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15+fpos.y*follow;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
- if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
+ if(G.FS_camHook&&!(EC&&S.zone==='home'))dist=G.FS_camHook(dist,S.zone,camS,fpos,tgt);if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
  let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if((titleOn||!fa())&&!(G.editCam&&S.zone==="home")){yaw+=t*.12;d*=1.15;pitch=.55}
  const k=Math.cos(pitch)*d;camera.position.set(camS.t.x+Math.sin(yaw)*k,camS.t.y+Math.sin(pitch)*d,camS.t.z+Math.cos(yaw)*k);
  if(rt.shake>.3){camera.position.x+=(Math.random()-.5)*rt.shake*.01;camera.position.y+=(Math.random()-.5)*rt.shake*.01}camera.lookAt(camS.t)}
@@ -611,7 +614,7 @@ function overlay(t,fade){const D=Math.min(2,devicePixelRatio||1);if(cv.width!==M
  if(!finalPass){/* cheap vignette on low/med */const vg=ctx2.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#00000040');ctx2.fillStyle=vg;ctx2.fillRect(0,0,W,H)}}
 // title-screen backdrop: render home island even before adoption
 G.rebuildIsland=()=>{curZone=null};G.draw=frame;
-G.W6={scene,camera,sun,hemi,su,sky,U,R,QP,get island(){return island},get N0(){return N0},get C0(){return C0},get zone(){return builtZone},hsh,fbm,vnoise,windify,get camDist(){return camS.dist}};
+G.W6={camS,ULTRA,get composer(){return composer},scene,camera,sun,hemi,su,sky,U,R,QP,get island(){return island},get N0(){return N0},get C0(){return C0},get zone(){return builtZone},hsh,fbm,vnoise,windify,get camDist(){return camS.dist}};
 if(G.W7)import('./world7.js').catch(e=>console.warn('w7',e));
 // v6.22: graduated performance steps used by perf621.js before the auto-drop to Low (session only, no save change)
 G.FSperfStep=n=>{try{if(n>=1){G._prMin=.6;if(PR>.6){PR=.6;R.setPixelRatio(PR);size()}}if(n>=2&&R.shadowMap.enabled){R.shadowMap.enabled=false;sun.castShadow=false;scene.traverse(o=>{if(o.material){const m=Array.isArray(o.material)?o.material:[o.material];m.forEach(x=>x.needsUpdate=true)}})}if(n>=3){G._prMin=.5;if(PR>.5){PR=.5;R.setPixelRatio(PR);size()}}}catch(e){console.warn('perfstep',e)}};
@@ -621,7 +624,7 @@ G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reloa
 // ---------- title screen & settings ----------
 const title=document.getElementById('title');
 if(title&&!QS.has('notitle')){titleOn=true;title.classList.remove('hidden');document.getElementById('play').onclick=()=>{Sound.init();Sound.sfx&&Sound.sfx('gate');vib(20);title.classList.add('out');titleOn=false;camS.dist=null;setTimeout(()=>title.remove(),900)}}else if(title)title.remove();
-const qb=document.getElementById('gfx');if(qb){{const tt=k=>(window.FS&&FS.t)?FS.t(k):k;qb.innerHTML='<i>⚙</i><span></span>';qb.lastChild.textContent=tt(GFX==='high'?'High':'Low')}qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');try{sessionStorage.setItem('fs_autolow',GFX==='high'?'0':'no')}catch(_){}localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
+const qb=document.getElementById('gfx');if(qb){{const tt=k=>(window.FS&&FS.t)?FS.t(k):k;qb.innerHTML='<i>⚙</i><span></span>';qb.lastChild.textContent=tt(ULTRA?'Ultra':GFX==='high'?'High':'Low')}qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.removeItem('fs_ultra');localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');try{sessionStorage.setItem('fs_autolow',GFX==='high'?'0':'no')}catch(_){}localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
 const ld=document.getElementById('loading');if(ld){ld.classList.add('out');setTimeout(()=>ld.remove(),700)}
 console.log('[FaunaMySphere] WebGL renderer active, quality='+Q);
 
