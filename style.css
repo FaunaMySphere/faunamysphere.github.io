@@ -233,3 +233,5 @@ body.webgl canvas#cv{position:absolute;inset:0;background:transparent}
 #pvpwin b{font-size:34px;display:block}#pvpwin.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 #pvpwin.lose{background:linear-gradient(#e6dcff,#a98be0);color:#2e1a5a;box-shadow:0 8px 40px rgba(120,80,220,.7)}
 #pvpwin.lose b{font-size:28px}
+
+#microbox.mclosed{padding:3px 8px}#microbox.mclosed h4{margin:0;gap:8px}#microbox h4 .msets{padding:0 2px}

@@ -15,7 +15,10 @@ function badge(){let b=document.getElementById('mpbadge');if(!NetMP.room||NetMP.
 function deliver(m,fromConn){ // host relays
  if(NetMP.isHost){if(m.to&&m.to!==NetMP.myId){const c=NetMP.conns.get(m.to);if(c&&c.open)c.send(m);return}if(!m.to){const zoned=(m.t==='st'||m.t==='say'||m.t==='trick')&&NetMP.isWorld();const sz=m.zk||(NetMP.peers.get(m.id)||{}).zk;for(const[id,c]of NetMP.conns){if(c===fromConn||!c.open)continue;if(zoned){const q=NetMP.peers.get(id);if(q&&q.zk!==sz){if(m.t!=='st')continue;c._lp=c._lp||{};if(Date.now()-(c._lp[m.id]||0)<12000)continue;c._lp[m.id]=Date.now()}}c.send(m)}}}
  if(!m.to||m.to===NetMP.myId)handle(m)}
-let SQ=0;const seen=new Set();function send(m){m.id=m.id||NetMP.myId;m.sq=m.sq||(++SQ+'_'+Date.now()%1e6);relayPub(m);if(NetMP.isHost)deliver(m,null);else if(NetMP.hostConn&&NetMP.hostConn.open)NetMP.hostConn.send(m)}
+let SQ=0;const seen=new Set();function send(m){m.id=m.id||NetMP.myId;m.sq=m.sq||(++SQ+'_'+Date.now()%1e6);relayPub(m);if(NetMP.isHost)deliver(m,null);else if(NetMP.hostConn&&NetMP.hostConn.open)NetMP.hostConn.send(m);
+ // v6.19: challenges/visit requests are re-sent (same sq, receiver dedupes) so one sent around a Find players reconnect is not lost
+ if(!m._rs&&RESEND[m.t]){const mm=Object.assign({},m,{_rs:1});[2500,5500,9000].forEach(d=>setTimeout(()=>{try{relayPub(mm);if(NetMP.isHost)deliver(mm,null);else if(NetMP.hostConn&&NetMP.hostConn.open)NetMP.hostConn.send(mm)}catch(_){}},d))}}
+const RESEND={pvpAsk:1,pvpAns:1,pvpGo:1,hvReq:1,hvNo:1};
 NetMP.send=send;
 function es(){return(window.I18N&&I18N.lang==='es')||window.LANG==='es'}
 let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(!SPECIES[m.genes.species]){m.oddSp=m.genes.species;m.genes={...m.genes,species:Object.keys(SPECIES)[0]}}}
