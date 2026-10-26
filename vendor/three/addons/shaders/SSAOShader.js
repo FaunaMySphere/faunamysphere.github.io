@@ -173,9 +173,9 @@ const SSAOShader = {
 				}
 
 				occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );
-				// FaunaMySphere v7.7: AO strength 0.4 (subtle contact shadows only)
+				// FaunaMySphere v7.7: AO strength 0.3 (subtle contact shadows only)
 
-				gl_FragColor = vec4( vec3( 1.0 - occlusion * 0.4 ), 1.0 );
+				gl_FragColor = vec4( vec3( 1.0 - occlusion * 0.3 ), 1.0 );
 
 			}
 

@@ -36,7 +36,7 @@ const PCX=G.FS_PCX=!isPhone&&Q!=='low'&&QS.get('pcfix')!=='0';const PCEXP=PCX?(+
 if(ULTRA){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,400);
 const hemi=new THREE.HemisphereLight(0xcfe9ff,0x5a4630,1.1);scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xfff1d8,2.6);sun.castShadow=!!QP.shadow;
+const sun=new THREE.DirectionalLight(0xfff1d8,2.6);sun.castShadow=!!QP.shadow;if(ULTRA)sun.shadow.intensity=.5;
 if(QP.shadow){sun.shadow.mapSize.set(QP.shadow,QP.shadow);sun.shadow.bias=-.0006;sun.shadow.normalBias=.02;sun.shadow.radius=4;const c=sun.shadow.camera;c.left=c.bottom=ULTRA?-16:-12;c.right=c.top=ULTRA?16:12;c.near=1;c.far=60}
 scene.add(sun,sun.target);
 const su={uLift:{value:PCX?.22:0},sunPosition:{value:new THREE.Vector3(0,1,0)},uTop:{value:new THREE.Color()},uHor:{value:new THREE.Color()},uSunC:{value:new THREE.Color(1,.9,.7)}};
