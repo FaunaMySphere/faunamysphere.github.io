@@ -142,3 +142,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 
 ## v7.3.1 (2026-10-26)
 - Fix: Give to friend picker was instantly replaced by the Fauna list (menu re-draw), so no gift could be sent. Gift messages now use the shared channel so friends in another zone or at home receive them; accept reply re-sent for reliability. sw fs-v731-1
+
+## v7.3.2 (2026-10-26)
+- Donate XRP QR (top-left, below top bar): QR = rJvQpAq1L4weG8b4B7C7ZqdmZeCcqhxbef (static SVG, made offline); tap opens xrpl: URI, copies address, EN/ES toast. sw fs-v732-1
