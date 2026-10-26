@@ -74,25 +74,50 @@ const sunGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,transparent
 const CT={};const cloudMats=[];const clouds=[];
 const mkCloud=(shade,x,y,z,s,a)=>{const k=shade;CT[k]=CT[k]||cloudTex(shade);const m=new THREE.SpriteMaterial({map:CT[k],transparent:true,fog:false,depthWrite:false,opacity:a});cloudMats.push(m);const sp=new THREE.Sprite(m);sp.position.set(x,y,z);sp.scale.set(s,s*.75,1);sp.userData={a:Math.atan2(z,x),r:Math.hypot(x,z),y};skyG.add(sp);clouds.push(sp);return sp};
 let cloudShade='#c9b7c8';
+// v7 sky: layered puffy clouds (lit tops, shaded bellies) + wisps; few billboards, procedural canvas textures
+const puffTex=(shade,v)=>cvs(256,160,(x,w,h)=>{let s2=v*977+7;const r=()=>(s2=(s2*16807)%2147483647)/2147483647;
+ const n=10+v*3,P=[];for(let k=0;k<n;k++){const t=k/(n-1),px=40+t*176+(r()-.5)*24,dome=1-Math.pow(Math.abs(t-.5)*2,1.6),rr=(16+r()*16)*(.6+dome*.7);P.push([px,112-dome*34-r()*12,rr])}
+ for(let k=0;k<5;k++)P.push([70+r()*116,80+r()*24,20+r()*14]);
+ P.forEach(([px,py,rr])=>{const g=x.createRadialGradient(px,py,rr*.2,px,py,rr);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.7,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.beginPath();x.arc(px,py,rr,0,7);x.fill()});
+ // flatten the base softly
+ x.globalCompositeOperation='destination-out';const fb=x.createLinearGradient(0,112,0,150);fb.addColorStop(0,'rgba(0,0,0,0)');fb.addColorStop(1,'rgba(0,0,0,1)');x.fillStyle=fb;x.fillRect(0,112,w,h-112);
+ // colourise: warm lit top -> zone-tinted shaded belly
+ x.globalCompositeOperation='source-atop';const vg=x.createLinearGradient(0,40,0,124);vg.addColorStop(0,'#fffdf6');vg.addColorStop(.45,'#f4f4f6');vg.addColorStop(1,shade);x.fillStyle=vg;x.fillRect(0,0,w,h);
+ P.slice(0,n).forEach(([px,py,rr])=>{const g=x.createRadialGradient(px-rr*.2,py-rr*.45,1,px,py-rr*.3,rr*.8);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(px-rr,py-rr,rr*2,rr*2)})});
+const wispTex=cvs(256,64,(x,w,h)=>{let s2=5;const r=()=>(s2=(s2*16807)%2147483647)/2147483647;for(let k=0;k<40;k++){const px=20+r()*216,py=32+(r()-.5)*18,rx=18+r()*30,ry=3+r()*5;const g=x.createRadialGradient(px,py,0,px,py,rx);g.addColorStop(0,'rgba(255,255,255,.28)');g.addColorStop(1,'rgba(255,255,255,0)');x.save();x.translate(px,py);x.scale(1,ry/rx);x.translate(-px,-py);x.fillStyle=g;x.beginPath();x.arc(px,py,rx,0,7);x.fill();x.restore()}});
+const mkPuff=(shade,v,x,y,z,s,a,sp)=>{const k=shade+v;CT[k]=CT[k]||puffTex(shade,v);const m=new THREE.SpriteMaterial({map:CT[k],transparent:true,fog:false,depthWrite:false,opacity:a});cloudMats.push(m);const c=new THREE.Sprite(m);c.position.set(x,y,z);c.scale.set(s,s*.62,1);c.userData={a:Math.atan2(z,x),r:Math.hypot(x,z),y,sp};skyG.add(c);clouds.push(c);return c};
 const buildClouds=()=>{clouds.forEach(c=>skyG.remove(c));clouds.length=0;rs=99;
- for(let k=0;k<12;k++){const a=k/12*6.283+rnd()*.4,r=120+rnd()*40;mkCloud(cloudShade,Math.cos(a)*r,10+rnd()*30,Math.sin(a)*r,40+rnd()*36,.95)}
- // cloud sea far below the island (depth like the concept)
- for(let k=0;k<16;k++){const a=rnd()*6.283,r=70+rnd()*70;mkCloud(cloudShade,Math.cos(a)*r,-45-rnd()*15,Math.sin(a)*r,38+rnd()*30,.9)}};
+ // low cloud sea behind/below the island: big, slow
+ for(let k=0;k<7;k++){const a=k/7*6.283+rnd()*.6,r=60+rnd()*45;mkPuff(cloudShade,k%3,Math.cos(a)*r,-30-rnd()*14,Math.sin(a)*r,22+rnd()*18,.85,.5)}
+ // mid puffy layer, varied sizes
+ for(let k=0;k<8;k++){const a=k/8*6.283+rnd()*.5,r=65+rnd()*40;mkPuff(cloudShade,(k+1)%3,Math.cos(a)*r,-12+rnd()*12,Math.sin(a)*r,10+rnd()*14,.95,.9)}
+ // a few nearer small puffs drifting below the rim (parallax)
+ for(let k=0;k<5;k++){const a=k/5*6.283+rnd(),r=34+rnd()*18;mkPuff(cloudShade,k%3,Math.cos(a)*r,-14-rnd()*8,Math.sin(a)*r,8+rnd()*8,.9,1.2)}
+ // a few wispy high clouds, faster
+ for(let k=0;k<5;k++){const a=rnd()*6.283,r=90+rnd()*30;const m=new THREE.SpriteMaterial({map:wispTex,transparent:true,fog:false,depthWrite:false,opacity:.8});cloudMats.push(m);const c=new THREE.Sprite(m);c.position.set(Math.cos(a)*r,6+rnd()*10,Math.sin(a)*r);const s=60+rnd()*40;c.scale.set(s,s*.25,1);c.userData={a,r,y:c.position.y,sp:1.6};skyG.add(c);clouds.push(c)}};
+// v7 sky: screen-space backdrop gradient as scene.background canvas (camera looks down, so the dome horizon never shows)
+const bdC=document.createElement('canvas');bdC.width=64;bdC.height=256;const bdT=new THREE.CanvasTexture(bdC);bdT.colorSpace=THREE.SRGBColorSpace;let bdKey='';
+const paintBD=(top,hor,sunC,day,sx)=>{const k=top.getHexString()+hor.getHexString()+day.toFixed(2)+sx.toFixed(1);if(k===bdKey)return;bdKey=k;const x=bdC.getContext('2d');
+ const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'#'+top.getHexString());g.addColorStop(.35,'#'+top.clone().lerp(hor,.45).getHexString());g.addColorStop(.75,'#'+hor.getHexString());g.addColorStop(1,'#'+hor.clone().lerp(C(0xffffff),.08).getHexString());x.fillStyle=g;x.fillRect(0,0,64,256);
+ if(day>.05){const cx=32+sx*28,r=x.createRadialGradient(cx,10,0,cx,10,120);const sc=sunC;r.addColorStop(0,`rgba(${sc.r*255|0},${sc.g*255|0},${sc.b*255|0},${.32*day})`);r.addColorStop(.4,`rgba(${sc.r*255|0},${sc.g*255|0},${sc.b*255|0},${.08*day})`);r.addColorStop(1,'rgba(255,255,255,0)');x.save();x.scale(1,1);x.fillStyle=r;x.fillRect(0,0,64,256);x.restore()}
+ bdT.needsUpdate=true};
+let bdArgs=null;G._bd=()=>bdArgs;
 // distant floating islets for depth (fogged)
 const islets=[];{const im=new THREE.MeshLambertMaterial({color:0x8f7a62}),gm=new THREE.MeshLambertMaterial({color:0x7aa548});rs=31;for(let k=0;k<5;k++){const g=new THREE.Group();const s=4+rnd()*7;const c=new THREE.Mesh(new THREE.ConeGeometry(1,1.8,8,2),im);c.rotation.x=Math.PI;c.position.y=-.9;const t=new THREE.Mesh(new THREE.CylinderGeometry(1.05,1,.25,10),gm);g.add(c,t);
  for(let b=0;b<3;b++){const tr=new THREE.Mesh(new THREE.IcosahedronGeometry(.25,0),gm);tr.position.set(rnd()-.5,.35,rnd()-.5);g.add(tr)}
  const a=k/5*6.283+.6,r=70+rnd()*50;g.position.set(Math.cos(a)*r,-6+rnd()*14,Math.sin(a)*r);g.scale.setScalar(s);skyG.add(g);islets.push(g)}}
 nr(skyG);
 let tAcc=0;(function tick(){requestAnimationFrame(tick);if(!skyG.visible)return;const cp=W.camera.position,d=cp.length();skyG.position.set(cp.x*.9,0,cp.z*.9);if(W.camera.far<d+320){W.camera.far=d+320;W.camera.updateProjectionMatrix()}
- const t=U.time.value*.006;clouds.forEach(c=>{const a=c.userData.a+t*(c.userData.y<0?.6:1);c.position.x=Math.cos(a)*c.userData.r;c.position.z=Math.sin(a)*c.userData.r});
- if(W.sun){const sp=W.sun.position.clone().normalize();sunGlow.position.copy(sp.multiplyScalar(180))}})();
+ const t=U.time.value*.006;clouds.forEach(c=>{const a=c.userData.a+t*(c.userData.sp||1);c.position.x=Math.cos(a)*c.userData.r;c.position.z=Math.sin(a)*c.userData.r});
+ if(W.sun){const sp=W.sun.position.clone().normalize();sunGlow.position.copy(sp.multiplyScalar(180));const q2=W.camera.position.clone().add(W.sun.position.clone().normalize().multiplyScalar(100)).project(W.camera);if(bdArgs){bdArgs[4]=Math.round(THREE.MathUtils.clamp(q2.x,-1,1)*4)/4;paintBD(...bdArgs)}}})();
 G.W6env=(z,nt)=>{const id=z.id||G.S?.zone,on=!!ON[id];skyG.visible=on;G.W7ON=on;if(!on)return;const PP=PK(zb(id));if(PP.cave){skyG.visible=false;return}if(PP.sea){skyG.visible=false;const pl=(G.ZPAL&&G.ZPAL[id])||BIOMES[zb(id)];const fc=C(pl[4]).lerp(C(pl[3]),.4);scene.background=fc;scene.fog=new THREE.Fog(fc,(W.camDist||20)*1.1,(W.camDist||20)*3.2);if(W.hemi){W.hemi.color.set(0x9fd8ff);W.hemi.groundColor.copy(C(pl[0]).multiplyScalar(.5));W.hemi.intensity=1.2}if(W.sun){W.sun.color.set(0xd8f4ff);W.sun.intensity=2}return}const pal=(G.ZPAL&&G.ZPAL[id])||BIOMES[zb(id)],day=1-Math.min(1,nt||0),night=C(0x0a1028);
  const hor=C(pal[5]).lerp(night,1-day),top=C(pal[4]).lerp(night,1-day);
  // v6.7: cool the peach home horizon so the haze behind the island reads as soft sky, not pink
  const hh={};C(pal[5]).getHSL(hh);const pinkHz=zb(id)!=='candy'&&(hh.h>.86||hh.h<.07)&&hh.s>.2;if(pinkHz){hor.lerp(C(0xcfe3f2).lerp(night,1-day),.7);top.lerp(C(0x9cc8ec).lerp(night,1-day),pal[4]&&zb(id)==='home'?.5:0)}
  if(W.su){W.su.uTop.value.copy(top);W.su.uHor.value.copy(hor)}
  // soft depth fog, gently tinted by the zone horizon colour
- const fc=hor.clone().lerp(C(0xffffff),.12*day);scene.background=fc;scene.fog=new THREE.Fog(fc,(W.camDist||20)*2.2,(W.camDist||20)*7);
+ const fc=hor.clone().lerp(C(0xffffff),.12*day);scene.background=fc;
+ {const cand=zb(id)==='candy';const bt=cand?top.clone().lerp(C(0xff8fc8),.45).lerp(night,1-day):C(0x2f72cc).lerp(top,.1).lerp(night,1-day),bh=cand?fc.clone():C(0xe4edf3).lerp(fc,.45).lerp(night,(1-day)*.8);bdArgs=[bt,bh,cand?C(0xfff0f6):C(0xfff1cc),day,bdArgs?bdArgs[4]:0];bdKey='';paintBD(...bdArgs);scene.background=bdT;if(W.sky)W.sky.visible=false}
  // shaded cloud underside tinted from the zone sky (pink at home, blue-grey in Rock Garden)
  const sh='#'+(pinkHz&&zb(id)==='home'?C(0xb8c6dc):C(pal[4])).lerp(C(0x8a8fb0),.45).lerp(C(0xffffff),.25).getHexString();if(sh!==cloudShade||!clouds.length){cloudShade=sh;buildClouds()}
  cloudMats.forEach(m=>m.color.setScalar(.35+.65*day));islets.forEach(g=>g.visible=true);sunGlow.material.opacity=.85*day;
