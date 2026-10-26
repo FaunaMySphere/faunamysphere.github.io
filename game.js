@@ -180,7 +180,7 @@ function isClickable(o){return!PROPS.includes(o.type)&&!(o.type==='decor'&&!rt.d
 function startTravel(zone){const z=Z(zone);if(!S.unlocked[zone]||(z.heat&&!fa().genes.heatProof)||zone===S.zone)return dispatch('travel',{zone});Sound.sfx('gate');rt.trans={t0:now(),fn:()=>{dispatch('travel',{zone});toast('✨ Arrived at '+z.name)}}}
 // ===== Movement & interaction =====
 let stepT=0;
-function step(dt){const f=fa();if(!f)return;if(rt.tgt){const[ti,tj]=rt.tgt,di=ti-rt.pos.i,dj=tj-rt.pos.j,d=Math.hypot(di,dj),sp=(f.energy>=95?4.4:3.2)*dt/1000;
+function step(dt){const f=fa();if(!f)return;if(rt.tgt){const[ti,tj]=rt.tgt,di=ti-rt.pos.i,dj=tj-rt.pos.j,d=Math.hypot(di,dj),sp=window.FSMove?FSMove(f,rt,dt,d,di,dj):(f.energy>=95?4.4:3.2)*dt/1000;
   if(Math.abs(di-dj)>.05)rt.face=(di-dj)>0?1:-1;if(now()-stepT>270+Math.random()*30){stepT=now();Sound.sfx('step')}
   if(d<=sp){rt.pos={i:ti,j:tj};rt.tgt=null;if(rt.onArrive){const a=rt.onArrive;rt.onArrive=null;a()}}else{rt.pos.i+=di/d*sp;rt.pos.j+=dj/d*sp}}
  const s=zs(S.zone);if(now()-rt.lastTox>2000){rt.lastTox=now();for(const o of s.objs)if(o.type==='tox'&&!o.mon){const di=Math.sign(rt.pos.i-o.i),dj=Math.sign(rt.pos.j-o.j);const ni=o.i+(Math.random()<.5?di:pick([-1,1])),nj=o.j+(Math.random()<.5?dj:0);
