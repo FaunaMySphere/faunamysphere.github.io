@@ -5,7 +5,7 @@
 (()=>{if(!window.NetMP)return;
 const ES=()=>window.LANG==='es',T=(en,es)=>ES()?es:en,esc=s=>String(s==null?'':s).replace(/[<>&"']/g,'');
 const V=window.FSVisit={on:false,owner:null,name:'',real:null,offline:false,rx:new Map(),pend:null,sentSig:new Map(),lastSnapAt:0};
-const tx=m=>{const q=NetMP.peers.get(m.to);if(q&&q.zk)m._z=q.zk;NetMP.send(m)};
+const RZ=new Map();const tx=m=>{const q=NetMP.peers.get(m.to),rz=RZ.get(m.to);if(rz&&rz.at>Date.now()-20000)m._z=rz.z;else if(q&&q.zk)m._z=q.zk;NetMP.send(m)};
 const MAXRAW=900000,CH=12000,MAXN=60;
 // ---------- compression ----------
 async function pack(str){if(window.CompressionStream){const st=new Blob([str]).stream().pipeThrough(new CompressionStream('deflate-raw'));const b=new Uint8Array(await new Response(st).arrayBuffer());let o='';for(let i=0;i<b.length;i+=8192)o+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return'z'+btoa(o)}return'u'+btoa(unescape(encodeURIComponent(str)))}
@@ -30,13 +30,13 @@ function snapshot(){const zh=zs('home'),z={};for(const k of Object.keys(zh))if(k
  const f=S.fauna.map((x,i)=>i===S.active?null:x).filter(Boolean).slice(0,30).map(x=>({name:x.name,genes:x.genes,level:x.level,rarity:x.rarity}));
  return JSON.stringify({v:1,n:myName(),h:S.home||{},z,f})}
 async function sendSnap(to,str){str=str||snapshot();const d=await pack(str);const n=Math.ceil(d.length/CH);if(n>MAXN){tx({t:'hvNo',to,why:'big'});return}
- const k=Math.random().toString(36).slice(2,8);for(let i=0;i<n;i++)tx({t:'hvC',to,k,i,n,d:d.slice(i*CH,(i+1)*CH)});V.sentSig.set(to,str)}
+ const k=Math.random().toString(36).slice(2,8);for(let i=0;i<n;i++)tx({t:'hvC',to,k,i,n,d:d.slice(i*CH,(i+1)*CH)});RZ.delete(to);V.sentSig.set(to,str)}
 const visitorsHere=()=>[...NetMP.peers.values()].filter(p=>p.zk==='home:'+NetMP.myId);
 // push updates to visitors when my home changes
 setInterval(()=>{try{if(V.on||S.visitsOff||!NetMP.room)return;const vs=visitorsHere();if(!vs.length)return;const str=snapshot();for(const p of vs)if(V.sentSig.get(p.id)!==str)sendSnap(p.id,str)}catch(e){}},1500);
 // ---------- messages ----------
 function onMsg(m,p){
- if(m.t==='hvReq'){if(S.visitsOff){tx({t:'hvNo',to:m.id,why:'off'});return}if(V.on){tx({t:'hvNo',to:m.id,why:'away'});return}sendSnap(m.id);if(p)toast('🏠 '+esc(p.name)+T(' is visiting your home!',' está visitando tu casa!'));return}
+ if(m.t==='hvReq'){if(typeof m.rz==='string'&&m.rz.length<60)RZ.set(m.id,{z:m.rz,at:Date.now()});if(S.visitsOff){tx({t:'hvNo',to:m.id,why:'off'});return}if(V.on){tx({t:'hvNo',to:m.id,why:'away'});return}sendSnap(m.id);if(p)toast('🏠 '+esc(p.name)+T(' is visiting your home!',' está visitando tu casa!'));return}
  if(m.t==='hvNo'){if(V.pend===m.id||V.owner===m.id){V.pend=null;toast(m.why==='off'?T('🔒 That player isn\'t allowing visits right now.','🔒 Ese jugador no permite visitas ahora.'):m.why==='big'?T('That home is too big to send.','Esa casa es demasiado grande para enviarla.'):T('That player is visiting someone else. Try again soon.','Ese jugador está de visita. Inténtalo pronto.'));if(V.on&&m.why==='off'){toast(T('The owner turned visits off.','El dueño desactivó las visitas.'));exit()}}return}
  if(m.t==='hvC'){if(V.pend!==m.id&&!(V.on&&V.owner===m.id))return;if(typeof m.k!=='string'||typeof m.d!=='string'||m.d.length>CH||!(m.n>0&&m.n<=MAXN)||!(m.i>=0&&m.i<m.n)||(m.i|0)!==m.i)return;
   const key=m.id+':'+m.k;let b=V.rx.get(key);if(!b){if(V.rx.size>6)V.rx.clear();b={n:m.n,parts:[],got:0,at:Date.now()};V.rx.set(key,b)}if(b.n!==m.n||b.parts[m.i]!=null)return;b.parts[m.i]=m.d;b.got++;
@@ -44,7 +44,7 @@ function onMsg(m,p){
    const pn=NetMP.peers.get(m.id);apply(m.id,s,(pn&&pn.name)||s.n||T('Friend','Amigo'))}).catch(()=>{})}}}
 V.msg=onMsg;Object.defineProperty(V,'active',{get:()=>V.on});
 // ---------- visitor side ----------
-V.request=id=>{if(!NetMP.peers.has(id)){toast(T('That player is not online.','Ese jugador no está conectado.'));return}V.pend=id;tx({t:'hvReq',to:id});toast(T('🏠 Asking to visit…','🏠 Pidiendo visitar…'));
+V.request=id=>{if(!NetMP.peers.has(id)){toast(T('That player is not online.','Ese jugador no está conectado.'));return}V.pend=id;tx({t:'hvReq',to:id,rz:NetMP.zk()});toast(T('🏠 Asking to visit…','🏠 Pidiendo visitar…'));
  setTimeout(()=>{if(V.pend===id){V.pend=null;toast(T('No answer from that home. They may need to update the app.','Sin respuesta de esa casa. Puede que necesiten actualizar la app.'))}},12000)};
 NetMP.visit=V.request;
 function toJSON(){const o=Object.assign({},this);delete o.toJSON;const r=V.real;if(!r)return o;o.home=r.home;o.zones=Object.assign({},this.zones,{home:r.zh});o.fauna=r.fauna;o.active=r.active;o.zone='home';return o}
@@ -65,7 +65,7 @@ const trv=R.travel;R.travel=p=>{if(V.on){const goHome=p&&p.zone==='home';V.home(
 const OK=new Set(['travel','trick','feed','heal','rest','useHappy','useCream','wear','collar','learn','giftStart','giftTo','giftAccept','giftDecline','skill']);
 const dsp=dispatch;dispatch=window.dispatch=function(type,p){if(V.on&&!OK.has(type)){toast(T('👀 View only — this is a friend\'s home.','👀 Solo mirar — es la casa de un amigo.'));return}return dsp(type,p)};
 setInterval(()=>{try{if(V.on){if(window.FSarr&&FSarr.on){FSarr.setOn(false);toast(T('👀 View only — you can\'t edit a friend\'s home.','👀 Solo mirar — no puedes editar la casa de un amigo.'))}rt.decor=null;if(rt.paint!=null)rt.paint=null;
-  if(S.zone!=='home'){exit()}const off=!NetMP.peers.has(V.owner);if(off!==V.offline){V.offline=off;banner();if(!off){tx({t:'hvReq',to:V.owner});V.pend=null}}}}catch(_){}},300);
+  if(S.zone!=='home'){exit()}const off=!NetMP.peers.has(V.owner);if(off!==V.offline){V.offline=off;banner();if(!off){tx({t:'hvReq',to:V.owner,rz:NetMP.zk()});V.pend=null}}}}catch(_){}},300);
 // banner
 function banner(){let b=document.getElementById('visitbar');if(!V.on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='visitbar';b.style.cssText='position:absolute;left:50%;transform:translateX(-50%);top:max(64px,calc(env(safe-area-inset-top) + 58px));z-index:40;background:rgba(23,60,15,.9);color:#fff;border:2px solid #3ea318;border-radius:16px;padding:6px 10px;font:700 13px "Trebuchet MS",sans-serif;display:flex;gap:8px;align-items:center;max-width:92vw;box-shadow:0 3px 10px rgba(0,0,0,.3)';(document.getElementById('stage')||document.body).appendChild(b)}
  b.innerHTML=`<span>🏠 ${T('Visiting ','Visitando la casa de ')}${esc(V.name)}${T("'s home",'')}${V.offline?`<br><span style="color:#ffd27a;font-weight:400;font-size:11px">${T('They went offline — showing their last home.','Se desconectó — mostrando su última casa.')}</span>`:''}</span><button id="visitback" style="background:#3ea318;color:#fff;border:0;border-radius:12px;padding:5px 9px;font:700 12px sans-serif;white-space:nowrap">${T('Back home','Volver a casa')}</button>`;

@@ -1,5 +1,6 @@
 # Releases
 - 2026-10-25 8:15 PM EDT — v6.17.1: Visit a friend's home (tap their fauna or Friends → 🏠 Visit home; view-only copy of their layout + fauna, live presence and updates, Allow visits setting, offline fallback; friend data never saved). No PvP while visiting. sw fs-v6171-1
+- 2026-10-25 EDT — v6.17.2: visit hotfix — first home snapshot is sent on the visitor's current zone channel (fixes visits sometimes not opening over relay-only connections). sw fs-v6172-1
 - 2026-10-25 1:05 PM EDT — v4.0.1 hotfix (live): hardened saving (IndexedDB mirror, persistent storage, flush on hide/close, boot guards), 💾 Saved indicator, Save & Backup panel (export/import code), naming applies on tap/Enter and persists after reload, SW cache fs-v4-1 no-cache. Live mobile-emulation tests passed (Lv14/Lux2030 kept after abrupt close; names Pip/Zippy kept after reload).
 - 2026-10-25 1:12 PM EDT — v4.1: v5 content (Wintergift, Sunken Probe, Parade Balloons 2, Abyss, Gobblefield zones; release popups; hatch bar; Lv20 gold ceremony), brighter graphics pass, FS hooks (fshooks.js) for the multiplayer/i18n worker, SW cache fs-v41-1. Save key unchanged.
 - 2026-10-25 1:13 PM EDT — v4.2: 💾 Saved indicator is now static (no zoom/pulse/bounce, fixed width); the word 'Saved' just fades out by opacity. Manual Save button has no zoom animation. SW cache fs-v42-1.
