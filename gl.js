@@ -404,11 +404,17 @@ function roamOverlay(proj,t){for(const[i,e]of roam){if(!e.emo||t-e.emoT>2.5)cont
 G.roamHit=(px,py)=>{if(!roam.size)return null;setRay(px,py);const ms=[];for(const[,e]of roam)e.f.traverse(m=>{if(m.isMesh)ms.push(m)});const r=ray.intersectObjects(ms,false);return r.length?r[0].object.userData.roam:null};
 // ---------- v5 multiplayer: remote fauna ----------
 const remote=new Map();
+// v7.3 fighting: aim my zap at a player, remote attacker beam, knockback + flash
+G.zapAt=null;G.pvpZap=id=>{G.zapAt={id,t:now()};rt.zapT=now()};
+G.pvpRemoteZap=id=>{const e=remote.get(id);if(e){e.zapT=now();e.zf=fpos.clone()}};
+G.pvpKnock=(who,fromId,col)=>{const fe=remote.get(fromId),tgtE=who==='me'?null:remote.get(who);const vp=who==='me'?fpos:(tgtE&&tgtE.pos);if(!vp)return;
+ const src=who==='me'?(fe&&fe.pos):fpos;let dx=0,dz=0;if(src){dx=vp.x-src.x;dz=vp.z-src.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L}
+ const kb={t0:now(),x:dx,z:dz};if(who==='me')G._kb=kb;else tgtE.kb=kb;const p=vp.clone().add(new THREE.Vector3(0,.45,0));try{burstW(p,10,0xffffff,2.2,{size:.12,decay:.05});burstW(p,8,col||0xff5a5a,1.4)}catch(_){}};
 function remoteFrame(t){const NM=window.NetMP;const want=NM?NM.visiblePeers():[];const ids=new Set(want.map(p=>p.id));
  for(const[id,e]of remote)if(!ids.has(id)){scene.remove(e.f);remote.delete(id)}
  for(const p of want){let e=remote.get(p.id);const k=JSON.stringify(p.genes)+(p.level>=20?'g':'');if(!e||e.k!==k){if(e)scene.remove(e.f);const f=buildFauna({...p.genes,_lv:p.level||1});f.traverse(m=>{m.userData.rid=p.id});scene.add(f);e={f,k,pos:W2(p.i,p.j)};remote.set(p.id,e)}
-  const tgt=W2(p.i,p.j),mv=tgt.clone().sub(e.pos);e.pos.lerp(tgt,.12);e.f.position.copy(e.pos);settle(e.f,e.pos.x,e.pos.z);if(mv.lengthSq()>1e-4){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-e.f.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.f.rotation.y+=d*.2}
-  animFauna(e.f,t,{walk:mv.lengthSq()>4e-4,zap:0,happy:false,sleep:!!p.sleep,trick:p.trick||null})}}
+  const tgt=W2(p.i,p.j),mv=tgt.clone().sub(e.pos);if(mv.lengthSq()>36)e.pos.copy(tgt);else e.pos.lerp(tgt,1-Math.exp(-7*(G._dt||.016)));e.f.position.copy(e.pos);settle(e.f,e.pos.x,e.pos.z);if(e.kb){const u=(now()-e.kb.t0)/320;if(u<1){const k=Math.sin(u*Math.PI)*.35;e.f.position.x+=e.kb.x*k;e.f.position.z+=e.kb.z*k}else e.kb=null}if(e.zf&&now()-e.zapT<300){let d=e.zf.clone().sub(e.pos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-e.f.rotation.y;e.f.rotation.y+=Math.atan2(Math.sin(dd),Math.cos(dd))*.35}if(mv.lengthSq()>1e-4){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-e.f.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.f.rotation.y+=d*.2}
+  animFauna(e.f,t,{walk:mv.lengthSq()>4e-4,zap:clamp(1-(now()-(e.zapT||0))/260,0,1),happy:false,sleep:!!p.sleep,trick:p.trick||null})}}
 G.remoteHit=(px,py)=>{if(!remote.size)return null;setRay(px,py);const ms=[];for(const[,e]of remote)e.f.traverse(m=>{if(m.isMesh)ms.push(m)});const r=ray.intersectObjects(ms,false);return r.length?r[0].object.userData.rid:null};
 function remoteOverlay(proj){for(const[id,e]of remote){const p=window.NetMP&&NetMP.peers.get(id);if(!p)continue;const[x,y]=proj(e.f.position.clone().add(new THREE.Vector3(0,1.15,0)));
   ctx2.font='bold 13px "Trebuchet MS",sans-serif';const nm=p.name+' & '+p.fname;const w=ctx2.measureText(nm).width+12;ctx2.fillStyle='rgba(23,60,15,.85)';ctx2.beginPath();ctx2.roundRect(x-w/2,y-9,w,18,9);ctx2.fill();ctx2.fillStyle='#bfff8a';ctx2.fillText(nm,x,y+4);
@@ -520,23 +526,26 @@ function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun
  stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt);
  if(bloom)bloom.strength=dun||nt>.5?.6:.3;
  setWeather('weather' in z?z.weather:{sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
-function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
+function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);G._dt=dt;lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
  const f=fa();if(!f)return;const z=Z(S.zone),nt=z.biome==='dungeon'?0:z.biome==='night'?1:nightA();
  if(S.zone!==curZone){curZone=S.zone;clearObjs();buildIsland(S.zone);camS.dist=null;applyEnv(z,nt);pv.length=0}
  if(((t*10)|0)%50===0)applyEnvLite(z,nt);
  syncObjs();
  // fauna
  const lvB=f.level>=20?4:f.level>=15?3:f.level>=10?2:f.level>=5?1:0,key=JSON.stringify(f.genes)+lvB;if(key!==faunaKey){if(fauna)scene.remove(fauna);fauna=buildFauna({...f.genes,_lv:f.level,_hd:1});scene.add(fauna);faunaKey=key}
- const want=W2(rt.pos.i,rt.pos.j);const mv=want.clone().sub(fpos);fpos.lerp(want,.5);fauna.position.copy(fpos);settle(fauna,fpos.x,fpos.z);fpos.y=fauna.position.y;
+ const want=W2(rt.pos.i,rt.pos.j);const mv=want.clone().sub(fpos);fpos.lerp(want,.5);fauna.position.copy(fpos);settle(fauna,fpos.x,fpos.z);fpos.y=fauna.position.y;if(G._kb){const u=(now()-G._kb.t0)/320;if(u<1){const k=Math.sin(u*Math.PI)*.35;fauna.position.x+=G._kb.x*k;fauna.position.z+=G._kb.z*k}else G._kb=null}
  if(mv.lengthSq()>1e-6&&rt.tgt){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-fauna.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));fauna.rotation.y+=d*.18}
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);
- if(zapA>0&&rt.tgtObj&&!rt.tgt){const tp=W2(rt.tgtObj.i,rt.tgtObj.j);const d=tp.clone().sub(fpos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-fauna.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));fauna.rotation.y+=dd*.3}
+ const pz=G.zapAt&&now()-G.zapAt.t<300&&remote.get(G.zapAt.id),pzp=G.zapAt&&now()-G.zapAt.t<300&&window.NetMP&&NetMP.peers.get(G.zapAt.id),zp=pz?pz.pos.clone():pzp?W2(pzp.i,pzp.j):G.zapAt&&now()-G.zapAt.t<300?null:rt.tgtObj?(objMap.get(rt.tgtObj.id)?objMap.get(rt.tgtObj.id).g.position.clone():W2(rt.tgtObj.i,rt.tgtObj.j)):null;
+ if(zapA>0&&zp&&(!rt.tgt||pz)){const tp=zp;const d=tp.clone().sub(fpos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-fauna.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));fauna.rotation.y+=dd*.3}
  remoteFrame(t);roamFrame(t);paintFrame();ghostFrame();animFauna(fauna,t,{walk:!!rt.tgt,zap:zapA,happy:now()-(rt.happyT||0)<1400,sleep:rt.sleep});
  if(rt.sleep&&Math.random()<.02)spawn({p:fpos.clone().add(new THREE.Vector3(.1,.7,0)),v:new THREE.Vector3(.1,.4,0),g:0,col:new THREE.Color(0xaad4ff),size:.14,decay:.008});
  // lightning beam from necklace gem
  const gr=fauna.userData.rig;
- if(zapA>0&&rt.tgtObj){Sound.zapHold(true);const a=new THREE.Vector3();gr.gem.getWorldPosition(a);const b=W2(rt.tgtObj.i,rt.tgtObj.j).add(new THREE.Vector3(0,.3,0));bolt(a,b,zapA,gr.gemCol);
+ if(zapA>0&&zp){Sound.zapHold(true);const a=new THREE.Vector3();gr.gem.getWorldPosition(a);const b=zp.clone().add(new THREE.Vector3(0,pz?.45:.3,0));bolt(a,b,zapA,gr.gemCol);
   if(Math.random()<.7)spawn({p:b.clone(),v:new THREE.Vector3((Math.random()-.5)*2,Math.random()*1.5,(Math.random()-.5)*2),col:new THREE.Color(0xeaffb0),size:.08,decay:.06,g:-4})}else bolt(null);
+ {let rb=null,rz=0;for(const[,e]of remote){const z=clamp(1-(now()-(e.zapT||0))/260,0,1);if(z>rz){rz=z;rb=e}}
+  if(rb&&rb.f.userData.rig){const a=new THREE.Vector3();rb.f.userData.rig.gem.getWorldPosition(a);const b=fauna.position.clone().add(new THREE.Vector3(0,.45,0));const L=a.distanceTo(b);beam.visible=true;beam.position.copy(a);beam.lookAt(b);beam.scale.set(1+rz,1+rz,L);beam.children.forEach(m=>m.material.opacity=(m===beam.children[0]?.9:.35)*rz)}else beam.visible=false}
  // target ring
  target.visible=!!(rt.tgt&&!rt.onArrive);if(target.visible){target.position.copy(W2(...rt.tgt)).setY(HT(rt.tgt[0],rt.tgt[1])+.03);target.scale.setScalar(1+Math.sin(t*8)*.1)}
  hoverTile.visible=!!(rt.decor&&rt.hover);if(hoverTile.visible)hoverTile.position.copy(W2(...rt.hover)).setY(HT(rt.hover[0],rt.hover[1])+.02);

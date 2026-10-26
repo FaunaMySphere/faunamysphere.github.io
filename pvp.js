@@ -50,7 +50,7 @@ function act(kind){if(!B||B.fin||Date.now()<B.t0)return;const n=Date.now();if(n-
  if(kind==='special'&&!(S.tricks||[]).length)return toast(tr('Learn a trick first!','¡Aprende un truco primero!'));B.last[kind]=n;
  if(kind==='dodge'){B.mdge=n;try{rt.trick={k:'jump',t0:now()}}catch(e){}try{Sound.sfx('whoosh')}catch(e){}send({t:'pvpAct',to:B.opp,bid:B.bid,k:'dodge'});return}
  // attack visuals on my side
- try{rt.zapT=now()}catch(e){}if(kind==='special'){try{const k=(S.tricks||[])[0];rt.trick={k:S.tricks.includes('spin')?'spin':k,t0:now()}}catch(e){}}
+ try{if(window.pvpZap)pvpZap(B.opp);else rt.zapT=now()}catch(e){}if(kind==='special'){try{const k=(S.tricks||[])[0];rt.trick={k:S.tricks.includes('spin')?'spin':k,t0:now()}}catch(e){}}
  const p=peer(B.opp);try{if(p)G.emit('hit',{i:p.i,j:p.j})}catch(e){}
  if(B.role==='ch')hit(B.op,kind,n);else send({t:'pvpAct',to:B.opp,bid:B.bid,k:kind})}
 // authoritative damage (challenger only)
@@ -65,7 +65,7 @@ function onAct(m){if(!B||B.bid!==m.bid||m.id!==B.opp)return;B.seen=Date.now();co
 function onSt(m){if(!B||B.bid!==m.bid||m.id!==B.opp||B.role!=='df')return;B.seen=Date.now();if(!Array.isArray(m.hp)||(m.sq2|0)<=B.seq)return;
  const nh=m.hp.map(x=>+x);for(let i=0;i<2;i++){if(!(nh[i]>=0&&nh[i]<=B.hp[i]))return console.log('[pvp] rejected hp');if(B.hp[i]-nh[i]>MAXHIT*Math.max(1,(m.sq2|0)-B.seq))return console.log('[pvp] rejected dmg')}
  B.seq=m.sq2|0;B.hp=nh;if(m.ev)fxHit(m.ev.who,Math.min(MAXHIT,m.ev.d|0),m.ev.k);if(m.ev&&m.ev.who===B.op){const p=peer(B.opp);if(p&&m.ev.k){}}}
-function fxHit(who,d,k){if(who===B.me){try{rt.shake=5;rt.happyT=0;Sound.noise&&Sound.noise(.2,.1,1800)}catch(e){}float(who,d?'-'+d:tr('Dodged!','¡Esquivado!'),d?'#ff6a6a':'#9fe8ff')}
+function fxHit(who,d,k){try{if(who===B.me){window.pvpRemoteZap&&pvpRemoteZap(B.opp);if(d&&window.pvpKnock)pvpKnock('me',B.opp)}else if(d&&window.pvpKnock)pvpKnock(B.opp,null,0xffe25a)}catch(e){}if(who===B.me){try{rt.shake=5;rt.happyT=0;Sound.noise&&Sound.noise(.2,.1,1800)}catch(e){}float(who,d?'-'+d:tr('Dodged!','¡Esquivado!'),d?'#ff6a6a':'#9fe8ff')}
  else{const p=peer(B.opp);try{if(p&&B.role==='df')G.emit('hit',{i:p.i,j:p.j})}catch(e){}float(who,d?'-'+d:tr('Dodged!','¡Esquivado!'),d?'#ffe25a':'#9fe8ff')}}
 function loop(){if(!B)return;const n=Date.now();
  if(!B.fin){ // forfeits
