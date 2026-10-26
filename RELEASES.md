@@ -148,3 +148,6 @@ Screenshots: screenshots/v5_home_mobile.png, v5_travel_mobile.png, v5_destinatio
 
 ## v7.4 (2026-10-26)
 - New address https://faunamysphere.github.io/ (old leonisbel.github.io/faunasphere forwards and carries the save). import.html merges without overwriting a better save. Donate label: Donate XRP to make the game better / Dona XRP para mejorar el juego. sw fs-v74-1
+
+## v7.4.1 (2026-10-26)
+- PC High matches phone look: desktops render at 1.5x (PCs report pixel ratio 1), auto-resolution never drops below 1x on PC (target 40 fps), wide screens view the island from a bit further back. Phones unchanged. sw fs-v741-1

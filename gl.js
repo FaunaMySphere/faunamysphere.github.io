@@ -25,7 +25,8 @@ const glc=document.createElement('canvas');glc.id='gl';stage.insertBefore(glc,cv
 let R;
 try{R=new THREE.WebGLRenderer({canvas:glc,antialias:Q!=='low',powerPreference:'high-performance'});}catch(e){console.warn('WebGL unavailable, staying on 2D',e);glc.remove();throw new Error('no-webgl-fallback-2d')}
 document.body.classList.add('webgl');
-let PR=Math.min(devicePixelRatio||1,QP.pr);R.setPixelRatio(PR);
+// v7.4.1: PCs report devicePixelRatio 1, so High rendered at 1x and looked blurry next to phones (2x). Desktops on High/Med now render at 1.5x (supersampled).
+const maxPR=()=>isPhone?Math.min(devicePixelRatio||1,QP.pr):Math.min(QP.pr,Math.max(devicePixelRatio||1,Q==='low'?1:1.5));let PR=maxPR();R.setPixelRatio(PR);
 R.toneMapping=THREE.NoToneMapping;R.toneMappingExposure=1.0;R.outputColorSpace=THREE.SRGBColorSpace;
 if(false){R.shadowMap.enabled=true;R.shadowMap.type=Q==='high'?THREE.PCFSoftShadowMap:THREE.PCFShadowMap}
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,400);
@@ -475,7 +476,7 @@ let W=1,H=1;function size(){const r=stage.getBoundingClientRect();W=Math.max(1,r
 addEventListener('resize',size);size();
 const fpos=new THREE.Vector3();
 function updCamera(dt,t){const n=N0||9,asp=W/H,fov=camera.fov*Math.PI/180;
- const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=false;
+ const fit=(n*.55)/Math.tan(fov/2)/Math.min(1.25,Math.max(.55,asp));let dist=fit*(asp>1.2&&!isPhone?1.3:1)/(cam.zoom||1);const portrait=asp<.8;if(portrait)dist=Math.min(dist,n*(typeof S!=="undefined"&&S.zone==="home"?4.4:2.1)/(cam.zoom||1));const HW=false;
  const follow=portrait?(HW?.55:1):clamp((cam.zoom-1)/.8,0,1);const tgt=new THREE.Vector3().lerpVectors(new THREE.Vector3(0,0,0),fpos,follow);tgt.y=.15+fpos.y*follow;const EC=G.editCam;if(EC&&S.zone==='home'){tgt.set(EC.x,.15,EC.z);dist=n*3.8/(EC.zoom||1);if(camS.dist!=null){camS.dist=dist;camS.t.copy(tgt)}}
  if(camS.dist===null){camS.dist=dist;camS.t.copy(tgt)}camS.dist+=(dist-camS.dist)*.08;camS.t.lerp(tgt,.06);
  let yaw=camS.yaw,pitch=camS.pitch,d=camS.dist;if((titleOn||!fa())&&!(G.editCam&&S.zone==="home")){yaw+=t*.12;d*=1.15;pitch=.55}
@@ -579,7 +580,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);G._d
  if(finalPass){finalPass.uniforms.uTime.value=t%10;finalPass.uniforms.uFade.value=fade;composer.render(dt)}else R.render(scene,camera);
  overlay(t,fade);
  // adaptive resolution
- fpsAcc+=dt;fpsN++;if(fpsAcc>2.5){const fps=fpsN/fpsAcc;G.GLfps=fps;fpsAcc=0;fpsN=0;const tgt=isPhone?30:50,nowT=performance.now();if(nowT-(G._prT||0)<12000||(G._prN||0)>=4){}else if(fps<tgt&&PR>.75){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.max(G._prMin||.75,PR-.2);R.setPixelRatio(PR);size()}else if(fps>tgt+15&&PR<Math.min(devicePixelRatio||1,QP.pr)){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.min(QP.pr,PR+.1);R.setPixelRatio(PR);size()}}}
+ fpsAcc+=dt;fpsN++;if(fpsAcc>2.5){const fps=fpsN/fpsAcc;G.GLfps=fps;fpsAcc=0;fpsN=0;const tgt=isPhone?30:40,nowT=performance.now();if(nowT-(G._prT||0)<12000||(G._prN||0)>=4){}else if(fps<tgt&&PR>(isPhone?.75:1)){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.max(G._prMin||(isPhone?.75:1),PR-.2);R.setPixelRatio(PR);size()}else if(fps>tgt+15&&PR<maxPR()){G._prT=nowT;G._prN=(G._prN||0)+1;PR=Math.min(maxPR(),PR+.1);R.setPixelRatio(PR);size()}}}
 let sheetG=null;function sheet(t){if(!sheetG){sheetG=new THREE.Group();const ks=Object.keys(SPECIES),cols=Object.keys(COLORS);ks.forEach((k,i)=>{const f=buildFauna({species:k,color:cols[i%cols.length],pattern:PATTERNS[i%PATTERNS.length],tail:TAILS[i%3],eyes:EYES[i%3]});f.position.set((i%6)-2.5,0,Math.floor(i/6)*1.3-.6);f.rotation.y=.6;f.scale.setScalar(1.05);sheetG.add(f)});scene.add(sheetG);fauna.visible=false;clearObjs();island.visible=false;camS.yaw=Math.PI/4*0+0.0001;camS.pitch=.5}
  sheetG.children.forEach((f,i)=>animFauna(f,t+i,{walk:i%4===1,happy:i%4===2,sleep:i%4===3,zap:0}))}
 function applyEnvLite(z,nt){/* periodic day/night refresh */const k=z.id+'|'+nt.toFixed(2);if(applyEnvLite.k!==k){applyEnvLite.k=k;applyEnv(z,nt)}}
