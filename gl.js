@@ -304,7 +304,6 @@ function patTex(base,pat,animal,sec){const c=document.createElement('canvas');c.
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
 function furMat(color,pat,animal,sec){const m=furMat0(color,pat,animal,sec);if(Q!=='low')m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\n{float rim=1.-max(dot(normalize(-vViewPosition),normal),0.);gl_FragColor.rgb+=vec3(1.,.96,.84)*pow(rim,3.)*.32;}')};return m}
 function furMat0(color,pat,animal,sec){return new THREE.MeshPhysicalMaterial({color:0xffffff,map:patTex(color,pat,animal,sec),roughness:.78,sheen:1,sheenRoughness:.45,sheenColor:new THREE.Color(color).lerp(new THREE.Color(1,1,1),.6)})}
-window.FS3=window.FS3||{};queueMicrotask(()=>{window.FS3.THREE=THREE;window.FS3.buildFauna=buildFauna});
 function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[sp.animal]||SP.dog,col=COLORS[genes.color]||'#e2b273';
  const fur=furMat(col,genes.pattern||'Plain',sp.animal,COLORS[genes.color2]),dark=std(new THREE.Color(col).multiplyScalar(.45),{roughness:.7}),belly=std(new THREE.Color(col).lerp(new THREE.Color(1,1,1),.45),{roughness:.8});
  const root=new THREE.Group(),body=new THREE.Group();root.add(body);const rig={root,body,legs:[],eyes:[],lids:[],tail:null,head:null};
