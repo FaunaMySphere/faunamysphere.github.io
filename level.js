@@ -6,11 +6,15 @@ const need=l=>Math.round(75*Math.pow(l,1.5)); // XP to go from l to l+1. Lv10 ~8
 const UNL=[[10,'flapper'],[20,'reacher'],[30,'wiggler'],[40,'chomper'],[50,'bobbler']];
 const lockLv=sp=>{const u=UNL.find(x=>x[1]===sp);return u?u[0]:0};
 const P=()=>{if(typeof S==='undefined'||!S)return null;if(!S.plv||typeof S.plv!=='object')S.plv={lv:1,xp:0,seen:{}};if(!S.plv.seen)S.plv.seen={};return S.plv};
-const isLocked=sp=>{const p=P(),l=lockLv(sp);return !!(l&&p&&p.lv<l)};
+// v7.5.4 (Leo): every species is unlocked for all players; UNL kept only for history/migration
+const ALLUNL=1;const isLocked=sp=>{if(ALLUNL)return false;const p=P(),l=lockLv(sp);return !!(l&&p&&p.lv<l)};
 const spN=sp=>(SPECIES[sp]||{}).name||sp;
 window.PLV={UNL,need,isLocked,lockLv};
 // ---- migration: estimate a starting level for existing saves (never lowers) ----
 function totalTo(l){let s=0;for(let i=1;i<l;i++)s+=need(i);return s}
+function allUnl(){const p=P();if(!p||!ALLUNL)return;let ch=0;p.eggGiven=p.eggGiven||{};UNL.forEach(([l,sp])=>{if(!p.seen[l]){p.seen[l]=1;ch=1}if(!p.eggGiven[sp]){p.eggGiven[sp]=1;ch=1}});
+ if(!S.spAll){S.spAll=1;S.unlockedSp=Object.keys(SPECIES);ch=1}if(ch){try{save()}catch(e){}}} // marks gated unlocks done silently (no egg spam); nothing removed
+window.PLV.allUnl=allUnl;
 function migrate(){const fresh=!S.plv;const p=P();if(!fresh||p.est)return;p.est=1;
  const st=S.stats||{},zaps=Object.values(st.zap||{}).reduce((a,b)=>a+(+b||0),0),done=Object.keys(S.done||{}).length,
   gen=Math.max(1,...(S.fauna||[]).map(f=>f.gen||1)),inv=Object.values((S.player&&S.player.inv)||{}).reduce((a,b)=>a+(+b||0),0);
@@ -54,12 +58,12 @@ function draw(){const p=P();if(!p)return;let b=document.getElementById('plv');co
  b.querySelector('b').textContent=(ES()?'Nv ':'Lv ')+p.lv;b.querySelector('i').style.width=(p.lv>=MAX?100:Math.min(100,p.xp/need(p.lv)*100))+'%';
  b.title=p.lv>=MAX?'MAX':p.xp+' / '+need(p.lv)+' XP'}
 function panel(){const p=P();let h='<h2>🌟 '+tr('Player Level ','Nivel de Jugador ')+p.lv+'</h2><p class="small">'+(p.lv>=MAX?tr('Max level!','¡Nivel máximo!'):p.xp.toLocaleString()+' / '+need(p.lv).toLocaleString()+' XP')+'</p><p class="small">'+tr('Earn XP by zapping pollution, beating toxic monsters, gathering, finishing goals and hatching eggs.','Gana XP zapeando contaminación, venciendo monstruos tóxicos, recolectando, completando metas e incubando huevos.')+'</p><h3>'+tr('Species unlocks','Especies por desbloquear')+'</h3>'+unlockList();open(h)}
-function unlockList(){const p=P();return '<div class="plvlist">'+UNL.map(([l,sp])=>{const lk=p.lv<l;return '<div class="plvrow'+(lk?' lk':'')+'"><span>'+(lk?'🔒':'✅')+'</span><b>'+spN(sp)+'</b><small>'+(lk?tr('Unlocks at Lv ','Se desbloquea en Nv ')+l:tr('Unlocked','Desbloqueada'))+'</small></div>'}).join('')+'</div>'}
+function unlockList(){const p=P();return '<div class="plvlist">'+UNL.map(([l,sp])=>{const lk=!ALLUNL&&p.lv<l;return '<div class="plvrow'+(lk?' lk':'')+'"><span>'+(lk?'🔒':'✅')+'</span><b>'+spN(sp)+'</b><small>'+(lk?tr('Unlocks at Lv ','Se desbloquea en Nv ')+l:tr('Unlocked','Desbloqueada'))+'</small></div>'}).join('')+'</div>'}
 window.PLV.panel=panel;
 const U0=window.ui;window.ui=ui=function(v,p){const r=U0.apply(this,arguments);try{if(v==='nest'){const host=document.getElementById('mb');if(host&&!host.querySelector('.plvlist'))host.insertAdjacentHTML('beforeend','<h3>'+tr('Species unlocks','Especies por desbloquear')+'</h3>'+unlockList())}}catch(e){}return r};
 // debug: ?plv=10 or localStorage fs_plv_debug=50 forces a level (for testing)
 function boot(){if(typeof S==='undefined'||!S||!S.player||!document.getElementById('who')){return setTimeout(boot,500)}
- migrate();const q=new URLSearchParams(location.search).get('plv')||localStorage.getItem('fs_plv_debug');if(q){const p=P(),L=Math.max(1,Math.min(MAX,+q|0));if(L>p.lv){p.lv=L-1;p.xp=0;gain(need(L-1))}}
+ migrate();allUnl();const q=new URLSearchParams(location.search).get('plv')||localStorage.getItem('fs_plv_debug');if(q){const p=P(),L=Math.max(1,Math.min(MAX,+q|0));if(L>p.lv){p.lv=L-1;p.xp=0;gain(need(L-1))}}
  draw();setInterval(draw,1000)}
 boot();
 })();
