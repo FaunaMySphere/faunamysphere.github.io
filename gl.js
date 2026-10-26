@@ -286,7 +286,7 @@ const SP={ // proportions (original designs)
  // v7.8 new original species (low poly: reuse shared primitives, 4-8 sided extras)
  hedgehog:{b:[.15,.12,.17],leg:.07,lr:.035,head:.11,neck:[.02,.3],snout:[.07,.04],ears:'round',tail:'stub',quills:1},
  otter:{b:[.12,.11,.26],leg:.08,lr:.035,head:.11,neck:[.06,.5],snout:[.05,.05],ears:'round',tail:'croc',whisk:1},
- elephant:{b:[.21,.2,.25],leg:.17,lr:.07,head:.15,neck:[.03,.4],snout:[.05,.07],ears:'flop',tail:'thin',trunk:1},
+ koala:{b:[.18,.19,.2],leg:.13,lr:.06,head:.16,neck:[.03,.6],snout:[.02,.05],ears:'round',tail:'stub',bignose:1,tufts:1},
  axolotl:{b:[.13,.1,.22],leg:.07,lr:.035,head:.14,neck:[.01,.2],snout:[.02,.08],ears:'',tail:'croc',gills:1},
  alpaca:{b:[.15,.16,.21],leg:.24,lr:.04,head:.11,neck:[.26,1.2],snout:[.07,.05],ears:'point',tail:'puff',fluff:1}};
 function patTex(base,pat,animal,sec){const c=document.createElement('canvas');c.width=256;c.height=128;const x=c.getContext('2d'),b=new THREE.Color(base),d=sec&&pat!=='Solid'?'#'+new THREE.Color(sec).getHexString():'#'+b.clone().multiplyScalar(.6).getHexString(),l='#'+b.clone().lerp(new THREE.Color(1,1,1),.35).getHexString();
@@ -326,7 +326,7 @@ function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[
   if(a.snout[0])head.add(mesh(SPH,belly,[a.snout[1],a.snout[1]*.85,a.snout[0]],[0,-a.head*.25,a.head*.75]));
   if(a.beak)head.add(mesh(new THREE.ConeGeometry(a.head*.3,a.head*.7,8),std(0xf2a62a),[1,1,1],[0,-a.head*.15,a.head*1.1],[Math.PI/2,0,0]));
   if(a.disc)head.add(mesh(CYL,std(0xff9fb5),[.05,.02,.05],[0,-a.head*.2,a.head*.75+a.snout[0]*.9],[Math.PI/2,0,0]));
-  if(a.trunk){for(let k=0;k<4;k++)head.add(mesh(SPHL,fur,[a.head*(.3-k*.04),a.head*.26,a.head*(.3-k*.04)],[0,-a.head*(.15+k*.28),a.head*(1.05+k*.12)]));if(a.fluff===undefined)for(const s of[-1,1])head.add(mesh(new THREE.ConeGeometry(a.head*.07,a.head*.35,5),std(0xfff4dc),[1,1,1],[s*a.head*.32,-a.head*.5,a.head*.75],[1.9,0,0]))}
+  if(a.bignose)head.add(mesh(SPHL,std(0x2a2226,{roughness:.35}),[a.head*.2,a.head*.26,a.head*.16],[0,-a.head*.05,a.head*.92]));
   head.add(mesh(SPHL,std(0x221a18,{roughness:.3}),[.022,.016,.016],[0,-a.head*.12,a.head*.72+a.snout[0]*.95]));
   const ew=new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.1,clearcoat:1}),ir=std({Vamp:0xc0102a,Greenvamp:0x2aa83a,Bluevamp:0x2a5ad0,Pinkvamp:0xe0509a,Orangevamp:0xf07a1a,Purplevamp:0x8a3ad0,Evil:0xc0102a,Cat:0xd8b81a,Smitten:0xff5a9a,Glam:0x7a3ab0}[genes.eyes]||0x2a1a12,{roughness:.2}),hl=new THREE.MeshBasicMaterial({color:0xffffff});
   for(const s of[-1,1]){const e=new THREE.Group();e.position.set(s*a.head*.48,a.head*.22,a.head*.72);e.rotation.y=s*.35;e.add(mesh(SPH,ew,[a.head*.3,a.head*.34,a.head*.22]));e.add(mesh(SPH,ir,[a.head*.2,a.head*.24,a.head*.12],[0,-a.head*.02,a.head*.14]));e.add(mesh(SPHL,hl,[a.head*.06,a.head*.06,a.head*.03],[a.head*.06,a.head*.08,a.head*.25]));
@@ -340,6 +340,7 @@ function buildFauna(genes){const sp=SPECIES[genes.species]||SPECIES.hoofer,a=SP[
    if(e)head.add(e);
    if(a.horns===1)head.add(mesh(new THREE.TorusGeometry(a.head*.45,a.head*.09,6,12,Math.PI*.7),std(0xe8dcc0,{roughness:.4}),[1,1,1],[s*a.head*.75,a.head*.75,0],[0,Math.PI/2,s>0?-.4:Math.PI+.4]));
    if(a.gills)for(let k=0;k<3;k++)head.add(mesh(new THREE.CapsuleGeometry(a.head*.07,a.head*.4,2,5),std(0xff7aa8),[1,1,1],[s*a.head*.95,a.head*(.45-k*.25),-a.head*.2],[0,0,s*(.9-k*.5)]));
+   if(a.tufts)head.add(mesh(SPHL,std(0xfff4ec),[a.head*.36,a.head*.36,a.head*.1],[s*a.head*.82,a.head*.78,-a.head*.02]));
    if(a.whisk)head.add(mesh(CYL,std(0xf5f0e8),[.004,a.head*.5,.004],[s*a.head*.35,-a.head*.25,a.head*.95],[0,0,s*1.4]));
    if(a.horns===2)head.add(mesh(CYL,dark,[.012,a.head*.6,.012],[s*a.head*.3,a.head*1.1,-a.head*.2]))}}
  else{head.position.set(0,.05,.0);const ew=new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.1,clearcoat:1}),hl=new THREE.MeshBasicMaterial({color:0xffffff});for(const s of[-1,1]){const e=new THREE.Group();e.position.set(s*.08,.06,.17);e.add(mesh(SPH,ew,[.055,.065,.04]));e.add(mesh(SPH,std(genes.eyes==='Vamp'?0xc0102a:0x22140f),[.035,.045,.02],[0,0,.03]));e.add(mesh(SPHL,hl,[.012,.012,.008],[.012,.018,.05]));const lid=mesh(new THREE.SphereGeometry(1,16,8,0,6.283,0,1.6),fur,[.06,.07,.045]);lid.rotation.x=genes.eyes==='Sleepy'?.9:-.4;e.add(lid);rig.lids.push(lid);head.add(e);rig.eyes.push(e)}}

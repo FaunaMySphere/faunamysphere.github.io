@@ -5,7 +5,7 @@ const MAX=50,ES=()=>window.LANG==='es',tr=(en,es)=>ES()?es:en;
 const need=l=>Math.round(75*Math.pow(l,1.5)); // XP to go from l to l+1. Lv10 ~8.3k XP (an evening), Lv50 ~500k (long-term)
 const OLD=[[10,'flapper'],[20,'reacher'],[30,'wiggler'],[40,'chomper'],[50,'bobbler']]; // v7.5.4: these are unlocked for everyone
 // v7.8: new species gated by Player Level (levels chosen not to clash with OLD keys in S.plv.seen)
-const UNL=[[5,'bristlepuff'],[15,'ripplet'],[25,'puffpaca'],[35,'glimmer'],[45,'trumpet']].filter(x=>typeof SPECIES!=='undefined'&&SPECIES[x[1]]);
+const UNL=[[5,'bristlepuff'],[15,'ripplet'],[25,'puffpaca'],[35,'glimmer'],[45,'snugglet']].filter(x=>typeof SPECIES!=='undefined'&&SPECIES[x[1]]);
 const lockLv=sp=>{const u=UNL.find(x=>x[1]===sp);return u?u[0]:0};
 const P=()=>{if(typeof S==='undefined'||!S)return null;if(!S.plv||typeof S.plv!=='object')S.plv={lv:1,xp:0,seen:{}};if(!S.plv.seen)S.plv.seen={};return S.plv};
 // v7.5.4 (Leo): every species is unlocked for all players; UNL kept only for history/migration
