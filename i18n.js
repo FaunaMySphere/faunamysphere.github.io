@@ -4,7 +4,7 @@
  if(Q.get('lang'))localStorage.setItem('fs_lang',L);window.LANG=L;document.documentElement.lang=L;
  const D=window.I18N_ES||{},RX=window.I18N_ES_RX||[];
  const frags=Object.keys(D).filter(k=>k.length>=8&&D[k]&&/[ .!?:]/.test(k)).sort((a,b)=>b.length-a.length);
- const ORIG=new WeakMap(),ORIGA=new WeakMap();let busy=false; // originals so we can switch back to English live
+ const DONE=new WeakMap(),ORIG=new WeakMap(),ORIGA=new WeakMap();let busy=false; // originals so we can switch back to English live
  function look(t){if(D[t])return D[t];for(const[r,f]of RX)if(r.test(t))return t.replace(r,f);return null}
  function seg(s){const t=s.trim();if(!t)return null;let v=look(t);if(v!=null)return s.replace(t,v);
   const m=t.match(/^([^\p{L}\d]*)(.*?)([^\p{L}\d!?.…]*)$/u);if(m&&m[2]&&m[2]!==t){v=look(m[2]);if(v!=null)return s.replace(m[2],v)}return null}
@@ -12,9 +12,9 @@
   const parts=s.split(/( · | \/ |: |, | \| | — | & |\n|\()/);if(parts.length>1){let ch=false;const o=parts.map((p,i)=>{if(i%2)return p;const r=seg(p.replace(/\)$/,''));if(r!=null){ch=true;return r+(p.endsWith(')')?')':'')}return p});if(ch)s=o.join('')}
   for(const f of frags)if(s.includes(f))s=s.split(f).join(D[f]);return s};
  const SKIP=/^(SCRIPT|STYLE|TEXTAREA|CANVAS)$/;
- function tr(n){if(L!=='es')return;if(n.nodeType===3){const p=n.parentNode;if(!p||SKIP.test(p.nodeName)||p.closest&&p.closest('[data-notr]'))return;const v=T(n.data);if(v!==n.data){ORIG.set(n,n.data);busy=true;n.data=v;busy=false}}
+ function tr(n){if(L!=='es')return;if(n.nodeType===3){const p=n.parentNode;if(!p||SKIP.test(p.nodeName)||p.closest&&p.closest('[data-notr]'))return;if(DONE.get(n)===n.data)return;const v=T(n.data);if(v!==n.data){ORIG.set(n,n.data);busy=true;n.data=v;busy=false}DONE.set(n,n.data)}
   else if(n.nodeType===1&&!SKIP.test(n.nodeName)){for(const a of['placeholder','title'])if(n.hasAttribute(a)){const o=n.getAttribute(a),v=T(o);if(v!==o){const m=ORIGA.get(n)||{};m[a]=o;ORIGA.set(n,m);busy=true;n.setAttribute(a,v);busy=false}}for(const c of n.childNodes)tr(c)}}
- function untr(n){if(n.nodeType===3){if(ORIG.has(n)){n.data=ORIG.get(n);ORIG.delete(n)}}else if(n.nodeType===1){const m=ORIGA.get(n);if(m){for(const a in m)n.setAttribute(a,m[a]);ORIGA.delete(n)}for(const c of n.childNodes)untr(c)}}
+ function untr(n){if(n.nodeType===3){DONE.delete(n);if(ORIG.has(n)){n.data=ORIG.get(n);ORIG.delete(n)}}else if(n.nodeType===1){const m=ORIGA.get(n);if(m){for(const a in m)n.setAttribute(a,m[a]);ORIGA.delete(n)}for(const c of n.childNodes)untr(c)}}
  window.I18N={lang:L,T,tr,set(l){if(!['en','es'].includes(l))return;try{localStorage.setItem('fs_lang',l)}catch(e){}if(l===L)return;
   try{const u=new URL(location.href);if(u.searchParams.has('lang')){u.searchParams.delete('lang');history.replaceState(null,'',u)}}catch(e){}
   L=l;window.LANG=L;I18N.lang=L;document.documentElement.lang=L;busy=true;try{if(L==='es')tr(document.body);else untr(document.body)}finally{busy=false}

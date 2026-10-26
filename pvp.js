@@ -22,7 +22,7 @@ function challenge(id){if(B||out)return toast('⚔️ '+tr('You are already in a
  if(!sameZone(id))return toast(tr('That player is not in this zone.','Ese jugador no está en esta zona.'));
  const bid=NM().myId+'-'+Date.now().toString(36);out={bid,to:id,at:Date.now()};
  send({t:'pvpAsk',to:id,bid,lv:myLv(),zone:S.zone});toast('⚔️ '+tr('Challenge sent to ','Desafío enviado a ')+pname(id)+'…');
- setTimeout(()=>{if(out&&out.bid===bid){out=null;toast('⚔️ '+pname(id)+tr(' did not answer.',' no respondió.'))}},ASK_T+2000)}
+ setTimeout(()=>{if(out&&out.bid===bid){out=null;toast('⚔️ '+tr('Challenge not delivered to ','Desafío no entregado a ')+pname(id)+tr(' — try again.',' — inténtalo de nuevo.'))}},ASK_T+2000)}
 function onAsk(m){const busy=B||ask||out;if(P().block||busy||!canHere()||!sameZone(m.id)){send({t:'pvpAns',to:m.id,bid:m.bid,ok:false,why:P().block?'block':busy?'busy':'zone'});return}
  ask={bid:m.bid,from:m.id,lv:m.lv|0,at:Date.now()};try{Sound.sfx('hmm')}catch(e){}
  let d=document.getElementById('pvpask');if(!d){d=document.createElement('div');d.id='pvpask';document.body.appendChild(d)}

@@ -45,7 +45,7 @@ function onMsg(m,p){
 V.msg=onMsg;Object.defineProperty(V,'active',{get:()=>V.on});
 // ---------- visitor side ----------
 V.request=id=>{if(!NetMP.peers.has(id)){toast(T('That player is not online.','Ese jugador no está conectado.'));return}V.pend=id;tx({t:'hvReq',to:id,rz:NetMP.zk()});toast(T('🏠 Asking to visit…','🏠 Pidiendo visitar…'));
- setTimeout(()=>{if(V.pend===id){V.pend=null;toast(T('No answer from that home. They may need to update the app.','Sin respuesta de esa casa. Puede que necesiten actualizar la app.'))}},12000)};
+ setTimeout(()=>{if(V.pend===id){V.pend=null;toast(T('🏠 Visit not delivered — try again.','🏠 Visita no entregada — inténtalo de nuevo.'))}},14000)};
 NetMP.visit=V.request;
 function toJSON(){const o=Object.assign({},this);delete o.toJSON;const r=V.real;if(!r)return o;o.home=r.home;o.zones=Object.assign({},this.zones,{home:r.zh});o.fauna=r.fauna;o.active=r.active;o.zone='home';return o}
 function apply(id,s,name){const first=!V.on;V.pend=null;

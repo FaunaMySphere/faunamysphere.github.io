@@ -11,7 +11,7 @@ const G=window, QS=new URLSearchParams(location.search);
 const isPhone=matchMedia('(pointer:coarse)').matches||innerWidth<700;
 let Q=QS.get('q')||localStorage.getItem('fs_q')||(isPhone?'med':'high');if(!['low','med','high'].includes(Q))Q='med';
 // v6 graphics High/Low (localStorage fs_gfx6; not part of the save). Auto: Low on slow phones.
-const GFX=(()=>{let g=QS.get('gfx');if(g==='high'||g==='low')return g;g=localStorage.getItem('fs_gfx6');
+const GFX=(()=>{let g=QS.get('gfx');if(g==='high'||g==='low')return g;try{if(sessionStorage.getItem('fs_autolow')==='1')return 'low'}catch(_){}g=localStorage.getItem('fs_gfx6');
  // v6.8: High is the default everywhere; Low only if the player explicitly chose it with the gear button (auto-Low is ignored)
  if(g!=='low'||localStorage.getItem('fs_gfx6_auto')==='1'){g='high';localStorage.setItem('fs_gfx6','high');localStorage.removeItem('fs_gfx6_auto')}return g})();
 if(GFX==='low')Q='low';else if(!QS.get('q'))Q='high';
@@ -595,7 +595,7 @@ G.GL={Q,sky,su,scene,setQuality(q){localStorage.setItem('fs_q',q);location.reloa
 // ---------- title screen & settings ----------
 const title=document.getElementById('title');
 if(title&&!QS.has('notitle')){titleOn=true;title.classList.remove('hidden');document.getElementById('play').onclick=()=>{Sound.init();Sound.sfx&&Sound.sfx('gate');vib(20);title.classList.add('out');titleOn=false;camS.dist=null;setTimeout(()=>title.remove(),900)}}else if(title)title.remove();
-const qb=document.getElementById('gfx');if(qb){{const tt=k=>(window.FS&&FS.t)?FS.t(k):k;qb.innerHTML='<i>⚙</i><span></span>';qb.lastChild.textContent=tt(GFX==='high'?'High':'Low')}qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
+const qb=document.getElementById('gfx');if(qb){{const tt=k=>(window.FS&&FS.t)?FS.t(k):k;qb.innerHTML='<i>⚙</i><span></span>';qb.lastChild.textContent=tt(GFX==='high'?'High':'Low')}qb.title='Graphics: High / Low';qb.onclick=()=>{try{save()}catch(e){}localStorage.setItem('fs_gfx6',GFX==='high'?'low':'high');try{sessionStorage.setItem('fs_autolow',GFX==='high'?'0':'no')}catch(_){}localStorage.removeItem('fs_gfx6_auto');localStorage.removeItem('fs_q');location.reload()}}
 const ld=document.getElementById('loading');if(ld){ld.classList.add('out');setTimeout(()=>ld.remove(),700)}
 console.log('[FaunaMySphere] WebGL renderer active, quality='+Q);
 
