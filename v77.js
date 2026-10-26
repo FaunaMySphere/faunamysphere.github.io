@@ -11,7 +11,7 @@ const CAP=W6.ULTRA?1.4:Q==='high'?1:Q==='med'?.5:.25;   // prop density cap per 
 let lastZ=null;
 G.FS_camHook=(dist,zone,camS,fpos,tgt)=>{if(zone==='home'){if(lastZ!=='home'){lastZ='home'}return dist}
  if(lastZ!==zone){lastZ=zone;camS.pitch=1.0}
- tgt.set(fpos.x,.15+fpos.y,fpos.z);const pt=innerWidth<innerHeight;return dist*(pt?.93:.52)};
+ tgt.set(fpos.x,.15+fpos.y,fpos.z);const pt=innerWidth<innerHeight;return dist*(pt?.93:.68)};
 // ---------- shared noise (same in JS and GLSL) ----------
 const fr=x=>x-Math.floor(x),h2=(x,y)=>fr(Math.sin(x*127.1+y*311.7)*43758.5453);
 const vn=(x,y)=>{const i=Math.floor(x),j=Math.floor(y),u=x-i,v=y-j,a=h2(i,j),b=h2(i+1,j),c=h2(i,j+1),d=h2(i+1,j+1),su=u*u*(3-2*u),sv=v*v*(3-2*v);return a+(b-a)*su+(c-a)*sv+(a-b-c+d)*su*sv};
