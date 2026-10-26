@@ -109,7 +109,7 @@ let island=new THREE.Group();scene.add(island);let builtZone=null,N0=0,C0=0;
 // v6 step 2: hills/terraces. Deterministic per-zone height field (not saved). Home stays flat.
 let HMAP=null;const HSTEP=.25;
 function genHeights(zid,n,tiles,objs){if(zid==='home'||(window.FS_HILLS===0))return null;const T=new Set(tiles.map(t=>t[0]+','+t[1]));let sd=0;for(const c of zid)sd=(sd*31+c.charCodeAt(0))|0;
- const r=k=>{const x=Math.sin(sd*.013+k*12.9898)*43758.5;return x-Math.floor(x)};const hills=[];const nh=2+Math.floor(n/6);for(let k=0;k<nh;k++)hills.push([2+r(k)*(n-4),2+r(k+50)*(n-4),2.2+r(k+90)*n*.22,1.1+r(k+130)*1.4,r(k+170)<.5]);
+ const r=k=>{const x=Math.sin(sd*.013+k*12.9898)*43758.5;return x-Math.floor(x)};const HP=(typeof Z==='function'&&Z(zid)&&Z(zid).hills)||{};const hills=[];const nh=HP.n!=null?HP.n:2+Math.floor(n/6);for(let k=0;k<nh;k++)hills.push([2+r(k)*(n-4),2+r(k+50)*(n-4),(2.2+r(k+90)*n*.22)*(HP.rad||1),(1.1+r(k+130)*1.4)*(HP.amp||1),r(k+170)<(HP.ter!=null?HP.ter:.5)]);
  const flat=new Set();(objs||[]).forEach(o=>{if(['gate','vendor','goal','project'].includes(o.type))for(let a=-1;a<2;a++)for(let b=-1;b<2;b++)flat.add((o.i+a)+','+(o.j+b))});
  const H=[];for(let i=0;i<n;i++){H[i]=[];for(let j=0;j<n;j++){let h=0;for(const[x,y,rad,amp,ter]of hills){const d=Math.hypot(i-x,j-y)/rad;if(d<1){const v=amp*(ter?(d<.55?1:(1-d)/.45):.5*(1+Math.cos(Math.PI*d)));h=Math.max(h,v)}}
   if(!T.has(i+','+j)||flat.has(i+','+j))h=0;let e=0;for(let a=-1;a<2;a++)for(let b=-1;b<2;b++)if(!T.has((i+a)+','+(j+b)))e=1;if(e)h=0;H[i][j]=Math.round(h/HSTEP)*HSTEP}}
@@ -519,7 +519,7 @@ function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun
  if(!dun&&!(window.ZPAL&&ZPAL[z.id])&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
  stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt);
  if(bloom)bloom.strength=dun||nt>.5?.6:.3;
- setWeather({sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
+ setWeather('weather' in z?z.weather:{sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
 function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
  const f=fa();if(!f)return;const z=Z(S.zone),nt=z.biome==='dungeon'?0:z.biome==='night'?1:nightA();
  if(S.zone!==curZone){curZone=S.zone;clearObjs();buildIsland(S.zone);camS.dist=null;applyEnv(z,nt);pv.length=0}

@@ -19,7 +19,7 @@ function banner(t){const b=document.getElementById('banner');if(!b)return;b.text
 function toast(m){const d=document.createElement('div');d.textContent=m;const t=document.getElementById('toast');t.prepend(d);setTimeout(()=>d.remove(),4000);while(t.children.length>4)t.lastChild.remove()}
 // ===== Zone generation =====
 function genZone(z){const r=rng(z.id),n=z.n,tiles=[],objs=[];let id=0;
- for(let i=0;i<n;i++){tiles[i]=[];for(let j=0;j<n;j++){const dx=i-(n-1)/2,dy=j-(n-1)/2;tiles[i][j]=Math.hypot(dx,dy)<n/2-.2+r()*.6?1:0}}
+ for(let i=0;i<n;i++){tiles[i]=[];for(let j=0;j<n;j++){const dx=i-(n-1)/2,dy=j-(n-1)/2;tiles[i][j]=z.shape?(z.shape(dx,dy,n,r)?1:0):Math.hypot(dx,dy)<n/2-.2+r()*.6?1:0}}
  const free=()=>{for(let k=0;k<200;k++){const i=1+Math.floor(r()*(n-2)),j=1+Math.floor(r()*(n-2));if(tiles[i][j]&&!objs.some(o=>o.i===i&&o.j===j)&&!(Math.abs(i-n/2)<1&&Math.abs(j-n-2)<1))return[i,j]}return[2,2]};
  const add=(type,x={})=>{const[i,j]=x.at||free();delete x.at;objs.push({id:z.id+'_'+id++,type,i,j,...x})};
  const spots={gate:[n-2,Math.floor(n/2)],goal:[Math.floor(n/2),2],vendor:[2,Math.floor(n/2)],den:[2,2],nest:[2,5],treetree:[5,2],totem:[6,6],project:[Math.floor(n/2)+2,Math.floor(n/2)-2]};
@@ -50,7 +50,7 @@ const R={
   if(o.hp>0)return;s.objs.splice(s.objs.indexOf(o),1);
   const tox=o.type==='tox',lux=(tox?12:4)+z.tier*3+Math.floor(Math.random()*4);gainLux(lux);emit('pop',{o,lux});gainXP((tox?30:10)+z.tier*5);
   S.stats.zap[S.zone]=(S.stats.zap[S.zone]||0)+1;if(tox){S.stats.tox++;S.stats.toxZ[S.zone]=(S.stats.toxZ[S.zone]||0)+1}
-  let msg='Zapped '+(tox?TOX_NAMES[(o.v||0)%4]:POLL_NAMES[(o.v||0)%3])+'! +'+lux+' Lux';if(!tox&&Math.random()<.3){addItem('silt');msg+=' · +1 Silt'}
+  let msg='Zapped '+(tox?TOX_NAMES[(o.v||0)%4]:(z.pollNames||POLL_NAMES)[(o.v||0)%3])+'! +'+lux+' Lux';if(!tox&&Math.random()<.3){addItem('silt');msg+=' · +1 Silt'}
   if(S.zone==='rockgarden'||S.zone==='rockisland'){const need=['totem_base','totem_coffer','totem_lowman'].filter(k=>!S.player.inv[k]&&!(S.flags&&S.flags.totemGrid));if(need.length&&Math.random()<.45){const k=need[0];addItem(k);msg+=' · found a '+ITEMS[k].name+'!'}}
   if(Math.random()<.18){const it=pick(['treat','clover','stone','berry']);addItem(it);msg+=' · found '+ITEMS[it].name}toast(msg);
   if(!s.objs.some(o=>o.type==='poll'||o.type==='tox')){S.stats.cleared[S.zone]=1;gainLux(25);toast('🌈 '+z.name+' is clean! +25 Lux. Pollution creeps back over time…')}},

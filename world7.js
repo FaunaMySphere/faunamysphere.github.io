@@ -15,7 +15,7 @@ const PROF={home:{gr:1,gh:1,fl:[0xffffff,0xffd84a,0xff8fc0,0xb48cff,0xfff1a8],tr
  sea:{gr:0,fl:null,tree:'kelp',nt:1.8,bu:16,coral:1,mu:0,bo:10,pe:3.2,sand:1,roots:0,shells:1,sea:1},
  dungeon:{gr:0,fl:null,tree:'crystal',nt:.9,bu:0,mu:2,glow:1,bo:10,pe:3,stone:1,cave:1},
  beach:{gr:.25,gh:1.3,dry:1,fl:null,tree:null,nt:0,bu:0,mu:0,bo:3,pe:3,sand:1,roots:0,shells:1}};
-const PK=z=>PROF[z]||null;const zb=id=>{try{return Z(id).biome}catch(e){return null}};const ON=new Proxy({},{get:(t,id)=>!!PK(zb(id))});
+const PK=z=>PROF[z]||(G.W7XP&&G.W7XP[z])||null;const zb=id=>{try{const q=Z(id);return q.w7||q.biome}catch(e){return null}};const ON=new Proxy({},{get:(t,id)=>!!PK(zb(id))});
 if(W&&G.W7){
 const {scene,QP,U}=W;
 let rs=1;const rnd=()=>{rs=(rs*16807)%2147483647;return(rs-1)/2147483646};
