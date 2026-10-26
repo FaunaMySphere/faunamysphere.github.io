@@ -27,6 +27,7 @@ let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(
  const pv=+m.v||1;if(pv>NET_V&&!updHint){updHint=1;toast(es()?'🔄 Un amigo tiene una versión más nueva. Por favor actualiza (recarga la app).':'🔄 A friend has a newer version. Please update (reload the app).')}
  else if(pv<NET_V&&!m._h){m.old=1}}catch(_){}}
 function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if(seen.has(k))return;seen.add(k);if(seen.size>4000)seen.clear()}let p=NetMP.peers.get(m.id);
+ if(typeof m.t==='string'&&m.t.slice(0,2)==='mk'){if(window.FSMkt)try{FSMkt.on(m,p)}catch(e){console.warn('mkt',e)}return} // v7.0 marketplace
  if(typeof m.t==='string'&&m.t.slice(0,2)==='hv'){if(window.FSVisit)try{FSVisit.msg(m,p)}catch(e){console.warn('visit',e)}return}
  if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
  else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere')return;
