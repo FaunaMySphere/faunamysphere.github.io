@@ -17,7 +17,7 @@ function hookTravel(){if(!G.R||!R.travel)return setTimeout(hookTravel,300);const
 const base={ok:0,sunI:0,hemiI:0,sunC:new THREE.Color(),bg:new THREE.Color(),fogC:new THREE.Color(),near:0,far:0,top:new THREE.Color(),hor:new THREE.Color(),exp:1};
 // rev2: moody polluted look = dark slate sky over a sickly amber horizon, low amber sun, desaturated cool terrain; restored = extra saturation/brightness
 const SMOG=new THREE.Color('#6a6250'),SKYT=new THREE.Color('#2f3440'),SKYH=new THREE.Color('#a8864e'),BGM=new THREE.Color('#3a3c42'),SUNM=new THREE.Color('#e09a55'),GREY=new THREE.Color('#6d7380'),tmp=new THREE.Color(),HSL={h:0,s:0,l:0};
-function snap(){const w=W(),sc=w.scene;if(!sc||!w.sun)return;base.sunI=w.sun.intensity;base.hemiI=w.hemi.intensity;base.sunC.copy(w.sun.color);if(sc.background&&sc.background.isColor)base.bg.copy(sc.background);
+function snap(){const w=W(),sc=w.scene;if(!sc||!w.sun)return;if(G.FS_tint81)try{G.FS_tint81()}catch(e){}base.sunI=w.sun.intensity;base.hemiI=w.hemi.intensity;base.sunC.copy(w.sun.color);if(sc.background&&sc.background.isColor)base.bg.copy(sc.background);
  if(sc.fog){base.fogC.copy(sc.fog.color);base.near=sc.fog.near;base.far=sc.fog.far}if(w.su){base.top.copy(w.su.uTop.value);base.hor.copy(w.su.uHor.value)}base.exp=w.R?w.R.toneMappingExposure:1;base.ok=1;lastK=-1}
 let wrapped=null;setInterval(()=>{if(G.W6env&&G.W6env!==wrapped){const e0=G.W6env;wrapped=G.W6env=function(){const r=e0.apply(this,arguments);try{snap()}catch(_){}return r}}else if(!G.W6env&&!wrapped){wrapped=G.W6env=function(){try{snap()}catch(_){}}}},250);
 // terrain tint: multiply island materials' colour (no new materials)

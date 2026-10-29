@@ -40,9 +40,26 @@ const sun=new THREE.DirectionalLight(0xfff1d8,2.6);sun.castShadow=!!QP.shadow;if
 if(QP.shadow){sun.shadow.mapSize.set(QP.shadow,QP.shadow);sun.shadow.bias=-.0006;sun.shadow.normalBias=.02;sun.shadow.radius=4;const c=sun.shadow.camera;c.left=c.bottom=ULTRA?-16:-12;c.right=c.top=ULTRA?16:12;c.near=1;c.far=60}
 scene.add(sun,sun.target);
 const su={uLift:{value:PCX?.22:0},sunPosition:{value:new THREE.Vector3(0,1,0)},uTop:{value:new THREE.Color()},uHor:{value:new THREE.Color()},uSunC:{value:new THREE.Color(1,.9,.7)}};
+// v8.1 PREVIEW: sky with drifting toon clouds + sunset tint; water with sky reflection, ripples and foam. ?v81off = old shaders.
+const V81=!new URLSearchParams(location.search).has('v81off');
+const SKY81=`uniform vec3 sunPosition,uTop,uHor,uSunC;uniform float uLift,uTime,uDusk,uNight,uCloud,uOct;varying vec3 vD;
+ float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+ float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1.,0.)),f.x),mix(h2(i+vec2(0.,1.)),h2(i+vec2(1.,1.)),f.x),f.y);}
+ void main(){float h=clamp(vD.y,-.3,1.);vec3 c=mix(uHor,uTop,clamp(pow(max(h,0.),.6)+uLift,0.,1.));c=mix(c,uHor*.8,smoothstep(0.,-.3,h));
+ vec3 sd=normalize(sunPosition);float s=max(dot(vD,sd),0.);
+ float az=dot(normalize(vD.xz+vec2(1e-4)),normalize(sd.xz+vec2(1e-4)))*.5+.5;float band=exp(-abs(h-.02)*4.5);
+ c=mix(c,mix(vec3(.98,.5,.62),vec3(1.,.62,.32),az),band*uDusk*(.3+.5*az));c=mix(c,c*vec3(1.,.86,.9),uDusk*.35*(1.-band));
+ c+=uSunC*(pow(s,600.)*1.2+pow(s,12.)*(.25+uDusk*.35));
+ float ah=abs(h);if(uCloud>0.){vec2 q=vD.xz/(ah+.32)*1.5+vec2(uTime*.012,uTime*.004)+(h<0.?vec2(9.3,4.1):vec2(0.));
+  float n=n2(q)*.6+n2(q*2.3+7.1)*.28;n+=uOct*n2(q*5.1-uTime*.01)*.12;n=n/(.88+uOct*.12);
+  float cm=smoothstep(.56,.62,n)*smoothstep(.0,.1,ah+.04)*smoothstep(1.,.55,ah)*uCloud*(h<0.?.85:1.);
+  float lit=smoothstep(.62,.8,n);vec3 cc=mix(mix(uHor,vec3(.78,.84,.95),.5),vec3(1.),lit*(h<0.?.6:.8));
+  cc=mix(cc,cc*vec3(1.,.74,.62)+vec3(.08,.02,.04),uDusk*.8);cc+=uSunC*pow(s,5.)*.35;cc=mix(cc,cc*vec3(.22,.26,.42),uNight);
+  c=mix(c,cc,cm*.9);}
+ gl_FragColor=vec4(c,1.);}`;
 const sky=new THREE.Mesh(new THREE.SphereGeometry(250,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:su,
  vertexShader:`varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`uniform vec3 sunPosition,uTop,uHor,uSunC;uniform float uLift;varying vec3 vD;void main(){float h=clamp(vD.y,-.3,1.);vec3 c=mix(uHor,uTop,clamp(pow(max(h,0.),.6)+uLift,0.,1.));c=mix(c,uHor*.8,smoothstep(0.,-.3,h));
+ fragmentShader:V81?SKY81:`uniform vec3 sunPosition,uTop,uHor,uSunC;uniform float uLift;varying vec3 vD;void main(){float h=clamp(vD.y,-.3,1.);vec3 c=mix(uHor,uTop,clamp(pow(max(h,0.),.6)+uLift,0.,1.));c=mix(c,uHor*.8,smoothstep(0.,-.3,h));
  float s=max(dot(vD,normalize(sunPosition)),0.);c+=uSunC*(pow(s,600.)*1.2+pow(s,12.)*.25);gl_FragColor=vec4(c,1.);}`}));scene.add(sky);
 const pmrem=new THREE.PMREMGenerator(R);
 // stars
@@ -170,7 +187,22 @@ function buildIsland(zid){scene.remove(island);island.traverse(o=>{if(o.geometry
   else if(o.position.y>-.05)o.position.y+=HGT(o.position.x,o.position.z)})}}
 
 // ---------- water shader ----------
-const waterMat=()=>new THREE.ShaderMaterial({transparent:true,uniforms:{uTime:U.time,uCol:{value:new THREE.Color(0x3aa7e0)},uDeep:{value:new THREE.Color(0x0d4f86)}},
+const uLow81={value:0};
+const waterMat81=()=>new THREE.ShaderMaterial({transparent:true,uniforms:{uTime:U.time,uCol:{value:new THREE.Color(0x3aa7e0)},uDeep:{value:new THREE.Color(0x0d4f86)},uTop:su.uTop,uHor:su.uHor,uSunD:su.sunPosition,uSunC:su.uSunC,uLow:uLow81},
+ vertexShader:`varying vec2 vUv;varying vec3 vW,vN;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*viewMatrix*w;}`,
+ fragmentShader:`uniform float uTime,uLow;uniform vec3 uCol,uDeep,uTop,uHor,uSunD,uSunC;varying vec2 vUv;varying vec3 vW,vN;
+ void main(){vec2 p=vUv-.5;float r=length(p)*2.;
+  vec2 g=vec2(sin(p.x*38.+uTime*2.3)+sin((p.x+p.y)*25.-uTime*1.9),cos(p.y*34.-uTime*2.1)+cos((p.x-p.y)*29.+uTime*1.6))*.07;
+  vec3 N=normalize(vN+vec3(g.x,0.,g.y));vec3 V=normalize(cameraPosition-vW);float fr=.18+.7*pow(1.-max(dot(N,V),0.),3.);
+  vec3 Rf=reflect(-V,N);vec3 sky=mix(uHor,uTop,clamp(Rf.y*1.4,0.,1.));
+  vec3 col=mix(uCol,uDeep,smoothstep(0.,.9,1.-r));col=mix(col,sky*1.05,fr*.55);
+  float rp=fract(r*1.3-uTime*.3);col+=vec3(.85,.97,1.)*smoothstep(0.,.04,rp)*smoothstep(.1,.04,rp)*(1.-r)*.22;
+  float c=sin((p.x+p.y)*30.+uTime*2.)*sin((p.x-p.y)*26.-uTime*1.7);col+=vec3(.9,1.,1.)*smoothstep(.8,1.,c)*.45;
+  float sp=pow(max(dot(Rf,normalize(uSunD)),0.),mix(110.,40.,uLow));col+=uSunC*smoothstep(.35,.6,sp)*.9;
+  float an=atan(p.y,p.x);float fn=sin(an*13.+uTime*1.4)*.5+.5;fn=fn*.6+.4*(sin(an*7.-uTime*.9)*.5+.5);
+  float foam=smoothstep(.8+fn*.07,.86+fn*.07,r);col=mix(col,vec3(.96,1.,1.),foam*.9);
+  gl_FragColor=vec4(col,smoothstep(1.,.96,r)*.94);}`});
+const waterMat=()=>V81?waterMat81():new THREE.ShaderMaterial({transparent:true,uniforms:{uTime:U.time,uCol:{value:new THREE.Color(0x3aa7e0)},uDeep:{value:new THREE.Color(0x0d4f86)}},
  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
  fragmentShader:`uniform float uTime;uniform vec3 uCol,uDeep;varying vec2 vUv;void main(){vec2 p=vUv-.5;float r=length(p)*2.;
  float w=sin(r*18.-uTime*3.)*.5+.5;float c=sin((p.x+p.y)*30.+uTime*2.)*sin((p.x-p.y)*26.-uTime*1.7);
@@ -387,6 +419,7 @@ function animFauna(f,t,st){const TK=st.trick!==undefined?st.trick:(f===fauna&&(t
  if(r.gem){r.gem.rotation.y=t*2;r.gem.material.emissiveIntensity=(st.zap>0?6:2.2)+Math.sin(t*5)*.8}
  const te=TK?(now()-TK.t0)/1000:9;const ta=window.FSTrickAnim?window.FSTrickAnim(TK?TK.k:null,te,r,b,L,y,t,f):undefined;if(ta!==undefined)y=ta;else if(te<1.6){const k=TK.k;if(k==='boing')y+=Math.abs(Math.sin(te*Math.PI*2.5))*.45;if(k==='roll')b.rotation.z=te*Math.PI*2.5;if(k==='play'){y+=Math.abs(Math.sin(te*12))*.12;b.rotation.y=Math.sin(te*8)*.4}if(k==='greet'&&r.head)r.head.rotation.z=Math.sin(te*10)*.35;if(k==='sniff'&&r.head)r.head.rotation.x=.45+Math.sin(te*30)*.06;if(k==='itch')b.rotation.z=Math.sin(te*30)*.12;if(k==='bored'){y=L*.8;if(r.head)r.head.rotation.x=.3}}else if(b.rotation.y)b.rotation.y*=.8;
  if(f===fauna&&(typeof rt!=="undefined")&&now()-(rt.frownT||0)<1500&&r.head)r.head.rotation.y=Math.sin(now()/60)*.3;
+ if(V81&&G.FS_anim81)try{const y2=G.FS_anim81(f,t,st,r,b,L,y,f===fauna);if(y2!==undefined)y=y2}catch(e){}
  b.position.y+= (y-b.position.y)*.35}
 
 // ---------- v5 station / prop builders ----------
@@ -543,9 +576,9 @@ function applyEnv(z,nt){const pal=(window.ZPAL&&ZPAL[z.id])||BIOMES[z.biome],dun
  if(!dun&&!(window.ZPAL&&ZPAL[z.id])&&!['candy','scorch','mesa','swamp'].includes(z.biome)){const bt=new THREE.Color(0xa9dcff).lerp(new THREE.Color(pal[5]),.35).lerp(new THREE.Color(0x0a1028),nt*.9);scene.background=bt;scene.fog.color.copy(bt)}
  stars.material.opacity=dun?0:clamp((nt-.3)*1.4,0,1);moon.visible=nt>.6&&!dun;R.toneMappingExposure=(dun?1.1:THREE.MathUtils.lerp(.95,1.15,nt))*PCEXP;
  if(bloom)bloom.strength=dun||nt>.5?.6:.3;
- setWeather('weather' in z?z.weather:{sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
+ setWeather('weather' in z?z.weather:{sea:'bubble',mesa:'dust',candy:'firefly',arctic:'snow',swamp:'bubble',forest:'leaf',scorch:'ember',dungeon:'dust'}[z.biome]||(nt>.5?'firefly':null));if(G.FS_env81)try{G.FS_env81(z,nt)}catch(e){console.warn('env81',e)}if(G.W6env)try{G.W6env(z,nt)}catch(e){console.warn('w6env',e)}}
 function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);G._dt=dt;lastT=tn;const t=(tn-clock0)/1000;U.time.value=t;
- const f=fa();if(!f)return;const z=Z(S.zone),nt=z.biome==='dungeon'?0:z.biome==='night'?1:nightA();
+ const f=fa();if(!f)return;const z=Z(S.zone),nt=z.biome==='dungeon'?0:z.biome==='night'?1:(V81&&G.__nt81!=null?G.__nt81:nightA());
  if(S.zone!==curZone){curZone=S.zone;clearObjs();buildIsland(S.zone);camS.dist=null;applyEnv(z,nt);pv.length=0}
  if(((t*10)|0)%50===0)applyEnvLite(z,nt);
  syncObjs();
@@ -669,6 +702,8 @@ const _em2=G.emit;G.emit=function(ev,d={}){try{_em2(ev,d)}catch(_){}try{
 }catch(e){console.warn(e)}};
 // v8.0 PREVIEW: handles for combat80.js (read-only helpers, no behaviour change on their own)
 G.W80={THREE,objMap,proj,objW,mePosW,burstW,floatW,fxAdd,ringM,vib,isPhone,get camera(){return camera},scene};
+if(V81){Object.assign(su,{uTime:U.time,uDusk:{value:0},uNight:{value:0},uCloud:{value:.8},uOct:{value:1}})}
+if(V81)G.W81={THREE,su,U,sun,hemi,sky,stars,uLow81,cv,R,proj,scene,isPhone,get fauna(){return fauna},get camera(){return camera},reEnv(){try{if(typeof S==='undefined'||!S.zone||!curZone)return;const z=Z(S.zone);applyEnv(z,z.biome==='dungeon'?0:z.biome==='night'?1:(G.__nt81!=null?G.__nt81:nightA()))}catch(e){}}};
 let trailT=0;const trailG=new THREE.CircleGeometry(.07,10);
 // v4.15: trail dots come from a fixed pool (no new mesh/material per step); other FX free their materials; real frame dt.
 const trailPool=[];for(let n=0;n<14;n++){const m=new THREE.Mesh(trailG,ringM(0x6dff3a));m.rotation.x=-Math.PI/2;m.visible=false;m._tp=1;trailPool.push(m)}let trailI=0,fxLast=performance.now();
