@@ -1,0 +1,71 @@
+/* v8.0 PREVIEW — cohesive UI layer (loaded last; only active with body.v80, so ?v80off shows the old look). */
+body.v80{--g1:#2f8f2a;--g2:#145a1c;--edge:#b6f06a;--gold1:#ffe36e;--gold2:#f4ad25;--goldE:#a8640f;--ink:#fff;--soft:#e9ffd8;
+ --font:"Trebuchet MS","Nunito",ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif}
+body.v80 #modal{background:radial-gradient(120% 90% at 50% 100%,#04140acc,#0a1a2a8c);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:m80fade .22s ease-out}
+body.v80 #modal .sheet{background:linear-gradient(170deg,#3a9c33f5 0%,#1d6e22f5 45%,#11501bf7 100%)!important;color:var(--ink)!important;
+ border:2px solid #c9f58a!important;border-radius:24px!important;box-shadow:0 18px 50px #0009,inset 0 1px 0 #ffffff40,inset 0 0 0 4px #0b3d1255;
+ padding:18px 16px 16px;font-family:var(--font);line-height:1.38;text-shadow:0 1px 0 #0004;animation:m80in .3s cubic-bezier(.2,1.25,.35,1) both;transform-origin:50% 70%}
+body.v80 #modal.m80out{animation:m80fadeout .17s ease-in forwards}
+body.v80 #modal.m80out .sheet{animation:m80out .17s ease-in forwards}
+@keyframes m80in{from{opacity:0;transform:translateY(22px) scale(.94)}}
+@keyframes m80out{to{opacity:0;transform:translateY(16px) scale(.96)}}
+@keyframes m80fade{from{opacity:0}}
+@keyframes m80fadeout{to{opacity:0}}
+body.v80 #mb h2,body.v80 #mb h3{font-family:var(--font);font-weight:900;letter-spacing:.2px;margin:2px 44px 10px 2px;color:#fff6c8;text-shadow:0 2px 0 #0b3d12,0 0 12px #ffe36e33}
+body.v80 #mb h2{font-size:21px}body.v80 #mb h3{font-size:16px;color:#e9ffd8}
+body.v80 #mb p,body.v80 #mb div,body.v80 #mb span,body.v80 #mb small{font-family:var(--font)}
+body.v80 #mb small{opacity:.88}
+body.v80 #mb hr{border:0;height:2px;background:linear-gradient(90deg,transparent,#c9f58a88,transparent);margin:12px 0}
+/* close button */
+body.v80 #x{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#5fc24a,#1e7a22)!important;color:#fff!important;border:2px solid #fff!important;
+ box-shadow:0 3px 0 #0b3d12,0 4px 10px #0005;font-size:16px;font-weight:900;transition:transform .14s cubic-bezier(.3,1.6,.5,1),filter .14s;z-index:2}
+body.v80 #x:active{transform:scale(.88)}
+/* buttons: one primary style everywhere (buttons with their own inline colour keep it) */
+body.v80 .btn:not([style*="background"]){background:linear-gradient(180deg,var(--gold1),var(--gold2))!important;color:#4a2600!important;text-shadow:0 1px 0 #fff6!important}
+body.v80 .btn{border:0!important;border-radius:999px!important;font-family:var(--font)!important;font-weight:900!important;letter-spacing:.2px;
+ box-shadow:0 4px 0 var(--goldE),0 6px 14px #0004,inset 0 2px 0 #ffffff80!important;padding:9px 18px;min-height:38px;
+ transition:transform .12s cubic-bezier(.3,1.6,.5,1),box-shadow .12s,filter .12s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body.v80 .btn.sm{min-height:30px;padding:5px 12px}
+body.v80 .btn:active,body.v80 .btn.p80{transform:translateY(3px) scale(.98)!important;box-shadow:0 1px 0 var(--goldE),0 2px 6px #0004,inset 0 2px 0 #ffffff60!important;filter:brightness(.96)}
+body.v80 .btn:disabled,body.v80 .btn[disabled]{filter:grayscale(.7) brightness(.85);opacity:.7}
+body.v80 .btn:focus-visible,body.v80 #bar button:focus-visible,body.v80 .rbtn:focus-visible,body.v80 #x:focus-visible{outline:3px solid #fff;outline-offset:2px}
+/* cards */
+body.v80 #mb .card{background:linear-gradient(180deg,#ffffff2b,#ffffff12)!important;border:2px solid #d6ff9e66!important;border-radius:18px!important;color:#fff;
+ box-shadow:0 4px 12px #0003,inset 0 1px 0 #ffffff30;transition:transform .16s cubic-bezier(.3,1.5,.5,1),box-shadow .16s,border-color .16s;font-family:var(--font)}
+body.v80 #mb .card:active{transform:scale(.97)}
+body.v80 #mb .row{border-radius:12px}
+body.v80 #mb input:not([type=range]):not([type=checkbox]),body.v80 #mb select{border-radius:12px;border:2px solid #c9f58a;background:#fffef6;color:#183b12;padding:8px 10px;font:600 15px var(--font)}
+/* top + bottom bars: press feedback for every round button */
+body.v80 .rbtn i,body.v80 #bar button i{transition:transform .14s cubic-bezier(.3,1.6,.5,1),filter .14s,box-shadow .14s}
+body.v80 .rbtn:active i,body.v80 #bar button:active i,body.v80 .rbtn.p80 i,body.v80 #bar button.p80 i{transform:scale(.86) translateY(2px);filter:brightness(1.1)}
+body.v80 #bar button span,body.v80 .rbtn span{font-family:var(--font);letter-spacing:.3px}
+body.v80 #mute,body.v80 #gfx,body.v80 #vol80{transition:transform .14s cubic-bezier(.3,1.6,.5,1)}
+body.v80 #mute:active,body.v80 #gfx:active,body.v80 #vol80:active{transform:scale(.86)}
+/* toasts */
+body.v80 #toast div{border-radius:14px!important;border:2px solid #c9f58a!important;background:linear-gradient(180deg,#2f8f2af2,#196322f2)!important;color:#fff!important;
+ box-shadow:0 6px 16px #0005;font:700 14px var(--font);padding:7px 14px!important;animation:t80in .32s cubic-bezier(.2,1.3,.4,1),f 4s forwards}
+@keyframes t80in{from{opacity:0;transform:translateY(-10px) scale(.95)}}
+/* sound panel */
+body.v80 #vol80{width:32px;height:32px;border-radius:50%;padding:0;border:2px solid #e9ffd0;background:#2f7a00cc;color:#fff;font-size:14px;cursor:pointer;flex-shrink:0}
+.v80vol{display:grid;gap:14px;margin-top:6px}
+.v80vol label{display:grid;grid-template-columns:28px 1fr 46px;align-items:center;gap:10px;font:800 15px var(--font,"Trebuchet MS")}
+.v80vol input[type=range]{-webkit-appearance:none;appearance:none;height:12px;border-radius:99px;background:linear-gradient(90deg,var(--gold2,#f4ad25) var(--p,100%),#0b3d1288 var(--p,100%));border:2px solid #c9f58a;outline:0}
+.v80vol input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7c2,#f4ad25);border:2px solid #a8640f;box-shadow:0 2px 6px #0006}
+.v80vol input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#ffd84a;border:2px solid #a8640f}
+.v80vol b{text-align:right;font-variant-numeric:tabular-nums}
+/* hurt vignette (combat80) */
+#hurt80{position:fixed;inset:0;pointer-events:none;z-index:8;opacity:0;background:radial-gradient(ellipse at center,transparent 55%,#ff1e3c66 100%)}
+#hurt80.on{animation:h80 .45s ease-out}
+@keyframes h80{0%{opacity:1}100%{opacity:0}}
+@media (hover:hover) and (pointer:fine){
+ body.v80 .btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+ body.v80 #mb .card:hover{transform:translateY(-3px);box-shadow:0 10px 20px #0004,inset 0 1px 0 #ffffff40;border-color:#e9ffb8aa!important}
+ body.v80 .rbtn:hover i,body.v80 #bar button:hover i{transform:translateY(-2px) scale(1.06);filter:brightness(1.08)}
+ body.v80 #x:hover{transform:rotate(90deg) scale(1.05)}
+}
+@media (max-width:600px){
+ body.v80 #modal .sheet{border-radius:22px 22px 0 0!important;border-bottom:0!important;padding:16px 14px calc(14px + env(safe-area-inset-bottom));font-size:15px}
+ body.v80 #mb h2{font-size:20px}
+ body.v80 .btn{min-height:42px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){body.v80 #modal .sheet,body.v80 #modal,body.v80 #toast div{animation-duration:.01s!important}body.v80 *{transition-duration:.01s!important}}

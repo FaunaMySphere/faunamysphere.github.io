@@ -75,6 +75,14 @@ const play=(k,w)=>{try{if(window.Sound&&Sound.ctx&&!Sound.muted)SND[k][w]()}catc
 // ---- behaviour ----
 const seen=new Set();let lastG=0;
 let lastHurt=0;function hurt(o,base){const f=fa();if(!f||rt.sleep||rt.trans)return;const T0=now();if(T0-lastHurt<1800)return;lastHurt=T0;const m=o.el===2?1.6:o.el===1?1.3:1;f.happiness=clamp(f.happiness-enemyDmg(base*m));emit('hurt');if(f.happiness<=0){try{tooSad()}catch(e){}try{save()}catch(e){}}}
+// v8.0 PREVIEW (?v80off disables): attacks are telegraphed first (ring on the ground), then land only if the fauna is still in the zone -> dodging works.
+// Telegraph state lives in a WeakMap (never saved). Boss (el 2) adds a ground-slam every 3rd attack.
+const V80=!/[?&]v80off/.test(location.search);const TEL=window.FS_TEL=new WeakMap(),CNT=new WeakMap();
+const fire=(k,o,x)=>{try{window.dispatchEvent(new CustomEvent('fs80',{detail:Object.assign({k,o},x||{})}))}catch(e){}};
+function tel(s,o,t,land,dmg){if(TEL.has(o))return;const zid=S.zone;t.t=now();TEL.set(o,t);fire('tel',o,{t});
+ setTimeout(async()=>{TEL.delete(o);if(!s.objs.includes(o)||S.zone!==zid||!fa())return;let hit=false;try{hit=await land()}catch(e){}
+  if(hit)hurt(o,dmg);else fire('dodge',o,{t})},t.dur)}
+window.FSspawnMon=(id,kind,el,at)=>spawnMon(id,kind,el,at);window.FSmonDanger=id=>danger(id);window.FSmonKinds=id=>kindsFor(id);
 function freeAt(s,i,j){return s.tiles[i]&&s.tiles[i][j]&&!s.objs.some(x=>x.i===i&&x.j===j)&&!(Math.round(rt.pos.i)===i&&Math.round(rt.pos.j)===j)}
 function stepTo(s,o,ti,tj){const di=Math.sign(ti-o.i),dj=Math.sign(tj-o.j);for(const[a,b]of[[di,dj],[di,0],[0,dj]])if((a||b)&&freeAt(s,o.i+a,o.j+b)){o.i+=a;o.j+=b;return true}return false}
 function tick(){try{if(typeof S==='undefined'||!S.zones||!fa()||S.zone==='home'||S.zone==='visit'||document.hidden)return;const id=S.zone,s=zs(id);tagZone(id);const T=now(),P=rt.pos;
@@ -82,9 +90,11 @@ function tick(){try{if(typeof S==='undefined'||!S.zones||!fa()||S.zone==='home'|
  for(const o of s.objs){if(o.type!=='tox'||!o.mon)continue;const m=MON[o.mon],d=Math.hypot(o.i-P.i,o.j-P.j);
   if(d<6&&!seen.has(id+o.id)){seen.add(id+o.id);if(!o.hid){toast('⚠️ '+nameOf(o)+' '+tr('appeared!'));play(o.mon,'g')}}
   if(!act.has(o)||T-(o.nt||0)<m.every*(o.el===2?.8:1))continue;o.nt=T;
-  if(m.beh==='lunge'){if(d<m.range&&d>1.2){const ti=Math.round(P.i),tj=Math.round(P.j);for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]])if(freeAt(s,ti+a,tj+b)){o.i=ti+a;o.j=tj+b;break}o.atk=T;play('stalker','a');hurt(o,m.dmg);toast('⚠️ '+nameOf(o)+' '+tr('lunged at you!'))}else if(d<7)stepTo(s,o,P.i,P.j)}
-  else if(m.beh==='chase'||m.beh==='swarm'){if(d<8)stepTo(s,o,Math.round(P.i),Math.round(P.j));if(Math.hypot(o.i-P.i,o.j-P.j)<m.range){o.atk=T;play(o.mon,'a');hurt(o,m.dmg)}}
-  else if(m.beh==='ranged'){if(d<m.range){o.atk=T;o.spit=T;play('wraith','a');setTimeout(()=>{if(s.objs.includes(o)){hurt(o,m.dmg)}},450);if(Math.random()<.3)toast('❄️ '+nameOf(o)+' '+tr('spat at you!'))}else if(d<8)stepTo(s,o,P.i,P.j);if(d<2.2){const ai=Math.sign(o.i-P.i),aj=Math.sign(o.j-P.j);if(freeAt(s,o.i+ai,o.j+aj)){o.i+=ai;o.j+=aj}}}
+  if(V80&&o.el===2&&((CNT.set(o,(CNT.get(o)||0)+1),CNT.get(o))%3===0)&&d<4){tel(s,o,{k:'slam',i:o.i,j:o.j,r:2.3,dur:1000},()=>{o.atk=now();play(o.mon,'a');return Math.hypot(rt.pos.i-o.i,rt.pos.j-o.j)<2.3},m.dmg*1.2)}
+  else if(m.beh==='lunge'){if(d<m.range&&d>1.2){const ti=Math.round(P.i),tj=Math.round(P.j);const land=()=>{for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]])if(freeAt(s,ti+a,tj+b)){o.i=ti+a;o.j=tj+b;break}o.atk=now();play('stalker','a')};
+   if(V80)tel(s,o,{k:'lunge',i:ti,j:tj,r:1.5,dur:650},()=>{land();const hit=Math.hypot(rt.pos.i-ti,rt.pos.j-tj)<1.5;if(hit)toast('⚠️ '+nameOf(o)+' '+tr('lunged at you!'));return hit},m.dmg);else{land();hurt(o,m.dmg);toast('⚠️ '+nameOf(o)+' '+tr('lunged at you!'))}}else if(d<7)stepTo(s,o,P.i,P.j)}
+  else if(m.beh==='chase'||m.beh==='swarm'){if(d<8)stepTo(s,o,Math.round(P.i),Math.round(P.j));if(Math.hypot(o.i-P.i,o.j-P.j)<m.range){if(V80)tel(s,o,{k:'bite',i:Math.round(P.i),j:Math.round(P.j),r:1,dur:m.beh==='swarm'?320:420},()=>{o.atk=now();play(o.mon,'a');return Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<m.range+.35},m.dmg);else{o.atk=T;play(o.mon,'a');hurt(o,m.dmg)}}}
+  else if(m.beh==='ranged'){if(d<m.range){if(V80){const ti=Math.round(P.i),tj=Math.round(P.j);tel(s,o,{k:'spit',i:ti,j:tj,r:1.3,dur:600},()=>{o.atk=now();o.spit=now();play('wraith','a');return new Promise(res=>setTimeout(()=>res(Math.hypot(rt.pos.i-ti,rt.pos.j-tj)<1.3),450))},m.dmg)}else{o.atk=T;o.spit=T;play('wraith','a');setTimeout(()=>{if(s.objs.includes(o)){hurt(o,m.dmg)}},450)}if(Math.random()<.3)toast('❄️ '+nameOf(o)+' '+tr('spat at you!'))}else if(d<8)stepTo(s,o,P.i,P.j);if(d<2.2){const ai=Math.sign(o.i-P.i),aj=Math.sign(o.j-P.j);if(freeAt(s,o.i+ai,o.j+aj)){o.i+=ai;o.j+=aj}}}
   else if(m.beh==='ambush'){if(o.hid===undefined)o.hid=1;if(o.hid&&d<m.range){o.hid=0;o.atk=T;o.rise=T;play('lurker','g');play('lurker','a');hurt(o,m.dmg);toast('⚠️ '+nameOf(o)+' '+tr('rose from the mud!'))}else if(!o.hid){if(d<m.range){o.atk=T;play('lurker','a');hurt(o,m.dmg*.5)}else if(d>5)o.hid=1}}}
  if(T-lastG>7000){lastG=T;const near=s.objs.filter(o=>o.type==='tox'&&o.mon&&!o.hid).sort((a,b)=>Math.hypot(a.i-P.i,a.j-P.j)-Math.hypot(b.i-P.i,b.j-P.j))[0];if(near&&Math.hypot(near.i-P.i,near.j-P.j)<6)play(near.mon,'g')}}catch(e){console.warn('mon',e)}}
 setInterval(tick,300);

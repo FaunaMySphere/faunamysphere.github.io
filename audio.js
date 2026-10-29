@@ -57,6 +57,7 @@ const Sound={ctx:null,master:null,mus:null,fx:null,muted:localStorage.getItem('f
   const melHub=[16,null,19,null,16,14,12,null,14,null,16,null,12,null,null,null],melTri=[21,null,24,21,19,null,16,null,19,21,null,16,14,null,12,null],melTro=[12,16,19,16,21,19,16,null,17,21,24,21,19,null,16,null];
   const sched=()=>{if(!this.ctx)return;const s=this.style();if(s!==cur){cur=s;step=0}const p=P[s],e=60/p.bpm/2;
    while(next<c.currentTime+.3){if(!this.muted&&!document.hidden){const bar=Math.floor(step/8)%p.prog.length,b=step%8,ch=p.prog[bar],t=next,phrase=Math.floor(step/32)%2;
+    if(this.onStep)try{this.onStep(s,step,t,e,ch,b)}catch(_){}
     if(s==='hub'){ // cozy acoustic guitar strum, acoustic bass, marimba accents, shaker/congas
      if([0,3,4,6].includes(b))this.guitar(ch.map(x=>st(x)),t,.035,b!==3);
      if(b===0||b===5)this.bass(st(ch[0]-24),t,e*2.5);if(b===4)this.bass(st(ch[2]-24),t,e*1.5,.12);
