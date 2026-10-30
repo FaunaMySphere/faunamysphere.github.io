@@ -74,6 +74,8 @@ const SND={
 const play=(k,w)=>{try{if(window.Sound&&Sound.ctx&&!Sound.muted)SND[k][w]()}catch(e){}};
 // ---- behaviour ----
 const seen=new Set();let lastG=0;
+// v8.3.6: two monsters of the same kind that come into range on the same tick used to toast '… appeared!' twice in the same millisecond → one toast per kind per tick ('Bramble Beast ×2 appeared!'), one growl
+let ANNP=null;function annMon(o){const nm=nameOf(o);if(!ANNP){ANNP=new Map();queueMicrotask(()=>{const P=ANNP;ANNP=null;for(const[n,v]of P){const x=v.n>1?' ×'+v.n:'';toast(isES()?'⚠️ ¡Apareció '+n+x+'!':'⚠️ '+n+x+' appeared!');play(v.m,'g')}})}const v=ANNP.get(nm);if(v)v.n++;else ANNP.set(nm,{n:1,m:o.mon})}
 let lastHurt=0;function hurt(o,base){const f=fa();if(!f||rt.sleep||rt.trans)return;const T0=now();if(T0-lastHurt<1800)return;lastHurt=T0;const m=o.el===2?1.6:o.el===1?1.3:1;f.happiness=clamp(f.happiness-enemyDmg(base*m));emit('hurt');if(f.happiness<=0){try{tooSad()}catch(e){}try{save()}catch(e){}}}
 // v8.0 PREVIEW (?v80off disables): attacks are telegraphed first (ring on the ground), then land only if the fauna is still in the zone -> dodging works.
 // Telegraph state lives in a WeakMap (never saved). Boss (el 2) adds a ground-slam every 3rd attack.
@@ -88,7 +90,7 @@ function stepTo(s,o,ti,tj){const di=Math.sign(ti-o.i),dj=Math.sign(tj-o.j);for(c
 function tick(){try{if(typeof S==='undefined'||!S.zones||!fa()||S.zone==='home'||S.zone==='visit'||document.hidden)return;const id=S.zone,s=zs(id);tagZone(id);const T=now(),P=rt.pos;
  const act=new Set(s.objs.filter(o=>o.type==='tox'&&o.mon).sort((a,b)=>Math.hypot(a.i-P.i,a.j-P.j)-Math.hypot(b.i-P.i,b.j-P.j)).slice(0,2));
  for(const o of s.objs){if(o.type!=='tox'||!o.mon)continue;const m=MON[o.mon],d=Math.hypot(o.i-P.i,o.j-P.j);
-  if(d<6&&!seen.has(id+o.id)){seen.add(id+o.id);if(!o.hid&&!(window.FS_ANN80&&FS_ANN80.has(o))){toast(isES()?'⚠️ ¡Apareció '+nameOf(o)+'!':'⚠️ '+nameOf(o)+' appeared!');play(o.mon,'g')}}
+  if(d<6&&!seen.has(id+o.id)){seen.add(id+o.id);if(!o.hid&&!(window.FS_ANN80&&FS_ANN80.has(o)))annMon(o)}
   if(!act.has(o)||T-(o.nt||0)<m.every*(o.el===2?.8:1))continue;o.nt=T;
   if(V80&&o.el===2&&((CNT.set(o,(CNT.get(o)||0)+1),CNT.get(o))%3===0)&&d<4){tel(s,o,{k:'slam',i:o.i,j:o.j,r:2.3,dur:1000},()=>{o.atk=now();play(o.mon,'a');return Math.hypot(rt.pos.i-o.i,rt.pos.j-o.j)<2.3},m.dmg*1.2)}
   else if(m.beh==='lunge'){if(d<m.range&&d>1.2){const ti=Math.round(P.i),tj=Math.round(P.j);const land=()=>{for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]])if(freeAt(s,ti+a,tj+b)){o.i=ti+a;o.j=tj+b;break}o.atk=now();play('stalker','a')};

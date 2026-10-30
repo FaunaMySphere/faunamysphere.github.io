@@ -26,11 +26,11 @@ const pick=(px,py)=>{const R=Math.max(26,tilePx()*.85);let best=null,bd=1e9;
  D().forEach((d,k)=>tst(k,d.i,d.j,(d.h|0)*.3,(d.h|0)*.3+.5,(d.h|0)*.5));
  Z0().objs.forEach(o=>{if(!FIX.includes(o.type))return;const f=fp(o),cx=f.reduce((s,q)=>s+q[0],0)/f.length,cz=f.reduce((s,q)=>s+q[1],0)/f.length;tst(o.id,o.i+cx,o.j+cz,0,o.type==='house'?1.4:.8,-2)});
  return bd<R?best:null};
-const fxs=()=>Z0().objs.filter(o=>FIX.includes(o.type)).map(o=>[o.id,o.i,o.j,o.rot|0]);
+const fxs=()=>Z0().objs.filter(o=>FIX.includes(o.type)).map(o=>[o.id,o.i,o.j,o.rot|0,o.type==='house'?{...o}:0]);// v8.3.6: houses keep a full copy so Undo can bring back a stored/recolored house
 const snap=()=>JSON.stringify({d:D(),inv:S.player.inv,fx:fxs()});
 const pushU=()=>{A.undo.push(snap());if(A.undo.length>10)A.undo.shift()};
 const commit=()=>{try{syncHomeDecor();save()}catch(e){console.warn(e)}};
-const undo=()=>{const u=A.undo.pop();if(!u){toast(t('Nothing to undo.'));return}try{const o=JSON.parse(u);S.home.decor.length=0;o.d.forEach(x=>S.home.decor.push(x));S.player.inv=o.inv;(o.fx||[]).forEach(([id,i,j,r])=>{const f=Z0().objs.find(x=>x.id===id);if(f){f.i=i;f.j=j;f.rot=r}});A.sel=[];commit();toast(t('Undone.'))}catch(e){console.warn(e)}};
+const undo=()=>{const u=A.undo.pop();if(!u){toast(t('Nothing to undo.'));return}try{const o=JSON.parse(u);S.home.decor.length=0;o.d.forEach(x=>S.home.decor.push(x));S.player.inv=o.inv;(o.fx||[]).forEach(([id,i,j,r,h])=>{let f=Z0().objs.find(x=>x.id===id);if(!f&&h){const H=S.player.houses||{},key=h.kind+':'+(h.style|0);if(H[key]>0){H[key]--;if(!H[key])delete H[key];Z0().objs.push(f=h)}}if(f){f.i=i;f.j=j;f.rot=r;if(h)f.style=h.style}});A.sel=[];commit();toast(t('Undone.'))}catch(e){console.warn(e)}};
 // compute target placement for moving selection by (di,dj)
 const plan=(di,dj)=>{const mvD=new Set(A.sel.filter(r=>!isF(r))),mvF=new Set(A.sel.filter(isF)),out=[];const per={};
  const occD=(i,j)=>at(i,j).filter(x=>!mvD.has(x));

@@ -127,9 +127,9 @@ function tick(){if(typeof S==='undefined'||!S||!S.player)return;const s=M(),now=
 const day=()=>new Date().toISOString().slice(0,10);
 function hsh(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0}
 const BASEP={food:12,mat:35,decor:110,tool:250};
-function shopStock(){const d=day(),ks=Object.keys(ITEMS).filter(k=>{const it=ITEMS[k];return it&&BASEP[it.type]&&!it.premium&&!it.hidden&&!/_hot_|_cold_|totem_|trophy/.test(k)}).sort((a,b)=>hsh(d+a)-hsh(d+b)).slice(0,8);
+function shopStock(){const d=day(),ks=Object.keys(ITEMS).filter(k=>{const it=ITEMS[k];return it&&BASEP[it.type]&&!it.premium&&!it.hidden&&!(window.FS_B3&&FS_B3[k])&&!/_hot_|_cold_|totem_|trophy/.test(k)}).sort((a,b)=>hsh(d+a)-hsh(d+b)).slice(0,8);
  return ks.map(k=>({k,p:Math.round(BASEP[ITEMS[k].type]*(1+(hsh(d+'p'+k)%5)*.25))}))}
-const sellBack=k=>{const it=ITEMS[k];return it&&BASEP[it.type]?Math.max(2,Math.round(BASEP[it.type]*.3)):0};
+const sellBack=k=>{const it=ITEMS[k];if(!it||!BASEP[it.type])return 0;const v=Math.max(2,Math.round(BASEP[it.type]*.3)),b3=window.FS_B3&&FS_B3[k];return b3&&b3.price?Math.max(1,Math.min(v,Math.floor(b3.price*.5))):v};// v8.3.6: Build items cost 15-30 Lux but sold back for 33 (free Lux loop) → never more than half their price
 function shopBuy(k,p){const s=M(),d=day();if(s.shopDay!==d){s.shopDay=d;s.shopN={}}const st=shopStock().find(x=>x.k===k);if(!st||st.p!==p)return;
  if((s.shopN[k]|0)>=5)return toast2('Sold out today — new stock tomorrow.','Agotado hoy — más mañana.');if(S.player.lux<p)return toast2('Not enough Lux.','No tienes suficiente Lux.');
  S.player.lux-=p;S.player.inv[k]=(S.player.inv[k]|0)+1;s.shopN[k]=(s.shopN[k]|0)+1;persist();try{renderHUD();Sound.sfx('pop')}catch(e){}refresh()}

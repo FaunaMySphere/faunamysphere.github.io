@@ -298,8 +298,8 @@ B.decor=o=>{const it=o.item||'',g=new THREE.Group();
  const out=new THREE.Group();out.add(g);g.position.y=(o.h|0)*.3;out.rotation.y=((o.rot|0)%4)*Math.PI/2;return out}}
 // v4.22 tile paint layer (S.home.paint {"i,j":"#hex"}): thin slabs, rebuilt only when the paint signature changes
 let paintG=null,paintSig='';let ghostG=null,ghostK='',selG=null,selK='';const selM=new THREE.LineBasicMaterial({color:0xffe14d,depthTest:false,transparent:true});const selGeo=new THREE.EdgesGeometry(new THREE.BoxGeometry(.98,.5,.98));
-function ghostFrame(){try{const on=typeof rt!=='undefined'&&S.zone==='home';const L=on?(rt.ghosts&&rt.ghosts.length?rt.ghosts:(rt.ghost?[rt.ghost]:[])):[];const k=JSON.stringify(L);if(k!==ghostK){ghostK=k;if(ghostG){scene.remove(ghostG);ghostG=null}if(L.length){ghostG=new THREE.Group();for(const gh of L){let m0;if(gh.type){try{m0=(B[gh.type]||B.rock)({type:gh.type,i:gh.i,j:gh.j,rot:gh.rot,style:gh.style,col:gh.col,count:0});if(gh.type!=='house')m0.rotation.y=0}catch(_){m0=B.decor({item:'d_paving'})}}else m0=B.decor({item:gh.item,rot:gh.rot,h:gh.h,col:gh.col,v:gh.v});m0.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;m.material.opacity=gh.bad?.6:.45;m.material.depthWrite=false;if(gh.bad&&m.material.color){m.material.color.set(0xff3030);if(m.material.emissive)m.material.emissive.set(0x550000)}m.raycast=()=>{}}});m0.position.add(W2(gh.i,gh.j));ghostG.add(m0)}scene.add(ghostG)}}
- const S2=on&&rt.sel?rt.sel:[];const k2=JSON.stringify(S2);if(k2!==selK){selK=k2;if(selG){scene.remove(selG);selG=null}if(S2.length){selG=new THREE.Group();for(const q of S2){const l=new THREE.LineSegments(selGeo,selM);l.renderOrder=999;l.position.copy(W2(q.i,q.j));l.position.y=(q.h|0)*.3+.25;selG.add(l)}scene.add(selG)}}
+function ghostFrame(){try{const on=typeof rt!=='undefined'&&S.zone==='home';const L=on?(rt.ghosts&&rt.ghosts.length?rt.ghosts:(rt.ghost?[rt.ghost]:[])):[];const k=JSON.stringify(L);if(k!==ghostK){ghostK=k;if(ghostG){scene.remove(ghostG);freeLater(ghostG);ghostG=null}if(L.length){ghostG=new THREE.Group();for(const gh of L){let m0;if(gh.type){try{m0=(B[gh.type]||B.rock)({type:gh.type,i:gh.i,j:gh.j,rot:gh.rot,style:gh.style,col:gh.col,count:0});if(gh.type!=='house')m0.rotation.y=0}catch(_){m0=B.decor({item:'d_paving'})}}else m0=B.decor({item:gh.item,rot:gh.rot,h:gh.h,col:gh.col,v:gh.v});m0.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;m.material.opacity=gh.bad?.6:.45;m.material.depthWrite=false;if(gh.bad&&m.material.color){m.material.color.set(0xff3030);if(m.material.emissive)m.material.emissive.set(0x550000)}m.raycast=()=>{}}});m0.position.add(W2(gh.i,gh.j));ghostG.add(m0)}scene.add(ghostG)}}
+ const S2=on&&rt.sel?rt.sel:[];const k2=JSON.stringify(S2);if(k2!==selK){selK=k2;if(selG){scene.remove(selG);freeLater(selG);selG=null}if(S2.length){selG=new THREE.Group();for(const q of S2){const l=new THREE.LineSegments(selGeo,selM);l.renderOrder=999;l.position.copy(W2(q.i,q.j));l.position.y=(q.h|0)*.3+.25;selG.add(l)}scene.add(selG)}}
  if(selG)selM.opacity=.6+.4*Math.sin(performance.now()/180)}catch(e){}}
 function paintFrame(){try{const on=typeof S!=='undefined'&&S.zone==='home'&&builtZone==='home';const P=on&&S.home&&S.home.paint||{};const sig=on?JSON.stringify(P)+C0:'';if(sig===paintSig)return;paintSig=sig;if(paintG){scene.remove(paintG);paintG.traverse(m=>{if(m.material)m.material.dispose()})}paintG=new THREE.Group();scene.add(paintG);const mats={};
  for(const k in P){const[i,j]=k.split(',').map(Number);const c=P[k];const m=mats[c]||(mats[c]=std(new THREE.Color(c).getHex(),{roughness:.85}));const sl=mesh(BOX,m,[.98,.02,.98],[0,0,0]);sl.position.copy(W2(i,j));sl.position.y=.012;paintG.add(sl)}}catch(e){}}
@@ -447,8 +447,8 @@ B.gift=o=>{const g=new THREE.Group(),c=[0xe02a3a,0x3a9a2a,0x2f55c8][(o.i+o.j)%3]
 const roam=new Map();const RV=new THREE.Vector3();const EMO=['❤️','🎵','✨','💤','❗','😊','🍀'];
 function roamPick(e){try{const s=zs('home'),n=s.tiles.length;for(let k=0;k<12;k++){const i=(Math.random()*n)|0,j=(Math.random()*n)|0;if(s.tiles[i]&&s.tiles[i][j]&&!s.objs.some(o=>o.i===i&&o.j===j)){e.tgt=W2(i,j);return}}}catch(_){}e.tgt=null}
 function roamFrame(t){try{const on=typeof S!=='undefined'&&S.zone==='home'&&S.fauna&&builtZone==='home';const want=on?S.fauna.map((f,i)=>[f,i]).filter(([f,i])=>i!==S.active&&f).slice(0,9):[];const ids=new Set(want.map(([,i])=>i));
- for(const[id,e]of roam)if(!ids.has(id)){scene.remove(e.f);roam.delete(id)}
- for(const[f,i]of want){let e=roam.get(i);const k=JSON.stringify(f.genes)+(f.level|0);if(!e||e.k!==k){if(e)scene.remove(e.f);const g=buildFauna({...f.genes,_lv:f.level||1});g.traverse(m=>{m.userData.roam=i});scene.add(g);e={f:g,k,pos:null,tgt:null,wait:t+Math.random()*3,emo:null,emoT:0};roam.set(i,e);
+ for(const[id,e]of roam)if(!ids.has(id)){scene.remove(e.f);freeLater(e.f);roam.delete(id)}
+ for(const[f,i]of want){let e=roam.get(i);const k=JSON.stringify(f.genes)+(f.level|0);if(!e||e.k!==k){if(e){scene.remove(e.f);freeLater(e.f)}const g=buildFauna({...f.genes,_lv:f.level||1});g.traverse(m=>{m.userData.roam=i});scene.add(g);e={f:g,k,pos:null,tgt:null,wait:t+Math.random()*3,emo:null,emoT:0};roam.set(i,e);
    const s=zs('home'),n=s.tiles.length;for(let q=0;q<20&&!e.pos;q++){const a=(Math.random()*n)|0,b=(Math.random()*n)|0;if(s.tiles[a]&&s.tiles[a][b]&&!s.objs.some(o=>o.i===a&&o.j===b))e.pos=W2(a,b)}e.pos=e.pos||W2(C0,C0)}
   let walk=false;if(t>e.wait){if(!e.tgt)roamPick(e);if(e.tgt){RV.copy(e.tgt).sub(e.pos);const d=RV.length();if(d<.05){e.tgt=null;e.wait=t+2+Math.random()*5;if(Math.random()<.35){e.emo=EMO[(Math.random()*EMO.length)|0];e.emoT=t}}else{RV.multiplyScalar(Math.min(d,.018)/d);e.pos.add(RV);walk=true;const yaw=Math.atan2(RV.x,RV.z);let dd=yaw-e.f.rotation.y;dd=Math.atan2(Math.sin(dd),Math.cos(dd));e.f.rotation.y+=dd*.2}}}
   e.f.position.copy(e.pos);settle(e.f,e.pos.x,e.pos.z);animFauna(e.f,t,{walk,zap:0,happy:false,sleep:false,trick:null})}}catch(err){}}
@@ -463,8 +463,8 @@ G.pvpKnock=(who,fromId,col)=>{const fe=remote.get(fromId),tgtE=who==='me'?null:r
  const src=who==='me'?(fe&&fe.pos):fpos;let dx=0,dz=0;if(src){dx=vp.x-src.x;dz=vp.z-src.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L}
  const kb={t0:now(),x:dx,z:dz};if(who==='me')G._kb=kb;else tgtE.kb=kb;const p=vp.clone().add(new THREE.Vector3(0,.45,0));try{burstW(p,10,0xffffff,2.2,{size:.12,decay:.05});burstW(p,8,col||0xff5a5a,1.4)}catch(_){}};
 function remoteFrame(t){const NM=window.NetMP;const want=NM?NM.visiblePeers():[];const ids=new Set(want.map(p=>p.id));
- for(const[id,e]of remote)if(!ids.has(id)){scene.remove(e.f);remote.delete(id)}
- for(const p of want){let e=remote.get(p.id);const k=JSON.stringify(p.genes)+(p.level>=20?'g':'');if(!e||e.k!==k){if(e)scene.remove(e.f);const f=buildFauna({...p.genes,_lv:p.level||1});f.traverse(m=>{m.userData.rid=p.id});scene.add(f);e={f,k,pos:W2(p.i,p.j)};remote.set(p.id,e)}
+ for(const[id,e]of remote)if(!ids.has(id)){scene.remove(e.f);freeLater(e.f);remote.delete(id)}
+ for(const p of want){let e=remote.get(p.id);const k=JSON.stringify(p.genes)+(p.level>=20?'g':'');if(!e||e.k!==k){if(e){scene.remove(e.f);freeLater(e.f)}const f=buildFauna({...p.genes,_lv:p.level||1});f.traverse(m=>{m.userData.rid=p.id});scene.add(f);e={f,k,pos:W2(p.i,p.j)};remote.set(p.id,e)}
   const tgt=W2(p.i,p.j),mv=tgt.clone().sub(e.pos);if(mv.lengthSq()>36)e.pos.copy(tgt);else e.pos.lerp(tgt,1-Math.exp(-7*(G._dt||.016)));e.f.position.copy(e.pos);settle(e.f,e.pos.x,e.pos.z);if(e.kb){const u=(now()-e.kb.t0)/320;if(u<1){const k=Math.sin(u*Math.PI)*.35;e.f.position.x+=e.kb.x*k;e.f.position.z+=e.kb.z*k}else e.kb=null}if(e.zf&&now()-e.zapT<300){let d=e.zf.clone().sub(e.pos);const yaw=Math.atan2(d.x,d.z);let dd=yaw-e.f.rotation.y;e.f.rotation.y+=Math.atan2(Math.sin(dd),Math.cos(dd))*.35}if(mv.lengthSq()>1e-4){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-e.f.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));e.f.rotation.y+=d*.2}
   animFauna(e.f,t,{walk:mv.lengthSq()>4e-4,zap:clamp(1-(now()-(e.zapT||0))/260,0,1),happy:false,sleep:!!p.sleep,trick:p.trick||null})}}
 G.remoteHit=(px,py)=>{if(!remote.size)return null;setRay(px,py);const ms=[];for(const[,e]of remote)e.f.traverse(m=>{if(m.isMesh)ms.push(m)});const r=ray.intersectObjects(ms,false);return r.length?r[0].object.userData.rid:null};
@@ -545,13 +545,13 @@ setInterval(()=>{if(!FREEQ.length)return;try{const q=FREEQ.splice(0);const liveG
  dg.forEach(x=>x.dispose());dt.forEach(x=>x.dispose())}catch(e){console.warn('free833',e)}},4000);
 function syncObjs(){const s=zs(S.zone),seen=new Set();
  for(const o of s.objs){seen.add(o.id);let e=objMap.get(o.id);const key=o.type+(o.item||'');
-  if(!e||e.key!==key){if(e)scene.remove(e.g);const g=shadowify((B[o.type]||B.rock)(o));g.rotation.y+=(o.type==='gate'||o.type==='house'?0:(hsh(o.i,o.j,2)-.5)*.6);
+  if(!e||e.key!==key){if(e){scene.remove(e.g);freeLater(e.g)}const g=shadowify((B[o.type]||B.rock)(o));g.rotation.y+=(o.type==='gate'||o.type==='house'?0:(hsh(o.i,o.j,2)-.5)*.6);
    const hit=mesh(BOX,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,colorWrite:false}),[.8,1.1,.8],[0,.55,0]);hit.userData.obj=o;g.add(hit);if(Q!=='low'&&o.type!=='gate'){const ao=new THREE.Mesh(AOG,AOM);ao.rotation.x=-Math.PI/2;ao.position.y=.012;ao.renderOrder=-1;g.add(ao)}
    if(isClickable(o)){const r=new THREE.Mesh(clickRingG,clickRingM);r.rotation.x=-Math.PI/2;r.position.y=.02;r.visible=false;g.add(r);g.userData.ring=r;const sk=Object.entries(SKILLS).find(([k,v])=>v.node===o.type);if(sk){r.material=clickRingM.clone();g.userData.nodeSkill=sk[0]}}
    g.position.copy(W2(o.i,o.j));scene.add(g);e={g,key,o,hit};objMap.set(o.id,e)}
   e.o=o;e.hit.userData.obj=o;const tp=W2(o.i,o.j);e.g.position.lerp(tp,.12);if(o.type==='tox'&&HMAP){const py=e.g.position.y;settle(e.g,e.g.position.x,e.g.position.z);if(e.g.userData.blob)e.g.position.y=py}}
- for(const[id,e]of objMap)if(!seen.has(id)){scene.remove(e.g);objMap.delete(id)}}
-function clearObjs(){for(const[,e]of objMap)scene.remove(e.g);objMap.clear()}
+ for(const[id,e]of objMap)if(!seen.has(id)){scene.remove(e.g);freeLater(e.g);objMap.delete(id)}}
+function clearObjs(){for(const[,e]of objMap){scene.remove(e.g);freeLater(e.g)}objMap.clear()}// v8.3.6: removed meshes go through freeLater (GPU geometries grew ~+100 per world hop)
 
 // ---------- camera ----------
 const camS={yaw:Math.PI/4,pitch:G.W7?.82:.92,dist:null,t:new THREE.Vector3(),drag:null,intro:1};
@@ -616,7 +616,7 @@ function frame(){const tn=performance.now(),dt=Math.min(.1,(tn-lastT)/1000);G._d
  if(((t*10)|0)%50===0)applyEnvLite(z,nt);
  syncObjs();
  // fauna
- const lvB=f.level>=20?4:f.level>=15?3:f.level>=10?2:f.level>=5?1:0,key=JSON.stringify(f.genes)+lvB;if(key!==faunaKey){if(fauna)scene.remove(fauna);fauna=buildFauna({...f.genes,_lv:f.level,_hd:1});scene.add(fauna);faunaKey=key}
+ const lvB=f.level>=20?4:f.level>=15?3:f.level>=10?2:f.level>=5?1:0,key=JSON.stringify(f.genes)+lvB;if(key!==faunaKey){if(fauna){scene.remove(fauna);freeLater(fauna)}fauna=buildFauna({...f.genes,_lv:f.level,_hd:1});scene.add(fauna);faunaKey=key}
  const want=W2(rt.pos.i,rt.pos.j);const mv=want.clone().sub(fpos);fpos.lerp(want,.5);fauna.position.copy(fpos);settle(fauna,fpos.x,fpos.z);fpos.y=fauna.position.y;if(G._kb){const u=(now()-G._kb.t0)/320;if(u<1){const k=Math.sin(u*Math.PI)*.35;fauna.position.x+=G._kb.x*k;fauna.position.z+=G._kb.z*k}else G._kb=null}
  if(mv.lengthSq()>1e-6&&rt.tgt){const yaw=Math.atan2(mv.x,mv.z);let d=yaw-fauna.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));fauna.rotation.y+=d*.18}
  const zapA=clamp(1-(now()-(rt.zapT||0))/260,0,1);

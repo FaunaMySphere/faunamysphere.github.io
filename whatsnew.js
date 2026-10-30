@@ -1,10 +1,15 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.5',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.6',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.6',[
+  ['🛠️','Smoother long sessions on phones: worlds you leave now free their 3D shapes, so memory no longer keeps growing as you travel between worlds.','Sesiones largas más fluidas en teléfonos: los mundos que dejas liberan sus formas 3D, así la memoria ya no sigue creciendo al viajar entre mundos.'],
+  ['🏗️','Build fixes: Undo now brings back a house you stored or recolored, the Market shop no longer sells Build items at triple their price, and Build items can no longer be sold back for more than they cost.','Arreglos al construir: Deshacer ahora recupera una casa que guardaste o recoloreaste, la tienda del Mercado ya no vende objetos de Construir al triple de su precio, y esos objetos ya no se pueden revender por más de lo que cuestan.'],
+  ['⚠️','Two monsters of the same kind showing up together now give one message (×2) instead of the same message twice.','Dos monstruos del mismo tipo que aparecen juntos ahora dan un solo mensaje (×2) en vez del mismo mensaje dos veces.'],
+  ['🌎','Spanish: the room badge says "Sala", "Placed!" is "¡Colocado!", and about 50 item names in the Market and inventory are now in Spanish.','Español: la insignia de la sala dice "Sala", "Placed!" ahora es "¡Colocado!" y unos 50 nombres de objetos del Mercado y del inventario ya están en español.']]],
  ['8.3.5',[
   ['💬','Messages no longer pile up over the quest card on phones: at most 2 show at once, the rest wait their turn, and the same message repeated shows ×2, ×3… instead of stacking.','Los mensajes ya no se amontonan sobre la tarjeta de misión en teléfonos: se ven 2 como máximo, los demás esperan su turno, y un mismo mensaje repetido muestra ×2, ×3… en vez de apilarse.'],
   ['👥','Fixed: opening a shared room link (🔗 Share link) now joins that room again, and reloading inside a private room keeps you in it. Names with an apostrophe (Bo\'s Caretaker) show correctly in visit messages, the room status no longer says online while your phone has no network, and leaving a room no longer reopens it by itself.','Arreglado: abrir un enlace de sala compartido (🔗 Compartir enlace) vuelve a unirte a esa sala, y recargar dentro de una sala privada te mantiene en ella. Los nombres con apóstrofo se ven bien en los mensajes de visita, el estado de la sala ya no dice en línea cuando tu teléfono no tiene red, y salir de una sala ya no la vuelve a abrir sola.']]],
