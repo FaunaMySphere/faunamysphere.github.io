@@ -46,7 +46,7 @@ function startStep(id,i){const r=rec(id),s=steps(id)[i];r.s=i;r.b=s&&!s.abs?s.ge
 // ---- tick: advance the quest for the current world ----
 let introShown={};
 function tick(){try{if(typeof S==='undefined'||!S||!fa()||document.getElementById('title'))return draw(null);const id=S.zone;S.stats=S.stats||{};
- if(hasQ(id)){S.q81=S.q81||{};if(!S.q81[id]){S.q81[id]={s:0,b:0};if((S.tut|0)>=5)intro(id)}
+ if(hasQ(id)){S.q81=S.q81||{};if(!S.q81[id]){S.q81[id]={s:0,b:0};if((S.tut|0)>=5){if(tutOn())S.q81[id].pi=1;else intro(id)}}else if(S.q81[id].pi&&!tutOn()){delete S.q81[id].pi;intro(id)}// v8.3.9: the intro waits until the tutorial ends (it covered the last tutorial step)
   const P=prog(id),r=P.r;if(r&&!r.d){const s=P.st[r.s];if(s&&P.p>=s.n){
    if(r.s>=P.st.length-1){r.d=1;finish(id)}else{gainLux(stepLux(id));toast('📜 '+L('Quest step done!','¡Paso de misión completado!')+' +'+stepLux(id)+' Lux');try{Sound.sfx('coin')}catch(e){}startStep(id,r.s+1)}
    try{save()}catch(e){}}}}
@@ -56,6 +56,7 @@ function finish(id){const s=story(id),lx=endLux(id);gainLux(lx);let egg='';
  try{Sound.sfx(G.FS_A80?'level':'coin')}catch(e){}try{banner(L('QUEST COMPLETE!','¡MISIÓN COMPLETADA!'))}catch(e){}
  toast('📜 '+s.title+' — +'+lx+' Lux'+egg);
  setTimeout(()=>{if(modalFree())open(card(id,true))},900)}
+function tutOn(){try{const n=typeof TUT!=='undefined'?TUT.length:8;return (S.tut|0)<n}catch(e){return false}}
 function modalFree(){const m=document.getElementById('modal');return!m||m.classList.contains('hidden')}
 function intro(id){if(introShown[id])return;introShown[id]=1;setTimeout(()=>{if(S.zone===id&&modalFree())open(card(id))},1800)}
 // ---- UI ----

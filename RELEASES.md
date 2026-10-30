@@ -1,5 +1,12 @@
 # Releases
 
+## v8.3.9
+- PC adoption screen: the name box and Adopt button are pinned at the bottom of the sheet (sticky footer), so they're visible without scrolling. Same look.
+- Map heading / gate label say "Tap this gate…" on touch devices and "Click on this gate…" with a mouse.
+- The Rock Island quest intro (Captain Clatter) is queued while the tutorial runs and opens once it ends, instead of covering the last tutorial step.
+- The friend gate tooltip now has a Spanish translation.
+- ES: Adopción en PC con nombre y botón siempre visibles; el mapa dice Toca/Haz clic según el dispositivo; la intro de la misión de Isla Roca espera al fin del tutorial; etiqueta de la puerta de amigos en español.
+
 ## v8.3.8 — new-player flow + HUD bug fixes
 - Fresh save: the adoption sheet opened on top of the title, and after adopting the title ("Play") showed again over the tutorial. Adoption now opens after Play.
 - Adoption text said "Every species is unlocked" (5 are level-gated); now "pick any one you like! More species unlock as you level up." ES for it and the 3 species blurbs (was English / "Born A prueba de agua").

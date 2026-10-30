@@ -4,6 +4,6 @@ const NAMES={gate:'Click on this gate to travel to a different world.',friendgat
 const tip=document.createElement('div');tip.id='wtip';document.body.appendChild(tip);let last=0,mx=0,my=0,pend=false;
 function upd(){pend=false;try{const cv=document.getElementById('cv')||document.querySelector('canvas');if(!window.hitObj||!cv)return;const r=cv.getBoundingClientRect();const o=hitObj(mx-r.left,my-r.top);
  if(!o){tip.style.display='none';return}let n=NAMES[o.type]||(window.STUMPS&&STUMPS[o.type]&&STUMPS[o.type].name)||(o.type==='decor'&&ITEMS[o.item]&&ITEMS[o.item].name)||'';if(o.type==='poll'&&o.hp)n+=' ('+o.hp+')';
- if(!n){tip.style.display='none';return}tip.textContent=t(n);tip.style.display='block';tip.style.left=mx+16+'px';tip.style.top=my+14+'px'}catch(e){tip.style.display='none'}}
+ if(!n){tip.style.display='none';return}tip.textContent=t(window.FS_TOUCH&&FS_TOUCH()&&/^Click on this gate/.test(n)?n.replace('Click on this gate','Tap this gate'):n);tip.style.display='block';tip.style.left=mx+16+'px';tip.style.top=my+14+'px'}catch(e){tip.style.display='none'}}
 document.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'){tip.style.display='none';return}mx=e.clientX;my=e.clientY;if(e.target.tagName!=='CANVAS'){tip.style.display='none';return}const n=performance.now();if(!pend&&n-last>120){last=n;pend=true;requestAnimationFrame(upd)}},{passive:true});
 })();
