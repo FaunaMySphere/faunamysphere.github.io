@@ -26,9 +26,10 @@ const BIO={garden:['🐝','Buzzy',['Bloom Again','Florecer de Nuevo'],['The flow
  mesa:['🐪','Dune',['Winds of the Mesa','Vientos de la Meseta'],['Sooty winds sweep across {w}. Help me calm them.','Vientos tiznados barren {w}. Ayúdame a calmarlos.'],['A clean breeze over {w}. Thank you, traveller.','Una brisa limpia sobre {w}. Gracias, viajero.']],
  night:['🦉','Hush',['Stars Return','Vuelven las Estrellas'],['The glow of {w} is fading under the smog.','El brillo de {w} se apaga bajo el smog.'],['{w} glows like a lantern again.','{w} brilla otra vez como un farol.']],
  dungeon:['🦇','Squeak',['Into the Dark','Hacia la Oscuridad'],['The tunnels of {w} are thick with smog and monsters. Careful!','Los túneles de {w} están llenos de smog y monstruos. ¡Cuidado!'],['The tunnels of {w} are safe once more. Well done!','Los túneles de {w} vuelven a ser seguros. ¡Bien hecho!']]};
+const WHO_ES={'Pebble the Snail':'Pebble el Caracol','Captain Clatter':'Capitán Clatter','Elder Hoot':'Anciano Hoot','Scout Flurry':'Exploradora Flurry','Granny Floe':'Abuela Floe','Sunny the Gecko':'Sunny el Geco','Old Mossback':'Viejo Mossback','Echo the Bat':'Echo el Murciélago','Fern the Fox':'Fern el Zorro'};
 function zinfo(id){try{return Z(id)}catch(e){return null}}
 function story(id){const z=zinfo(id);if(!z)return null;const s=STORY[id]||BIO[z.biome]||BIO.garden,w=z.name;const f=x=>x.replace(/\{w\}/g,w);
- return{ico:s[0],who:s[1],title:L(s[2][0],s[2][1]),intro:f(L(s[3][0],s[3][1])),outro:f(L(s[4][0],s[4][1]))}}
+ return{ico:s[0],who:es()&&WHO_ES[s[1]]||s[1],title:L(s[2][0],s[2][1]),intro:f(L(s[3][0],s[3][1])),outro:f(L(s[4][0],s[4][1]))}}
 function hasQ(id){const z=zinfo(id);return!!(z&&id!=='home'&&id!=='visit'&&(z.poll|0)>0)}
 // ---- steps (generated from the world's size so every world works, incl. future ones) ----
 function steps(id){const z=zinfo(id),tier=z.tier|0,poll=z.poll|0,tox=z.tox|0,w=z.name;const st=[];

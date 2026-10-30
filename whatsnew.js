@@ -1,10 +1,13 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3',K='fs_seen_ver';
+const VER='8.3.1',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.1',[
+  ['🛠️','Polish and fixes: Spanish now covers the Save panel, fauna cards and certificates, item cards (energy, counts), the world map tiers, quest guide names and room messages.','Pulido y arreglos: el español ahora cubre el panel de Guardado, las tarjetas y certificados de fauna, las tarjetas de objetos (energía, cantidades), los niveles del mapa, los nombres de los guías de misiones y los mensajes de sala.'],
+  ['🐾','Fixes: the Fauna panel showed the wrong number of free spots (now matches 10), and the Tricks wheel no longer stays open behind other windows. The Save panel shows the current version.','Arreglos: el panel de Fauna mostraba mal los espacios libres (ahora cuadra con 10) y la rueda de Trucos ya no se queda abierta detrás de otras ventanas. El panel de Guardado muestra la versión actual.']]],
  ['8.3',[
   ['🏗️','Bigger Build menu: 54 new pieces for your home base in 7 categories: Furniture, Plants, Paths & Fences, Lights, Water, Fauna Play and World Sets (pieces themed on the Rock Garden, Ruins, Frost Village, Whalebone Isthmus, Bogs, Quarry and the sky islands).','Menú de construcción más grande: 54 piezas nuevas para tu casa en 7 categorías: Muebles, Plantas, Caminos y vallas, Luces, Agua, Juegos de fauna y Sets de mundos (piezas inspiradas en el Jardín de rocas, las Ruinas, la Aldea helada, el Istmo de ballena, los Pantanos, la Cantera y las islas del cielo).'],
   ['🎨','Pick a color before you buy, and in Edit Home you can move, rotate, recolor, stack and now resize pieces (⤢ Size).','Elige un color antes de comprar. En Editar casa puedes mover, girar, recolorear, apilar y ahora cambiar el tamaño de las piezas (⤢ Tamaño).'],

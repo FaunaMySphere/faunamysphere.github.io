@@ -7,7 +7,7 @@
  const DONE=new WeakMap(),ORIG=new WeakMap(),ORIGA=new WeakMap();let busy=false; // originals so we can switch back to English live
  function look(t){if(D[t])return D[t];for(const[r,f]of RX)if(r.test(t))return t.replace(r,f);return null}
  function seg(s){const t=s.trim();if(!t)return null;let v=look(t);if(v!=null)return s.replace(t,v);
-  const m=t.match(/^([^\p{L}\d]*)(.*?)([^\p{L}\d!?.…]*)$/u);if(m&&m[2]&&m[2]!==t){v=look(m[2]);if(v!=null)return s.replace(m[2],v)}return null}
+  const m=t.match(/^([^\p{L}\d]*)(.*?)([^\p{L}\d!?.…]*)$/u);if(m&&m[2]&&m[2]!==t){v=look(m[2]);if(v!=null)return s.replace(m[2],v)}const m2=t.match(/^([^\p{L}]*)(.*?)([^\p{L}!?.…]*)$/u);if(m2&&m2[2]&&m2[2]!==t&&m2[2]!==(m&&m[2])){v=look(m2[2]);if(v!=null)return s.replace(m2[2],v)}return null}
  const T=window.T=function(s){if(L!=='es'||typeof s!=='string'||!s.trim())return s;const a=seg(s);if(a!=null)return a;
   const parts=s.split(/( · | \/ |: |, | \| | — | & |\n|\()/);if(parts.length>1){let ch=false;const o=parts.map((p,i)=>{if(i%2)return p;const r=seg(p.replace(/\)$/,''));if(r!=null){ch=true;return r+(p.endsWith(')')?')':'')}return p});if(ch)s=o.join('')}
   for(const f of frags)if(s.includes(f))s=s.split(f).join(D[f]);return s};

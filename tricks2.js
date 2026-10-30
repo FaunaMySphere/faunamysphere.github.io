@@ -114,3 +114,6 @@ let z0=null;(function camLoop(){requestAnimationFrame(camLoop);try{if(typeof cam
  if(on){if(z0===null)z0=cam.zoom||1;cam.zoom+=(Math.max(z0,1.9)-cam.zoom)*.06}else if(z0!==null){cam.zoom+=(z0-cam.zoom)*.08;if(Math.abs(cam.zoom-z0)<.01){cam.zoom=z0;z0=null}}}catch(e){}})();
 window.FSTricks2={BUF,get cur(){return cur},SONG};boot();
 })();
+// v8.3.1: opening any panel (or pressing Esc) closes the tricks wheel so it no longer lingers behind other windows
+(function(){const o=window.open;if(typeof o==='function'&&!o.__rad){const w=function(){try{const r=document.getElementById('radial');if(r)r.remove()}catch(e){}return o.apply(this,arguments)};w.__rad=1;window.open=w}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const r=document.getElementById('radial');if(r)r.remove()}})})();
