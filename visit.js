@@ -3,7 +3,7 @@
 // read-only copy with the friend's fauna roaming, live presence, live updates, privacy toggle. Friend data NEVER enters the visitor's save:
 // while visiting, S.toJSON returns the visitor's real home/fauna, and every mutating action is blocked.
 (()=>{if(!window.NetMP)return;
-const ES=()=>window.LANG==='es',T=(en,es)=>ES()?es:en,cln=s=>String(s==null?'':s).replace(/[<>&"']/g,''),esc=s=>String(s==null?'':s).replace(/[<>&"']/g,c=>'&#'+c.charCodeAt(0)+';'),tn=s=>String(s==null?'':s).slice(0,40);// v8.3.5: esc now escapes for HTML instead of deleting (Bo's Caretaker kept its apostrophe); toasts are plain text (tn)
+const ES=()=>window.LANG==='es',T=(en,es)=>ES()?es:en,cln=s=>String(s==null?'':s).replace(/[<>&"']/g,''),esc=s=>String(s==null?'':s).replace(/[<>&"']/g,c=>'&#'+c.charCodeAt(0)+';'),tn=s=>(NetMP.dn?NetMP.dn(s):String(s==null?'':s)).slice(0,40),dn=s=>NetMP.dn?NetMP.dn(s):String(s==null?'':s);// v8.3.5: esc now escapes for HTML instead of deleting (Bo's Caretaker kept its apostrophe); toasts are plain text (tn)
 const V=window.FSVisit={on:false,owner:null,name:'',real:null,offline:false,rx:new Map(),pend:null,sentSig:new Map(),lastSnapAt:0};
 const RZ=new Map();const tx=m=>{if(m.t==='hvReq'||m.t==='hvNo'){m._z='all';NetMP.send(m);return}const q=NetMP.peers.get(m.to),rz=RZ.get(m.to);if(rz&&rz.at>Date.now()-20000)m._z=rz.z;else if(q&&q.zk)m._z=q.zk;NetMP.send(m)};
 const MAXRAW=900000,CH=12000,MAXN=60;
@@ -72,17 +72,17 @@ setInterval(()=>{try{const H=document.documentElement,b=document.getElementById(
 try{const st=document.createElement('style');st.textContent='html.fsvisit #zoneName{visibility:hidden!important}#visitbar>span{white-space:nowrap;line-height:1.2;overflow:hidden;text-overflow:ellipsis;min-width:0}';document.head.appendChild(st)}catch(_){}
 // banner
 function banner(){let b=document.getElementById('visitbar');if(!V.on){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='visitbar';b.style.cssText='position:absolute;left:50%;transform:translateX(-50%);top:max(64px,calc(env(safe-area-inset-top) + 58px));z-index:40;background:rgba(23,60,15,.9);color:#fff;border:2px solid #3ea318;border-radius:16px;padding:6px 10px;font:700 13px "Trebuchet MS",sans-serif;display:flex;gap:8px;align-items:center;max-width:92vw;box-shadow:0 3px 10px rgba(0,0,0,.3)';(document.getElementById('stage')||document.body).appendChild(b)}
- b.innerHTML=`<span>🏠 ${T('Visiting ','Visitando la casa de ')}${esc(V.name)}${T("'s home",'')}${V.offline?`<br><span style="color:#ffd27a;font-weight:400;font-size:11px">${T('They went offline — showing their last home.','Se desconectó — mostrando su última casa.')}</span>`:''}</span><button id="visitback" style="background:#3ea318;color:#fff;border:0;border-radius:12px;padding:5px 9px;font:700 12px sans-serif;white-space:nowrap">${T('Back home','Volver a casa')}</button>`;
+ b.innerHTML=`<span>🏠 ${T('Visiting ','Visitando la casa de ')}${esc(dn(V.name))}${T("'s home",'')}${V.offline?`<br><span style="color:#ffd27a;font-weight:400;font-size:11px">${T('They went offline — showing their last home.','Se desconectó — mostrando su última casa.')}</span>`:''}</span><button id="visitback" style="background:#3ea318;color:#fff;border:0;border-radius:12px;padding:5px 9px;font:700 12px sans-serif;white-space:nowrap">${T('Back home','Volver a casa')}</button>`;
  b.querySelector('#visitback').onclick=e=>{e.stopPropagation();V.home()}}
 // taps: tap another player's fauna -> card with Visit home; tap a friend's roaming fauna -> name card (no Switch)
 const tp=tap;tap=window.tap=function(px,py){try{
  if(V.on&&window.roamHit){const i=roamHit(px,py);if(i!=null&&S.fauna[i]&&i!==0){const f=S.fauna[i],sp=(SPECIES[f.genes.species]||{}).name||f.genes.species,rr=f.rarity&&window.RARITY&&RARITY[f.rarity];try{Sound.sfx('click')}catch(_){}
-  open(`<h2>🐾 ${esc(f.name)}</h2><p>${esc(sp)} · Lv ${f.level|0}${rr?` · <b style="color:${rr.c}">${esc(rr.name)}</b>`:''}</p><p class="small">${T(esc(V.name)+"'s fauna",'Fauna de '+esc(V.name))}</p>`);return}}
+  open(`<h2>🐾 ${esc(f.name)}</h2><p>${esc(sp)} · Lv ${f.level|0}${rr?` · <b style="color:${rr.c}">${esc(rr.name)}</b>`:''}</p><p class="small">${T(esc(dn(V.name))+"'s fauna",'Fauna de '+esc(dn(V.name)))}</p>`);return}}
  if(window.remoteHit&&NetMP.room){const id=remoteHit(px,py);const p=id&&NetMP.peers.get(id);if(p){try{Sound.sfx('click')}catch(_){}ui('hvPlayer',{id});return}}}catch(e){}return tp(px,py)};
 // UI
 const ui0=ui;ui=function(v,p={}){
  if(v==='hvPlayer'){const q=NetMP.peers.get(p.id);if(!q)return close();cur={...p,v};const own=q.zk==='home:'+q.id;
-  open(`<h2>👤 ${esc(q.name)}</h2><p>${esc(q.fname)} <span class="small">(${q.genes&&SPECIES[q.genes.species]?SPECIES[q.genes.species].name:''} Lv ${q.level|0})</span></p>`+(V.on&&V.owner===q.id?`<p class="small">${T("You're in their home.",'Estás en su casa.')}</p>`:btn('🏠 '+T('Visit home','Visitar casa'),'ui',{v:'hvGo',id:q.id})));return}
+  open(`<h2>👤 ${esc(dn(q.name))}</h2><p>${esc(q.fname)} <span class="small">(${q.genes&&SPECIES[q.genes.species]?SPECIES[q.genes.species].name:''} Lv ${q.level|0})</span></p>`+(V.on&&V.owner===q.id?`<p class="small">${T("You're in their home.",'Estás en su casa.')}</p>`:btn('🏠 '+T('Visit home','Visitar casa'),'ui',{v:'hvGo',id:q.id})));return}
  if(v==='hvGo'){close();return V.request(p.id)}
  if(v==='hvAllow'){S.visitsOff=p.off?1:0;try{save()}catch(_){}toast(p.off?T('🔒 Visits off','🔒 Visitas desactivadas'):T('🏠 Other players can visit your home','🏠 Otros jugadores pueden visitar tu casa'));if(p.off)for(const q of visitorsHere())tx({t:'hvNo',to:q.id,why:'off'});return ui('friends')}
  if(v==='fauna'&&V.on){toast(T('Go back home to manage your fauna.','Vuelve a casa para cuidar tu fauna.'));return}
@@ -90,7 +90,7 @@ const ui0=ui;ui=function(v,p={}){
  if(v==='friends'){try{const mb=document.getElementById('mb')||MB;mb.querySelectorAll('button[data-a="ui"]').forEach(b=>{let d={};try{d=JSON.parse(b.dataset.p||'{}')}catch(_){}if(d.v==='mpVisit'){b.dataset.p=JSON.stringify({v:'hvGo',id:d.id});b.textContent='🏠 '+T('Visit home','Visitar casa')}});
   const off=!!S.visitsOff,div=document.createElement('div');div.className='row';div.innerHTML=`<div class="grow">🏠 ${T('Allow visits:','Permitir visitas:')} <b>${off?T('Nobody','Nadie'):T('Everyone','Todos')}</b></div>`+btn(off?T('Everyone','Todos'):T('Nobody','Nadie'),'ui',{v:'hvAllow',off:off?0:1});
   const h=mb.querySelector('h2');h&&h.parentNode.insertBefore(div,h.nextSibling);
-  if(V.on){const d2=document.createElement('div');d2.className='row';d2.innerHTML=`<div class="grow">🏠 ${T('Visiting ','Visitando a ')}${esc(V.name)}</div><button class="btn" id="hvback">${T('Back home','Volver a casa')}</button>`;h&&h.parentNode.insertBefore(d2,div);d2.querySelector('#hvback').onclick=()=>{close();V.home()}}}catch(e){}}
+  if(V.on){const d2=document.createElement('div');d2.className='row';d2.innerHTML=`<div class="grow">🏠 ${T('Visiting ','Visitando a ')}${esc(dn(V.name))}</div><button class="btn" id="hvback">${T('Back home','Volver a casa')}</button>`;h&&h.parentNode.insertBefore(d2,div);d2.querySelector('#hvback').onclick=()=>{close();V.home()}}}catch(e){}}
  return r};
 const hookPvp=()=>{if(!window.FSPvP||FSPvP._hv)return;FSPvP._hv=1;const em=FSPvP.extraMenu;FSPvP.extraMenu=p=>(em?em(p):'')+(p&&!(V.on&&V.owner===p.id)?btn('🏠 '+T('Visit home','Visitar casa'),'ui',{v:'hvGo',id:p.id}):'')};
 hookPvp();window.addEventListener('load',hookPvp);setTimeout(hookPvp,1500);

@@ -11,7 +11,7 @@ NetMP.visiblePeers=()=>{const zk=NetMP.zk();let q='med';try{q=localStorage.getIt
  return[...NetMP.peers.values()].filter(p=>p.zk===zk&&p.genes).sort((a,b)=>Math.hypot(a.i-pi,a.j-pj)-Math.hypot(b.i-pi,b.j-pj)).slice(0,cap)};NetMP.zonePeers=()=>{const zk=NetMP.zk();return[...NetMP.peers.values()].filter(p=>p.zk===zk).length};
 function me(){const f=fa();return{id:NetMP.myId,jt:NetMP.jt,name:(S.player.name&&S.player.name!=='Caretaker'?S.player.name:(f?f.name+"'s Caretaker":'Caretaker')).slice(0,20),fname:f?f.name:'',genes:f?f.genes:null,level:f?f.level:1,zk:NetMP.zk(),zone:S.zone,i:+rt.pos.i.toFixed(2),j:+rt.pos.j.toFixed(2),sleep:!!rt.sleep,kn:[...NetMP.peers.keys()].slice(0,16),v:NET_V,ts:Date.now()}}
 function badge(){let b=document.getElementById('mpbadge');if(!NetMP.room||NetMP.isWorld()){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='mpbadge';document.getElementById('stage').appendChild(b)}
- const here=NetMP.visiblePeers().length;const n=NetMP.peers.size;b.textContent=(NetMP.status!=='online'&&!RL.up)||navigator.onLine===false?'🟡 Connecting to room '+NetMP.room+'…':n?'🟢 Room '+NetMP.room+' · connected to '+[...NetMP.peers.values()].map(p=>p.name).slice(0,2).join(', ')+(n>2?' +'+(n-2):'')+(here?' · '+here+' here':''):'🟡 Room '+NetMP.room+' · waiting for friends (they need the game open)'}
+ const here=NetMP.visiblePeers().length;const n=NetMP.peers.size;b.textContent=(NetMP.status!=='online'&&!RL.up)||navigator.onLine===false?'🟡 Connecting to room '+NetMP.room+'…':n?'🟢 Room '+NetMP.room+' · connected to '+[...NetMP.peers.values()].map(p=>dn(p.name)).slice(0,2).join(', ')+(n>2?' +'+(n-2):'')+(here?' · '+here+' here':''):'🟡 Room '+NetMP.room+' · waiting for friends (they need the game open)'}
 function deliver(m,fromConn){ // host relays
  if(NetMP.isHost){if(m.to&&m.to!==NetMP.myId){const c=NetMP.conns.get(m.to);if(c&&c.open)c.send(m);return}if(!m.to){const zoned=(m.t==='st'||m.t==='say'||m.t==='trick')&&NetMP.isWorld();const sz=m.zk||(NetMP.peers.get(m.id)||{}).zk;for(const[id,c]of NetMP.conns){if(c===fromConn||!c.open)continue;if(zoned){const q=NetMP.peers.get(id);if(q&&q.zk!==sz){if(m.t!=='st')continue;c._lp=c._lp||{};if(Date.now()-(c._lp[m.id]||0)<12000)continue;c._lp[m.id]=Date.now()}}c.send(m)}}}
  if(!m.to||m.to===NetMP.myId)handle(m)}
@@ -21,6 +21,7 @@ let SQ=0;const seen=new Set();function send(m){m.id=m.id||NetMP.myId;m.sq=m.sq||
 const RESEND={giftResp:1,pvpAsk:1,pvpAns:1,pvpGo:1,hvReq:1,hvNo:1};
 NetMP.send=send;NetMP._rx=m=>handle(m);
 function es(){return(window.I18N&&I18N.lang==='es')||window.LANG==='es'}
+const dn=NetMP.dn=s=>{s=String(s==null?'':s);const m=es()&&s.match(/^(.+)'s Caretaker$/);return m?'Cuidador de '+m[1]:s};// v8.3.5: ES default names are built here, so the live translator's "X's Caretaker" rule can't swallow the sentence around them
 let updHint=0;function fixPeer(m){try{const cl=v=>String(v==null?'':v).replace(/[<>&"`]/g,'').slice(0,20);if('name' in m)m.name=cl(m.name)||'Caretaker';if('fname' in m)m.fname=cl(m.fname);if('level' in m)m.level=Math.max(1,Math.min(999,m.level|0));if('zone' in m)m.zone=String(m.zone).replace(/[^\w:-]/g,'').slice(0,40);if(m.genes&&typeof m.genes==='object'){if(!SPECIES[m.genes.species]){m.oddSp=m.genes.species;m.genes={...m.genes,species:Object.keys(SPECIES)[0]}}}
  m.i=+m.i||0;m.j=+m.j||0;m.name=String(m.name||'Friend').slice(0,20);m.fname=String(m.fname||'');if(typeof m.zk!=='string')m.zk=m.zone==='home'?'home:'+m.id:String(m.zone||'');
  if(m.zk&&m.zk.indexOf('home:')!==0)m.zk=m.zk.trim().toLowerCase();
@@ -29,14 +30,14 @@ let updHint=0;function fixPeer(m){try{const cl=v=>String(v==null?'':v).replace(/
 function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if(seen.has(k))return;seen.add(k);if(seen.size>4000)seen.clear()}let p=NetMP.peers.get(m.id);
  if(typeof m.t==='string'&&m.t.slice(0,2)==='mk'){if(window.FSMkt)try{FSMkt.on(m,p)}catch(e){console.warn('mkt',e)}return} // v7.0 marketplace
  if(typeof m.t==='string'&&m.t.slice(0,2)==='hv'){if(window.FSVisit)try{FSVisit.msg(m,p)}catch(e){console.warn('visit',e)}return}
- if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;if(p&&p.say&&p.say.zk!==m.zk)delete p.say;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
+ if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;if(p&&p.say&&p.say.zk!==m.zk)delete p.say;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+dn(p.name)+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
  else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere'&&m.t!=='giftOffer'&&m.t!=='giftResp')return;
  if(m.t&&m.t.slice(0,4)==='gift'&&window.FSGift){FSGift.on(m,p);return}
  if(m.t&&m.t.slice(0,3)==='pvp'&&window.FSPvP){FSPvP.on(m,p);return}
  if(m.t==='say'){const here=NetMP.zk(),wz=typeof m.zk==='string'?m.zk.slice(0,60):(p.zk||'');if(wz!==here)return; // v8.1.1: chat only from the same place (same home base or world)
  p.say={text:String(m.text).slice(0,80),at:Date.now()+CHAT_MS-6000,chat:1,zk:wz};Sound.tone&&Sound.tone(1320,.2,'sine',.04);chatLog(p.name,m.text,wz)}
  if(m.t==='trick'){p.trick={k:m.k,t0:now()}}
- if(m.t==='bye'){NetMP.peers.delete(m.id);if(!NetMP.isWorld())toast((p?p.name:'A friend')+' left the room.')}
+ if(m.t==='bye'){NetMP.peers.delete(m.id);if(!NetMP.isWorld())toast((p?dn(p.name):'A friend')+' left the room.')}
  if(m.t==='sphereReq'&&!S.visitsOff){const h=zs('home');const keep=h.objs.filter(o=>o.type==='gate'||o.type==='decor'||o.type==='pullytree'||PROPS.includes(o.type)).map(o=>({...o,type:o.type==='pullytree'?'d_tree':o.type}));send({t:'sphere',to:m.id,owner:me().name,data:{tiles:h.tiles,objs:keep,nextId:999}})}
  if(m.t==='sphere'&&NetMP.pendingVisit===m.id){NetMP.pendingVisit=null;const z=Z('visit');z.n=m.data.tiles.length;z.name=m.owner+"'s Faunasphere";S.zones.visit=m.data;S.unlocked.visit=1;S.v5.visitId=m.id;if(S.zone==='visit'){S.zone='home';}startTravel('visit');setTimeout(()=>dispatch('visit',{who:m.owner}),1200)}}
 
@@ -58,16 +59,16 @@ function relayPub(m){if(!RL.topic)return;if(m.t==='st'){const n=Date.now(),gap=n
 setInterval(()=>{if(RL.pend&&Date.now()-RL.lastSt>=700){const m=RL.pend;RL.pend=null;RL.lastSt=Date.now();relayRaw(m)}},250);
 const log=[];function chatLog(n,t,zk){log.push({n,t:String(t).slice(0,80),at:Date.now(),zk:zk||NetMP.zk()});if(log.length>30)log.shift()}NetMP.chatHere=()=>{const z=NetMP.zk();return log.filter(l=>l.zk===z)};
 function attach(c){c.on('data',m=>{if(!m||typeof m!=='object')return;if(NetMP.isHost&&m.id&&!NetMP.conns.has(m.id)){NetMP.conns.set(m.id,c);c._pid=m.id}deliver(m,c)});
- c.on('close',()=>{if(NetMP.isHost){const id=c._pid;NetMP.conns.delete(id);if(id&&NetMP.peers.has(id)){const p=NetMP.peers.get(id);NetMP.peers.delete(id);toast((p.name||'A friend')+' disconnected.');deliver({t:'bye',id},c)}}else if(c===NetMP.hostConn){NetMP.hostConn=null;NetMP.status='reconnecting';NetMP.peers.clear();toast('📡 Room host left. Reconnecting…');setTimeout(()=>start(NetMP.room,'auto'),800+Math.random()*2500)}});
+ c.on('close',()=>{if(NetMP.isHost){const id=c._pid;NetMP.conns.delete(id);if(id&&NetMP.peers.has(id)){const p=NetMP.peers.get(id);NetMP.peers.delete(id);toast((dn(p.name)||'A friend')+' disconnected.');deliver({t:'bye',id},c)}}else if(c===NetMP.hostConn){NetMP.hostConn=null;NetMP.status='reconnecting';NetMP.peers.clear();toast('📡 Room host left. Reconnecting…');setTimeout(()=>start(NetMP.room,'auto'),800+Math.random()*2500)}});
  c.on('error',()=>{})}
 function start(code,mode){if(typeof Peer==='undefined'){toast('Multiplayer library failed to load. Check your connection.');return}
  stop(true);if(NetMP.room!==code){NetMP.jt=Date.now();NetMP._shOk=0}NetMP.room=code;NetMP.status=RL.up&&RL.topic===PFX+code?'online':'connecting';badge();if(RL.topic!==PFX+code)relayStart(code);
  const asClient=()=>{const pr=new Peer();NetMP.peer=pr;pr.on('open',id=>{NetMP.isHost=false;const c=pr.connect(PFX+code,{reliable:true});NetMP.hostConn=c;attach(c);
-   const to=setTimeout(()=>{if(!c.open){if(!RL.up)toast('Room '+code+' not found. Hosting it instead.');pr.destroy();asHost(true)}},9000);
-   c.on('open',()=>{clearTimeout(to);NetMP.status='online';toast('🟢 Joined room '+code+'!');announce()})});pr.on('error',e=>{if(e.type==='peer-unavailable'){pr.destroy();if(mode!=='join-only')asHost(true);else toast('Room '+code+' not found.')}else if(e.type==='network'||e.type==='server-error')(!RL.up&&toast('📡 Network trouble: '+e.type))})};
+   const to=setTimeout(()=>{if(NetMP.peer!==pr)return;/* v8.3.5: a stale timer from a room you already left must not re-host it */if(!c.open){if(!RL.up)toast('Room '+code+' not found. Hosting it instead.');pr.destroy();asHost(true)}},9000);
+   c.on('open',()=>{clearTimeout(to);NetMP.status='online';toast('🟢 Joined room '+code+'!');announce()})});pr.on('error',e=>{if(NetMP.peer!==pr)return;if(e.type==='peer-unavailable'){pr.destroy();if(mode!=='join-only')asHost(true);else toast('Room '+code+' not found.')}else if(e.type==='network'||e.type==='server-error')(!RL.up&&toast('📡 Network trouble: '+e.type))})};
  const asHost=fallback=>{const pr=new Peer(PFX+code);NetMP.peer=pr;pr.on('open',id=>{NetMP.isHost=true;NetMP.status='online';toast(fallback?'🟢 You are now hosting room '+code+'.':'🟢 Room '+code+' created! Share the link with friends.');tick(true)});
    pr.on('connection',c=>{attach(c);c.on('open',()=>{setTimeout(()=>c.send({t:'st',...me()}),200);for(const p of NetMP.peers.values())c.send({...p,t:'st'})})});
-   pr.on('error',e=>{if(e.type==='unavailable-id'){pr.destroy();asClient()}else if(e.type!=='peer-unavailable')(!RL.up&&toast('📡 Network trouble: '+e.type))});pr.on('disconnected',()=>{try{pr.reconnect()}catch(_){}})};
+   pr.on('error',e=>{if(NetMP.peer!==pr)return;if(e.type==='unavailable-id'){pr.destroy();asClient()}else if(e.type!=='peer-unavailable')(!RL.up&&toast('📡 Network trouble: '+e.type))});pr.on('disconnected',()=>{try{pr.reconnect()}catch(_){}})};
  if(mode==='host')asHost(false);else asClient();
  try{const u=new URL(location.href);u.searchParams.set('room',code);history.replaceState(null,'',u)}catch(_){}}
 function stop(silent){if(!silent)relayStop();if(NetMP.peer){if(!NetMP._quiet)try{send({t:'bye'})}catch(_){}try{NetMP.peer.destroy()}catch(_){}}NetMP.peer=null;NetMP.conns.clear();NetMP.peers.clear();NetMP.hostConn=null;NetMP.isHost=false;if(!silent){NetMP.room=null;NetMP.status='offline';try{const u=new URL(location.href);u.searchParams.delete('room');history.replaceState(null,'',u)}catch(_){}badge()}}
@@ -75,7 +76,7 @@ NetMP.create=()=>start(newCode(),'host');NetMP.MAX=8;NetMP.join=code=>{start(Str
 NetMP.visit=id=>{NetMP.pendingVisit=id;send({t:'sphereReq',to:id});toast('Asking to visit…');setTimeout(()=>{if(NetMP.pendingVisit===id){NetMP.pendingVisit=null;toast('No answer from that sphere.')}},8000)};
 let lastAnn=0;function announce(){const n=Date.now();if(n-lastAnn<600){setTimeout(()=>{if(Date.now()-lastAnn>=600)announce()},650);return}lastAnn=n;RL.lastSt=0;tick(true)}NetMP.announce=announce;
 let lastSent='',lastBeat=0;function tick(force){if(!NetMP.peer||!fa())return;const m=me(),k=JSON.stringify(m);if(force||k!==lastSent||Date.now()-lastBeat>2000){lastSent=k;lastBeat=Date.now();send({t:'st',...m})}
- const cut=Date.now()-30000;for(const[id,p]of NetMP.peers)if(p.last<cut){NetMP.peers.delete(id);if(!NetMP.isWorld())toast((p.name||'A friend')+' timed out.')}badge()}
+ const cut=Date.now()-30000;for(const[id,p]of NetMP.peers)if(p.last<cut){NetMP.peers.delete(id);if(!NetMP.isWorld())toast((dn(p.name)||'A friend')+' timed out.')}badge()}
 setInterval(tick,200);
 // re-subscribe relays to the new zone channel; 'all' presence ping every 12 s (so friends lists work across zones)
 function resub(){const z=NetMP.zk();for(const w of RL.socks)if(w.readyState===1&&w._sub!==z){try{w.send(JSON.stringify(['CLOSE','fs'+NetMP.room]));w._sub=z;w.send(JSON.stringify(['REQ','fs'+NetMP.room,{kinds:[KIND],'#t':[RL.topic],'#z':[z,'all'],since:Math.floor(Date.now()/1000)-20}]))}catch(_){}}}
