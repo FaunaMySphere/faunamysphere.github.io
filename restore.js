@@ -4,21 +4,31 @@
 import * as THREE from 'three';
 const G=window,es=()=>G.FS&&FS.lang==='es';
 const W=()=>G.W6||{};
+// v8.1.2 FIX: monsters are counted against the most seen in this world this visit (content24 fills up to ~6 while z.tox is 1-4,
+// so killing most of them used to count for nothing), and pollution against max(z.poll, peak). A boss adds to the peak, so it must die for 100%.
+const PK={id:null,P:0,T:0};
 function target(id){try{const z=Z(id),s=S.zones[id];if(!s)return 0;const p=s.objs.filter(o=>o.type==='poll').length,t=s.objs.filter(o=>o.type==='tox').length;
- const P=Math.max(1,z.poll|0),T=z.tox|0;const fp=1-Math.min(1,p/P),ft=T?1-Math.min(1,t/T):fp;return T?(fp*.5+ft*.5):fp}catch(e){return 1}}
+ if(PK.id!==id){PK.id=id;PK.P=0;PK.T=0}PK.P=Math.max(PK.P,p);PK.T=Math.max(PK.T,t);
+ const P=Math.max(1,z.poll|0,PK.P),T=Math.max(z.tox|0,PK.T);const fp=1-Math.min(1,p/P),ft=T?1-Math.min(1,t/T):fp;return T?(fp*.5+ft*.5):fp}catch(e){return 1}}
 G.FSrestoreTarget=target;
 // ---------- reset a world when the player leaves it ----------
 function resetZone(id){try{if(id==='home'||!S.zones[id])return;const s=S.zones[id],z=Z(id);s.objs=s.objs.filter(o=>o.type!=='poll'&&o.type!=='tox');
  for(let k=0;k<(z.poll|0);k++)spawnPoll(id);for(let k=0;k<(z.tox|0);k++)spawnTox(id);(S.restore=S.restore||{})[id]=0}catch(e){console.warn('restore reset',e)}}
 G.FSresetZone=resetZone;
-function hookTravel(){if(!G.R||!R.travel)return setTimeout(hookTravel,300);const t0=R.travel;R.travel=function(a){const prev=S.zone,vis=G.FSVisit&&FSVisit.on;const r=t0.apply(this,arguments);
- try{if(!vis&&prev&&prev!==S.zone&&prev!=='home')resetZone(prev);if(S.zone!=='home'){rDisp=target(S.zone);seenFull=rDisp>=.999}}catch(e){}return r}}hookTravel();
+function hookTravel(){const RR=typeof R!=='undefined'?R:G.R;if(!RR||!RR.travel)return setTimeout(hookTravel,300);const t0=RR.travel;RR.travel=function(a){const prev=S.zone,vis=G.FSVisit&&FSVisit.on;const r=t0.apply(this,arguments);
+ try{if(!vis&&prev&&prev!==S.zone&&prev!=='home')resetZone(prev);if(prev!==S.zone){PK.id=null;if(S.zone!=='home'){rDisp=target(S.zone);seenFull=rDisp>=.999}}}catch(e){}return r}}hookTravel();
+// v8.1.2 FIX: pollution/monsters no longer creep back by themselves (~every 30 s in simulate) while you are restoring the world you are in,
+// so 100% can actually be reached; the world still resets when you leave, and Leo's 5-min monster return (content24) still runs.
+let inSim=false;function hookRegrow(){if(typeof G.simulate!=='function'||typeof G.spawnPoll!=='function'||typeof G.spawnTox!=='function')return setTimeout(hookRegrow,300);
+ const s0=G.simulate;G.simulate=function(){inSim=true;try{return s0.apply(this,arguments)}finally{inSim=false}};
+ for(const k of['spawnPoll','spawnTox']){const f0=G[k];G[k]=function(id){if(inSim&&id===S.zone&&id!=='home')return;return f0.apply(this,arguments)}}}
+if(!new URLSearchParams(location.search).has('regrow'))hookRegrow();
 // ---------- visuals: snapshot env after applyEnv, then lerp toward "polluted" by k=1-r ----------
 const base={ok:0,sunI:0,hemiI:0,sunC:new THREE.Color(),bg:new THREE.Color(),fogC:new THREE.Color(),near:0,far:0,top:new THREE.Color(),hor:new THREE.Color(),exp:1};
 // rev2: moody polluted look = dark slate sky over a sickly amber horizon, low amber sun, desaturated cool terrain; restored = extra saturation/brightness
 const SMOG=new THREE.Color('#6a6250'),SKYT=new THREE.Color('#2f3440'),SKYH=new THREE.Color('#a8864e'),BGM=new THREE.Color('#3a3c42'),SUNM=new THREE.Color('#e09a55'),GREY=new THREE.Color('#6d7380'),tmp=new THREE.Color(),HSL={h:0,s:0,l:0};
 function snap(){const w=W(),sc=w.scene;if(!sc||!w.sun)return;if(G.FS_tint81)try{G.FS_tint81()}catch(e){}base.sunI=w.sun.intensity;base.hemiI=w.hemi.intensity;base.sunC.copy(w.sun.color);if(sc.background&&sc.background.isColor)base.bg.copy(sc.background);
- if(sc.fog){base.fogC.copy(sc.fog.color);base.near=sc.fog.near;base.far=sc.fog.far}if(w.su){base.top.copy(w.su.uTop.value);base.hor.copy(w.su.uHor.value)}base.exp=w.R?w.R.toneMappingExposure:1;base.ok=1;lastK=-1}
+ if(sc.fog){base.fogC.copy(sc.fog.color);base.near=sc.fog.near;base.far=sc.fog.far}if(w.su){base.top.copy(w.su.uTop.value);base.hor.copy(w.su.uHor.value)}base.exp=w.R?w.R.toneMappingExposure:1;const bd=G._bd&&G._bd();base.bdRef=bd||null;if(bd){base.bdT=bd[0].clone();base.bdH=bd[1].clone()}base.ok=1;lastK=-1}
 let wrapped=null;setInterval(()=>{if(G.W6env&&G.W6env!==wrapped){const e0=G.W6env;wrapped=G.W6env=function(){const r=e0.apply(this,arguments);try{snap()}catch(_){}return r}}else if(!G.W6env&&!wrapped){wrapped=G.W6env=function(){try{snap()}catch(_){}}}},250);
 // terrain tint: multiply island materials' colour (no new materials)
 let isl=null,mats=[];function grabMats(){const w=W(),I=w.island;if(I===isl)return;isl=I;mats=[];if(!I)return;const seen=new Set();I.traverse(m=>{const M=m.material;(Array.isArray(M)?M:[M]).forEach(x=>{if(x&&x.color&&!seen.has(x)){seen.add(x);if(!x.userData.rc0)x.userData.rc0=x.color.clone();mats.push(x)}})});lastK=-1}
@@ -47,5 +57,6 @@ let lt=performance.now();
  if(w.scene.fog){w.scene.fog.color.copy(base.fogC).lerp(SMOG,.85*k);w.scene.fog.near=base.near*(1-.55*k);w.scene.fog.far=base.far*(1-.35*k)}
  if(w.su){w.su.uTop.value.copy(base.top).lerp(SKYT,.85*k);w.su.uHor.value.copy(base.hor).lerp(SKYH,.8*k);if(v){w.su.uTop.value.getHSL(HSL);w.su.uTop.value.setHSL(HSL.h,Math.min(1,HSL.s*(1+.25*v)),HSL.l)}}
  if(w.R)w.R.toneMappingExposure=base.exp*(1-.12*k)*(1+.05*v);
+ {const bd=G._bd&&G._bd();if(bd&&bd===base.bdRef&&base.bdT){const kq=Math.round(k*20)/20;bd[0].copy(base.bdT).lerp(SKYT,.8*kq);bd[1].copy(base.bdH).lerp(SKYH,.75*kq);if(v){bd[0].getHSL(HSL);bd[0].setHSL(HSL.h,Math.min(1,HSL.s*(1+.2*v)),HSL.l)}}} // v8.1.2: the v7 sky backdrop follows restoration too (repaints only on 5% steps)
  for(const m of mats){m.color.copy(m.userData.rc0);m.color.getHSL(HSL);m.color.setHSL(HSL.h,Math.min(1,HSL.s*(1-.75*k)*(1+.3*v)),HSL.l*(1-.35*k)*(1+.04*v));m.color.lerp(tmp.copy(GREY).multiplyScalar(HSL.l*1.4),.25*k)}})();
 G.FSrestore=()=>({r:rDisp,target:S.zone==='home'?1:target(S.zone),saved:S.restore});
