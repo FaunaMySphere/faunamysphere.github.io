@@ -100,7 +100,7 @@ function dress(isl,zid){const z=typeof Z==='function'?Z(zid):null;if(!z||z.biome
  isl.children.forEach(o=>{if(!o.isInstancedMesh||!o.userData.v77||o.userData.v77==='wheat'||o.userData.v77==='sun'||o.userData.v77==='leaf'||o.userData.v77==='snow')return;const mm=new THREE.Matrix4(),pp=new THREE.Vector3(),qq=new THREE.Quaternion(),ss=new THREE.Vector3();
   for(let k=0;k<o.count;k++){o.getMatrixAt(k,mm);mm.decompose(pp,qq,ss);blobs.push([pp.x,pp.y,pp.z,(o.userData.v77==='fence'?.9:.6)*ss.x])}});
  if(blobs.length){const Bm=new THREE.InstancedMesh(blobG,blobM,blobs.length);blobs.forEach(([x,y,zz,s2],k)=>{q.identity();sc.set(s2,1,s2);p.set(x,y+.012,zz);m4.compose(p,q,sc);Bm.setMatrixAt(k,m4)});Bm.renderOrder=1;Bm.userData.v82='blob';group.add(Bm)}
- isl.add(group);G.FS_V82.last={zone:zid,tufts:nT,pebbles:nP,flowers:nF,rocks:nR,blobs:blobs.length};
+ isl.add(group);try{G.FSrestoreRegrab&&G.FSrestoreRegrab()}catch(_){}G.FS_V82.last={zone:zid,tufts:nT,pebbles:nP,flowers:nF,rocks:nR,blobs:blobs.length};
 }
 // ---------- finer trees (PC High/Ultra): extra leaf clusters, two branches, tapered trunk with root flare, contact shadow ----------
 let leafKit=null,brKit=null,trunkGeo=null;
@@ -118,7 +118,7 @@ function finer(g){treeKits();const trunk=g.children[0],lm=g.children[1].material
 function treeScan(){if(!PCHI)return;try{G.W80.objMap.forEach(e=>{const g=e&&e.g;if(!g||g.userData.v82)return;if(isTree(g))finer(g);else if(g.children){const t=g.children.find(c=>c.isGroup&&!c.userData.v82&&isTree(c));if(t)finer(t)}})}catch(e){console.warn('v82 trees',e)}}
 // ---------- haze, shadows, bloom, light shafts ----------
 let fogRef=null;function haze(){const f=scene.fog;if(!f||f===fogRef||!f.isFog)return;fogRef=f;const zb=typeof Z==='function'&&G.S?Z(S.zone).biome:'';if(zb==='dungeon')return;
- f.near*=PCHI?.72:.85;f.far*=PCHI?.8:.9;if(scene.background&&scene.background.isColor)f.color.lerp(scene.background,.35)}
+ f.near*=PCHI?.72:.85;f.far*=PCHI?.8:.9;}
 if(PCHI&&!R.shadowMap.enabled){R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;if(W6.sun&&W6.sun.shadow){W6.sun.castShadow=true;if('intensity' in W6.sun.shadow)W6.sun.shadow.intensity=.62}
  scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>{m.needsUpdate=true})})}
 const SHAFT={uniforms:{tDiffuse:{value:null},uSun:{value:new THREE.Vector2(.5,1.2)},uAmt:{value:0},uCol:{value:new THREE.Color(1,.95,.82)}},
@@ -135,7 +135,7 @@ function post(){const C=W6.composer;if(!C||!PCHI||post.done)return;post.done=1;t
 const sv=new THREE.Vector3();
 function shafts(){if(!shaft)return;const cam=W6.camera,su=W6.sun;if(!cam||!su)return;const zb=typeof Z==='function'&&G.S?Z(S.zone).biome:'';
  const night=G.W81&&G.W81.su&&G.W81.su.uNight?G.W81.su.uNight.value:0;const dir=su.position.clone().sub(su.target?su.target.position:new THREE.Vector3()).normalize();
- sv.copy(cam.position).addScaledVector(dir,120).project(cam);const amt=(zb==='dungeon'||zb==='arctic'||zb==='night')?0:(sv.z<1?.55:0)*(1-night);
+ sv.copy(cam.position).addScaledVector(dir,120).project(cam);let rr=1;try{if(G.FSrestore){const q=G.FSrestore();rr=Math.max(0,Math.min(1,(q.r-.5)*2))}}catch(e){}const amt=(zb==='dungeon'||zb==='arctic'||zb==='night')?0:(sv.z<1?.55:0)*(1-night)*rr;
  shaft.uniforms.uSun.value.set(sv.x*.5+.5,sv.y*.5+.5);shaft.uniforms.uAmt.value+=(amt-shaft.uniforms.uAmt.value)*.05}
 // ---------- watcher ----------
 let lastIsl=null;(function tick(){try{const isl=W6.island;if(isl&&isl!==lastIsl&&W6.zone&&isl.children.length>2&&G._groundIM&&isl.children.includes(G._groundIM)){lastIsl=isl;setTimeout(()=>{try{if(W6.island===isl)dress(isl,W6.zone)}catch(e){console.warn('v82 dress',e)}},60)}

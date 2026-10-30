@@ -31,7 +31,7 @@ function snap(){const w=W(),sc=w.scene;if(!sc||!w.sun)return;if(G.FS_tint81)try{
  if(sc.fog){base.fogC.copy(sc.fog.color);base.near=sc.fog.near;base.far=sc.fog.far}if(w.su){base.top.copy(w.su.uTop.value);base.hor.copy(w.su.uHor.value)}base.exp=w.R?w.R.toneMappingExposure:1;const bd=G._bd&&G._bd();base.bdRef=bd||null;if(bd){base.bdT=bd[0].clone();base.bdH=bd[1].clone()}base.ok=1;lastK=-1}
 let wrapped=null;setInterval(()=>{if(G.W6env&&G.W6env!==wrapped){const e0=G.W6env;wrapped=G.W6env=function(){const r=e0.apply(this,arguments);try{snap()}catch(_){}return r}}else if(!G.W6env&&!wrapped){wrapped=G.W6env=function(){try{snap()}catch(_){}}}},250);
 // terrain tint: multiply island materials' colour (no new materials)
-let isl=null,mats=[];function grabMats(){const w=W(),I=w.island;if(I===isl)return;isl=I;mats=[];if(!I)return;const seen=new Set();I.traverse(m=>{const M=m.material;(Array.isArray(M)?M:[M]).forEach(x=>{if(x&&x.color&&!seen.has(x)){seen.add(x);if(!x.userData.rc0)x.userData.rc0=x.color.clone();mats.push(x)}})});lastK=-1}
+let isl=null,mats=[];G.FSrestoreRegrab=()=>{isl=null};function grabMats(){const w=W(),I=w.island;if(I===isl)return;isl=I;mats=[];if(!I)return;const seen=new Set();I.traverse(m=>{const M=m.material;(Array.isArray(M)?M:[M]).forEach(x=>{if(x&&x.color&&!seen.has(x)){seen.add(x);if(!x.userData.rc0)x.userData.rc0=x.color.clone();mats.push(x)}})});lastK=-1}
 // particles: smog (big soft) + sparkles; fixed buffers
 let smog=null,spark=null,pts=null;
 function mkPts(){const w=W();if(!w.scene)return;const q=G.GL&&GL.Q,n=q==='low'?18:q==='med'?36:60;
