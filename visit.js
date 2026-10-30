@@ -3,7 +3,7 @@
 // read-only copy with the friend's fauna roaming, live presence, live updates, privacy toggle. Friend data NEVER enters the visitor's save:
 // while visiting, S.toJSON returns the visitor's real home/fauna, and every mutating action is blocked.
 (()=>{if(!window.NetMP)return;
-const ES=()=>window.LANG==='es',T=(en,es)=>ES()?es:en,esc=s=>String(s==null?'':s).replace(/[<>&"']/g,'');
+const ES=()=>window.LANG==='es',T=(en,es)=>ES()?es:en,cln=s=>String(s==null?'':s).replace(/[<>&"']/g,''),esc=s=>String(s==null?'':s).replace(/[<>&"']/g,c=>'&#'+c.charCodeAt(0)+';'),tn=s=>String(s==null?'':s).slice(0,40);// v8.3.5: esc now escapes for HTML instead of deleting (Bo's Caretaker kept its apostrophe); toasts are plain text (tn)
 const V=window.FSVisit={on:false,owner:null,name:'',real:null,offline:false,rx:new Map(),pend:null,sentSig:new Map(),lastSnapAt:0};
 const RZ=new Map();const tx=m=>{if(m.t==='hvReq'||m.t==='hvNo'){m._z='all';NetMP.send(m);return}const q=NetMP.peers.get(m.to),rz=RZ.get(m.to);if(rz&&rz.at>Date.now()-20000)m._z=rz.z;else if(q&&q.zk)m._z=q.zk;NetMP.send(m)};
 const MAXRAW=900000,CH=12000,MAXN=60;
@@ -22,8 +22,8 @@ function validate(raw){const s=clean(raw,0);if(!s||typeof s!=='object'||!s.z||ty
  z.objs=(Array.isArray(z.objs)?z.objs:[]).filter(o=>o&&typeof o==='object'&&typeof o.type==='string'&&/^[\w-]{1,32}$/.test(o.type)&&Number.isInteger(o.i)&&Number.isInteger(o.j)&&o.i>=0&&o.j>=0&&o.i<n&&o.j<n).slice(0,1500);
  z.polls=[];z.tox=[];const h=s.h&&typeof s.h==='object'&&!Array.isArray(s.h)?s.h:{};if(!Array.isArray(h.decor))h.decor=[];h.decor=h.decor.filter(d=>d&&typeof d==='object').slice(0,1500);
  const f=(Array.isArray(s.f)?s.f:[]).filter(x=>x&&x.genes&&typeof x.genes==='object'&&(typeof x.genes.species==='string'||Number.isInteger(x.genes.species))&&typeof SPECIES!=='undefined'&&SPECIES[x.genes.species]).slice(0,30)
-  .map(x=>({name:esc(x.name).slice(0,20)||'Fauna',genes:x.genes,level:Math.max(1,Math.min(99,(x.level|0)||1)),rarity:typeof x.rarity==='string'?x.rarity.slice(0,16):undefined,energy:100,happy:100,hunger:0}));
- return{z,h,f,n:esc(s.n).slice(0,20)}}
+  .map(x=>({name:cln(x.name).slice(0,20)||'Fauna',genes:x.genes,level:Math.max(1,Math.min(99,(x.level|0)||1)),rarity:typeof x.rarity==='string'?x.rarity.slice(0,16):undefined,energy:100,happy:100,hunger:0}));
+ return{z,h,f,n:cln(s.n).slice(0,20)}}
 // ---------- owner side ----------
 function myName(){const f=fa();return(S.player.name&&S.player.name!=='Caretaker'?S.player.name:(f?f.name+"'s Caretaker":'Caretaker')).slice(0,20)}
 function snapshot(){const zh=zs('home'),z={};for(const k of Object.keys(zh))if(k!=='polls'&&k!=='tox')z[k]=zh[k];
@@ -36,7 +36,7 @@ const visitorsHere=()=>[...NetMP.peers.values()].filter(p=>p.zk==='home:'+NetMP.
 setInterval(()=>{try{if(V.on||S.visitsOff||!NetMP.room)return;const vs=visitorsHere();if(!vs.length)return;const str=snapshot();for(const p of vs)if(V.sentSig.get(p.id)!==str)sendSnap(p.id,str)}catch(e){}},1500);
 // ---------- messages ----------
 function onMsg(m,p){
- if(m.t==='hvReq'){if(typeof m.rz==='string'&&m.rz.length<60)RZ.set(m.id,{z:m.rz,at:Date.now()});if(S.visitsOff){tx({t:'hvNo',to:m.id,why:'off'});return}if(V.on){tx({t:'hvNo',to:m.id,why:'away'});return}sendSnap(m.id);if(p)toast('🏠 '+esc(p.name)+T(' is visiting your home!',' está visitando tu casa!'));return}
+ if(m.t==='hvReq'){if(typeof m.rz==='string'&&m.rz.length<60)RZ.set(m.id,{z:m.rz,at:Date.now()});if(S.visitsOff){tx({t:'hvNo',to:m.id,why:'off'});return}if(V.on){tx({t:'hvNo',to:m.id,why:'away'});return}sendSnap(m.id);if(p)toast('🏠 '+tn(p.name)+T(' is visiting your home!',' está visitando tu casa!'));return}
  if(m.t==='hvNo'){if(V.pend===m.id||V.owner===m.id){V.pend=null;toast(m.why==='off'?T('🔒 That player isn\'t allowing visits right now.','🔒 Ese jugador no permite visitas ahora.'):m.why==='big'?T('That home is too big to send.','Esa casa es demasiado grande para enviarla.'):T('That player is visiting someone else. Try again soon.','Ese jugador está de visita. Inténtalo pronto.'));if(V.on&&m.why==='off'){toast(T('The owner turned visits off.','El dueño desactivó las visitas.'));exit()}}return}
  if(m.t==='hvC'){if(V.pend!==m.id&&!(V.on&&V.owner===m.id))return;if(typeof m.k!=='string'||typeof m.d!=='string'||m.d.length>CH||!(m.n>0&&m.n<=MAXN)||!(m.i>=0&&m.i<m.n)||(m.i|0)!==m.i)return;
   const key=m.id+':'+m.k;let b=V.rx.get(key);if(!b){if(V.rx.size>6)V.rx.clear();b={n:m.n,parts:[],got:0,at:Date.now()};V.rx.set(key,b)}if(b.n!==m.n||b.parts[m.i]!=null)return;b.parts[m.i]=m.d;b.got++;
@@ -52,7 +52,7 @@ function apply(id,s,name){const first=!V.on;V.pend=null;
  if(first){try{if(window.FSarr&&FSarr.on)FSarr.setOn(false)}catch(_){}rt.decor=null;rt.paint=null;V.real={home:S.home,zh:zs('home'),fauna:S.fauna,active:S.active};Object.defineProperty(S,'toJSON',{value:toJSON,configurable:true,writable:true,enumerable:false})}
  const own=V.real.fauna[V.real.active];S.home=Object.assign({decor:[],paint:{}},s.h);{const H=S.home,o=x=>x&&typeof x==='object'&&!Array.isArray(x),n=x=>typeof x==='number'&&isFinite(x);if(!o(H.paint))H.paint={};if(!o(H.nest))H.nest={egg:null,inc:null,at:0};if(!o(H.treat)||!n(H.treat.count)||!n(H.treat.last))H.treat={count:0,last:now()};if(!o(H.totem)||!n(H.totem.last))H.totem={last:now()}}S.zones.home=s.z;S.fauna=[own].concat(s.f);S.active=0;
  V.on=true;V.owner=id;V.name=name;V.offline=false;
- if(first){if(S.zone!=='home'){S.zone='home'}const n=s.z.tiles.length,c=(n-1)/2;rt.pos={i:c,j:c+1.5};rt.tgt=null;try{Sound.sfx('gate')}catch(_){}toast('🏠 '+T('Visiting ','Visitando la casa de ')+esc(name)+T("'s home",''))}
+ if(first){if(S.zone!=='home'){S.zone='home'}const n=s.z.tiles.length,c=(n-1)/2;rt.pos={i:c,j:c+1.5};rt.tgt=null;try{Sound.sfx('gate')}catch(_){}toast('🏠 '+T('Visiting ','Visitando la casa de ')+tn(name)+T("'s home",''))}
  try{G.rebuildIsland&&G.rebuildIsland()}catch(_){}banner();NetMP.announce&&NetMP.announce()}
 function exit(){if(!V.on)return;const r=V.real;S.home=r.home;S.zones.home=r.zh;S.fauna=r.fauna;S.active=r.active;delete S.toJSON;V.on=false;V.real=null;V.owner=null;V.offline=false;
  try{G.rebuildIsland&&G.rebuildIsland()}catch(_){}banner();NetMP.announce&&NetMP.announce();try{save()}catch(_){}}

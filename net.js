@@ -11,7 +11,7 @@ NetMP.visiblePeers=()=>{const zk=NetMP.zk();let q='med';try{q=localStorage.getIt
  return[...NetMP.peers.values()].filter(p=>p.zk===zk&&p.genes).sort((a,b)=>Math.hypot(a.i-pi,a.j-pj)-Math.hypot(b.i-pi,b.j-pj)).slice(0,cap)};NetMP.zonePeers=()=>{const zk=NetMP.zk();return[...NetMP.peers.values()].filter(p=>p.zk===zk).length};
 function me(){const f=fa();return{id:NetMP.myId,jt:NetMP.jt,name:(S.player.name&&S.player.name!=='Caretaker'?S.player.name:(f?f.name+"'s Caretaker":'Caretaker')).slice(0,20),fname:f?f.name:'',genes:f?f.genes:null,level:f?f.level:1,zk:NetMP.zk(),zone:S.zone,i:+rt.pos.i.toFixed(2),j:+rt.pos.j.toFixed(2),sleep:!!rt.sleep,kn:[...NetMP.peers.keys()].slice(0,16),v:NET_V,ts:Date.now()}}
 function badge(){let b=document.getElementById('mpbadge');if(!NetMP.room||NetMP.isWorld()){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='mpbadge';document.getElementById('stage').appendChild(b)}
- const here=NetMP.visiblePeers().length;const n=NetMP.peers.size;b.textContent=NetMP.status!=='online'&&!RL.up?'🟡 Connecting to room '+NetMP.room+'…':n?'🟢 Room '+NetMP.room+' · connected to '+[...NetMP.peers.values()].map(p=>p.name).slice(0,2).join(', ')+(n>2?' +'+(n-2):'')+(here?' · '+here+' here':''):'🟡 Room '+NetMP.room+' · waiting for friends (they need the game open)'}
+ const here=NetMP.visiblePeers().length;const n=NetMP.peers.size;b.textContent=(NetMP.status!=='online'&&!RL.up)||navigator.onLine===false?'🟡 Connecting to room '+NetMP.room+'…':n?'🟢 Room '+NetMP.room+' · connected to '+[...NetMP.peers.values()].map(p=>p.name).slice(0,2).join(', ')+(n>2?' +'+(n-2):'')+(here?' · '+here+' here':''):'🟡 Room '+NetMP.room+' · waiting for friends (they need the game open)'}
 function deliver(m,fromConn){ // host relays
  if(NetMP.isHost){if(m.to&&m.to!==NetMP.myId){const c=NetMP.conns.get(m.to);if(c&&c.open)c.send(m);return}if(!m.to){const zoned=(m.t==='st'||m.t==='say'||m.t==='trick')&&NetMP.isWorld();const sz=m.zk||(NetMP.peers.get(m.id)||{}).zk;for(const[id,c]of NetMP.conns){if(c===fromConn||!c.open)continue;if(zoned){const q=NetMP.peers.get(id);if(q&&q.zk!==sz){if(m.t!=='st')continue;c._lp=c._lp||{};if(Date.now()-(c._lp[m.id]||0)<12000)continue;c._lp[m.id]=Date.now()}}c.send(m)}}}
  if(!m.to||m.to===NetMP.myId)handle(m)}
@@ -103,7 +103,9 @@ const ui5=ui;ui=function(v,p={}){if(v==='mpCreate'){NetMP.create();setTimeout(()
  if(NetMP.isWorld())h+=`<h3>${es()?'Sala privada (opcional)':'Private room (optional)'}</h3>${btn('➕ Create Room','ui',{v:'mpCreate'})}<div class="row"><div class="grow"><input id="jc" maxlength="8" placeholder="Room code" style="text-transform:uppercase;width:140px"></div>${btn('Join','ui',{v:'mpJoin'})}</div>`;
  h+=`<div class="row"><div class="grow">🏝️ Amelia's Faunasphere (guide NPC)</div>${btn('Visit','visit',{who:'Amelia'})}</div>`;open(h)};
 // auto-join from link
-{const go=()=>{if(NetMP.room)return;if(fa()&&typeof Peer!=='undefined')NetMP.join(WORLD);else setTimeout(go,1500)};setTimeout(go,1200)}
+{const rq=(new URLSearchParams(location.search).get('room')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);// v8.3.5: a shared ?room= link (and a reload inside a private room) joins that room again instead of the global server
+ const go=()=>{if(NetMP.room)return;if(fa()&&typeof Peer!=='undefined')NetMP.join(rq||WORLD);else setTimeout(go,1500)};setTimeout(go,1200)}
+addEventListener('offline',()=>{if(NetMP.room){NetMP.status='connecting';badge()}});// v8.3.5: don't keep showing 'online' while the phone has no network (heal on 'online' reconnects)
 // ---- v6.13.1: heal after backgrounding / network change, peer counter, Find players ----
 let hidAt=0,lastHeal=0;
 function heal(hard){if(!NetMP.room)return;const n=Date.now();if(!hard&&n-lastHeal<3000)return;lastHeal=n;const code=NetMP.room;

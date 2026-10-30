@@ -16,7 +16,12 @@ function newState(){return{v:2,player:{id:'ct-'+Math.random().toString(36).slice
 const save=()=>{if(window.__importing)return;if(!S||!S.fauna||!S.fauna.length)return;S.lastTick=now();let j;try{j=JSON.stringify(S)}catch(e){window.__saveErr=e;console.warn('save stringify failed',e);return}try{localStorage.setItem(KEY,j);window.__saveErr=null}catch(e){window.__saveErr=e;console.warn('localStorage save failed',e)}window.__lastSave=Date.now();window.FSidb&&FSidb.put(j)};
 const fa=()=>S.fauna[S.active];const Z=id=>ZONES.find(z=>z.id===id);
 function banner(t){const b=document.getElementById('banner');if(!b)return;b.textContent=t;b.classList.remove('hidden','show');void b.offsetWidth;b.classList.add('show');clearTimeout(banner.t);banner.t=setTimeout(()=>b.classList.add('hidden'),2500)}
-function toast(m){const d=document.createElement('div');d.textContent=m;const t=document.getElementById('toast');t.prepend(d);setTimeout(()=>d.remove(),4000);while(t.children.length>4)t.lastChild.remove()}
+// v8.3.5: at most 2 toasts on screen, the rest wait in a short queue; an exact repeat bumps a ×N count instead of stacking
+const TQ=[];function toast(m){const t=document.getElementById('toast');if(!t)return;m=String(m);for(const d of t.children)if(d._m===m){d._n=(d._n||1)+1;tCnt(d);d.style.animation='none';void d.offsetWidth;d.style.animation='';clearTimeout(d._to);d._to=setTimeout(()=>tGone(d),4000);return}
+ const q=TQ.find(x=>x.m===m);if(q){q.n++;return}if(t.children.length>=2){TQ.push({m,n:1});if(TQ.length>6)TQ.shift();return}tShow(t,m,1)}
+function tShow(t,m,n){const d=document.createElement('div');d.textContent=m;d._m=m;d._n=n;if(n>1)tCnt(d);t.prepend(d);d._to=setTimeout(()=>tGone(d),4000)}
+function tGone(d){d.remove();const t=document.getElementById('toast');while(t&&TQ.length&&t.children.length<2){const q=TQ.shift();tShow(t,q.m,q.n)}}
+function tCnt(d){let s=d.querySelector('.tn');if(!s){s=document.createElement('span');s.className='tn';d.appendChild(s)}s.textContent=' ×'+d._n}
 // ===== Zone generation =====
 function genZone(z){const r=rng(z.id),n=z.n,tiles=[],objs=[];let id=0;
  for(let i=0;i<n;i++){tiles[i]=[];for(let j=0;j<n;j++){const dx=i-(n-1)/2,dy=j-(n-1)/2;tiles[i][j]=z.shape?(z.shape(dx,dy,n,r)?1:0):Math.hypot(dx,dy)<n/2-.2+r()*.6?1:0}}

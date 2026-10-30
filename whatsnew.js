@@ -1,10 +1,13 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.4',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.5',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.5',[
+  ['💬','Messages no longer pile up over the quest card on phones: at most 2 show at once, the rest wait their turn, and the same message repeated shows ×2, ×3… instead of stacking.','Los mensajes ya no se amontonan sobre la tarjeta de misión en teléfonos: se ven 2 como máximo, los demás esperan su turno, y un mismo mensaje repetido muestra ×2, ×3… en vez de apilarse.'],
+  ['👥','Fixed: opening a shared room link (🔗 Share link) now joins that room again, and reloading inside a private room keeps you in it. Names with an apostrophe (Bo\'s Caretaker) show correctly in visit messages, and the room status no longer says online while your phone has no network.','Arreglado: abrir un enlace de sala compartido (🔗 Compartir enlace) vuelve a unirte a esa sala, y recargar dentro de una sala privada te mantiene en ella. Los nombres con apóstrofo se ven bien en los mensajes de visita, y el estado de la sala ya no dice en línea cuando tu teléfono no tiene red.']]],
  ['8.3.4',[
   ['📱','Smoother on phones: the scenery in each world is now drawn in fewer batches (up to ~14% fewer draw calls), and it looks exactly the same.','Más fluido en teléfonos: el paisaje de cada mundo se dibuja en menos tandas (hasta ~14% menos llamadas de dibujo) y se ve exactamente igual.'],
   ['👥','Friends online: if a chat relay is down, the game now waits longer between retries and pauses while you are offline, saving battery and data. Friend names from other players are cleaned up before they show.','Amigos en línea: si un servidor de chat no responde, el juego espera más entre reintentos y se pausa mientras no tienes conexión, para ahorrar batería y datos. Los nombres de otros jugadores se limpian antes de mostrarse.']]],
@@ -54,6 +57,7 @@ const css=document.createElement('style');css.textContent=`
 #ver81{position:fixed;left:8px;z-index:30;font:700 10px/1.2 var(--font,system-ui),system-ui,sans-serif;color:#fff;background:#0b3d12b3;border:1px solid #ffffff40;border-radius:9px;padding:2px 7px;cursor:pointer;user-select:none;letter-spacing:.2px;opacity:.85}
 #ver81:hover{opacity:1}
 body:has(#modal:not(.hidden)) #ver81{display:none}
+body:has(#toast>div) #ver81{visibility:hidden}
 .wn81 h4{margin:12px 2px 4px;font-size:15px;color:#ffe36e}
 .wn81 .r{display:flex;gap:9px;align-items:flex-start;margin:5px 0;padding:7px 9px;border-radius:10px;background:#ffffff1f;font-size:14.5px;line-height:1.35}
 .wn81 .r b{font-size:18px;line-height:1.1}
