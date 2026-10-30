@@ -1,2 +1,2 @@
-{"name":"FaunaMySphere","short_name":"FaunaMySphere","start_url":"./index.html","scope":"./","display":"standalone","orientation":"portrait","background_color":"#1d4a5e","theme_color":"#3d8b5a",
+{"name":"FaunaMySphere","short_name":"FaunaMySphere","start_url":"./index.html","scope":"./","display":"fullscreen","display_override":["fullscreen","standalone"],"orientation":"portrait","background_color":"#1d4a5e","theme_color":"#3d8b5a",
 "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"},{"src":"apple-touch-icon.png","sizes":"180x180","type":"image/png"}]}
