@@ -19,7 +19,7 @@ let SQ=0;const seen=new Set();function send(m){m.id=m.id||NetMP.myId;m.sq=m.sq||
  // v6.19: challenges/visit requests are re-sent (same sq, receiver dedupes) so one sent around a Find players reconnect is not lost
  if(!m._rs&&RESEND[m.t]){const mm=Object.assign({},m,{_rs:1});[2500,5500,9000].forEach(d=>setTimeout(()=>{try{relayPub(mm);if(NetMP.isHost)deliver(mm,null);else if(NetMP.hostConn&&NetMP.hostConn.open)NetMP.hostConn.send(mm)}catch(_){}},d))}}
 const RESEND={giftResp:1,pvpAsk:1,pvpAns:1,pvpGo:1,hvReq:1,hvNo:1};
-NetMP.send=send;
+NetMP.send=send;NetMP._rx=m=>handle(m);
 function es(){return(window.I18N&&I18N.lang==='es')||window.LANG==='es'}
 let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(!SPECIES[m.genes.species]){m.oddSp=m.genes.species;m.genes={...m.genes,species:Object.keys(SPECIES)[0]}}}
  m.i=+m.i||0;m.j=+m.j||0;m.name=String(m.name||'Friend').slice(0,20);m.fname=String(m.fname||'');if(typeof m.zk!=='string')m.zk=m.zone==='home'?'home:'+m.id:String(m.zone||'');
@@ -29,11 +29,12 @@ let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(
 function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if(seen.has(k))return;seen.add(k);if(seen.size>4000)seen.clear()}let p=NetMP.peers.get(m.id);
  if(typeof m.t==='string'&&m.t.slice(0,2)==='mk'){if(window.FSMkt)try{FSMkt.on(m,p)}catch(e){console.warn('mkt',e)}return} // v7.0 marketplace
  if(typeof m.t==='string'&&m.t.slice(0,2)==='hv'){if(window.FSVisit)try{FSVisit.msg(m,p)}catch(e){console.warn('visit',e)}return}
- if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
+ if(m.t==='st'){if(m.ts&&Date.now()-m.ts>45000&&Math.abs(Date.now()-m.ts)<6e5)return;fixPeer(m);const isNew=!p;if(p&&p.say&&p.say.zk!==m.zk)delete p.say;p=Object.assign(p||{},m,{last:Date.now()});NetMP.peers.set(m.id,p);if(isNew&&!NetMP.isWorld()){toast('👋 '+p.name+' is online!');Sound.sfx&&Sound.sfx('hmm')}if(isNew||!(m.kn||[]).includes(NetMP.myId))announce()}
  else if(!p&&m.t!=='sphereReq'&&m.t!=='sphere'&&m.t!=='giftOffer'&&m.t!=='giftResp')return;
  if(m.t&&m.t.slice(0,4)==='gift'&&window.FSGift){FSGift.on(m,p);return}
  if(m.t&&m.t.slice(0,3)==='pvp'&&window.FSPvP){FSPvP.on(m,p);return}
- if(m.t==='say'){p.say={text:String(m.text).slice(0,80),at:Date.now()+CHAT_MS-6000,chat:1};Sound.tone&&Sound.tone(1320,.2,'sine',.04);chatLog(p.name,m.text)}
+ if(m.t==='say'){const here=NetMP.zk(),wz=typeof m.zk==='string'?m.zk.slice(0,60):(p.zk||'');if(wz!==here)return; // v8.1.1: chat only from the same place (same home base or world)
+ p.say={text:String(m.text).slice(0,80),at:Date.now()+CHAT_MS-6000,chat:1,zk:wz};Sound.tone&&Sound.tone(1320,.2,'sine',.04);chatLog(p.name,m.text,wz)}
  if(m.t==='trick'){p.trick={k:m.k,t0:now()}}
  if(m.t==='bye'){NetMP.peers.delete(m.id);if(!NetMP.isWorld())toast((p?p.name:'A friend')+' left the room.')}
  if(m.t==='sphereReq'&&!S.visitsOff){const h=zs('home');const keep=h.objs.filter(o=>o.type==='gate'||o.type==='decor'||o.type==='pullytree'||PROPS.includes(o.type)).map(o=>({...o,type:o.type==='pullytree'?'d_tree':o.type}));send({t:'sphere',to:m.id,owner:me().name,data:{tiles:h.tiles,objs:keep,nextId:999}})}
@@ -54,7 +55,7 @@ function relayRaw(m){if(!RL.topic||!RL.up)return;let ev;try{ev=NostrTools.finali
  const f=JSON.stringify(['EVENT',ev]);for(const w of RL.socks)if(w.readyState===1)try{w.send(f)}catch(_){}}
 function relayPub(m){if(!RL.topic)return;if(m.t==='st'){const n=Date.now(),gap=n-RL.lastSt;if(gap<700){RL.pend=m;return}RL.lastSt=n;RL.pend=null}relayRaw(m)}
 setInterval(()=>{if(RL.pend&&Date.now()-RL.lastSt>=700){const m=RL.pend;RL.pend=null;RL.lastSt=Date.now();relayRaw(m)}},250);
-const log=[];function chatLog(n,t){log.push({n,t:String(t).slice(0,80),at:Date.now()});if(log.length>30)log.shift()}
+const log=[];function chatLog(n,t,zk){log.push({n,t:String(t).slice(0,80),at:Date.now(),zk:zk||NetMP.zk()});if(log.length>30)log.shift()}NetMP.chatHere=()=>{const z=NetMP.zk();return log.filter(l=>l.zk===z)};
 function attach(c){c.on('data',m=>{if(!m||typeof m!=='object')return;if(NetMP.isHost&&m.id&&!NetMP.conns.has(m.id)){NetMP.conns.set(m.id,c);c._pid=m.id}deliver(m,c)});
  c.on('close',()=>{if(NetMP.isHost){const id=c._pid;NetMP.conns.delete(id);if(id&&NetMP.peers.has(id)){const p=NetMP.peers.get(id);NetMP.peers.delete(id);toast((p.name||'A friend')+' disconnected.');deliver({t:'bye',id},c)}}else if(c===NetMP.hostConn){NetMP.hostConn=null;NetMP.status='reconnecting';NetMP.peers.clear();toast('📡 Room host left. Reconnecting…');setTimeout(()=>start(NetMP.room,'auto'),800+Math.random()*2500)}});
  c.on('error',()=>{})}
@@ -79,12 +80,12 @@ setInterval(tick,200);
 function resub(){const z=NetMP.zk();for(const w of RL.socks)if(w.readyState===1&&w._sub!==z){try{w.send(JSON.stringify(['CLOSE','fs'+NetMP.room]));w._sub=z;w.send(JSON.stringify(['REQ','fs'+NetMP.room,{kinds:[KIND],'#t':[RL.topic],'#z':[z,'all'],since:Math.floor(Date.now()/1000)-20}]))}catch(_){}}}
 setInterval(()=>{if(NetMP.room&&RL.up)resub()},500);
 setInterval(()=>{if(!NetMP.room||!fa())return;const m={t:'st',...me(),_z:'all'};m.id=NetMP.myId;m.sq=(++SQ)+'_'+Date.now()%1e6;relayRaw(m)},12000);
-let zk0='';setInterval(()=>{if(!NetMP.room)return;try{const z=NetMP.zk();if(z!==zk0){zk0=z;[200,1500,4000].forEach(d=>setTimeout(announce,d))}}catch(_){}},300);
+let zk0='';setInterval(()=>{try{const z=NetMP.zk();if(zk0&&z!==zk0){for(const q of NetMP.peers.values())if(q.say&&q.say.zk!==z)delete q.say;try{if(rt.say)rt.say=null}catch(_){}}if(!NetMP.room){zk0=z;return}}catch(_){}if(!NetMP.room)return;try{const z=NetMP.zk();if(z!==zk0){zk0=z;[200,1500,4000].forEach(d=>setTimeout(announce,d))}}catch(_){}},300);
 // self-heal: room set but PeerJS dropped and no relay -> restart
 setInterval(()=>{if(NetMP.room&&!NetMP.peer&&!RL.up)start(NetMP.room,'auto')},10000);
 addEventListener('pagehide',()=>{if(NetMP.peer)try{send({t:'bye'})}catch(_){}});
 // hooks: chat + tricks broadcast
-const CHAT_MS=10000;const cf=document.getElementById('chatf'),cf0=cf.onsubmit;cf.onsubmit=e=>{const t=document.getElementById('chatin').value.trim();cf0(e);try{if(t&&rt.say&&rt.say.text===t.slice(0,80))rt.say.at=now()+CHAT_MS-5000}catch(_){}if(t&&NetMP.peer){send({t:'say',text:t.slice(0,80)});chatLog('You',t)}};
+const CHAT_MS=10000;const cf=document.getElementById('chatf'),cf0=cf.onsubmit;cf.onsubmit=e=>{const t=document.getElementById('chatin').value.trim();cf0(e);try{if(t&&rt.say&&rt.say.text===t.slice(0,80))rt.say.at=now()+CHAT_MS-5000}catch(_){}if(t&&NetMP.peer){const z=NetMP.zk();send({t:'say',text:t.slice(0,80),zk:z});chatLog('You',t,z)}};
 const rtr=R.trick;R.trick=p=>{rtr(p);if(NetMP.peer&&S.tricks.includes(p.k))send({t:'trick',k:p.k})};
 // leaving a visited sphere: drop it
 const trv=R.travel;R.travel=p=>{trv(p);if(NetMP.room)[300,1500,4000].forEach(d=>setTimeout(announce,d));if(p.zone!=='visit'&&S.zones.visit&&S.zone!=='visit'){delete S.zones.visit;S.unlocked.visit=0}};
@@ -97,7 +98,7 @@ const ui5=ui;ui=function(v,p={}){if(v==='mpCreate'){NetMP.create();setTimeout(()
  let h='<h2>👥 Friends</h2>';
  h+=`<div class="row"><div class="grow">Your name: <input id="mn" maxlength="20" value="${(S.player.name||'').replace(/"/g,'')}" placeholder="Caretaker name" style="width:150px"></div>${btn('Save','ui',{v:'mpName'})}</div>`;
  if(!NetMP.room)h+=`<p class="small">Play together! Create a room and send the link or code to friends. You'll see each other's fauna, chat, do tricks together and visit each other's spheres. (Peer-to-peer, no accounts.)</p>${btn('➕ Create Room','ui',{v:'mpCreate'})}<div class="row"><div class="grow"><input id="jc" maxlength="8" placeholder="Room code" style="text-transform:uppercase;width:140px"></div>${btn('Join','ui',{v:'mpJoin'})}</div>`;
- else h+=`<p>${NetMP.isWorld()?(es()?'🌍 Servidor '+NetMP.shard()+' · ':'🌍 Server '+NetMP.shard()+' · ')+NetMP.zonePeers()+(es()?' en tu zona':' in your zone'):'Room: <span class="roomcode">'+NetMP.room+'</span>'} ${NetMP.isHost?'<span class="small">(you host)</span>':''} · <b>${NetMP.status}</b></p>${btn('🔗 Share link','ui',{v:'mpCopy'})} ${btn('Leave room','ui',{v:'mpLeave'})} ${btn('🔄 Find players','ui',{v:'mpFind'})}<h3>Online (${ps.length+1})</h3><div class="row"><div class="grow"><span class="online"></span><b>${me().name}</b> (you) · ${Z(S.zone).name}</div></div>`+ps.map(q=>`<div class="row"><div class="grow"><span class="online"></span><b>${q.name}</b> & ${q.fname} <span class="small">${q.old?'<span title="old">⚠️</span> ':''}(${q.genes&&SPECIES[q.genes.species]?SPECIES[q.genes.species].name:''} Lv ${q.level}) · ${q.zone==='visit'?'visiting':Z(q.zone)?Z(q.zone).name:''}</span></div>${btn('Visit sphere','ui',{v:'mpVisit',id:q.id})}${q.zone!=='visit'&&q.zone!=='home'&&S.unlocked[q.zone]&&q.zone!==S.zone?btn('Go to','travel',{zone:q.zone}):''}</div>`).join('')+(log.length?'<h3>Chat</h3>'+log.slice(-8).map(l=>`<div class="small"><b style="color:#2f8a1a">${l.n}:</b> ${l.t.replace(/</g,'&lt;')}</div>`).join(''):'');
+ else h+=`<p>${NetMP.isWorld()?(es()?'🌍 Servidor '+NetMP.shard()+' · ':'🌍 Server '+NetMP.shard()+' · ')+NetMP.zonePeers()+(es()?' en tu zona':' in your zone'):'Room: <span class="roomcode">'+NetMP.room+'</span>'} ${NetMP.isHost?'<span class="small">(you host)</span>':''} · <b>${NetMP.status}</b></p>${btn('🔗 Share link','ui',{v:'mpCopy'})} ${btn('Leave room','ui',{v:'mpLeave'})} ${btn('🔄 Find players','ui',{v:'mpFind'})}<h3>Online (${ps.length+1})</h3><div class="row"><div class="grow"><span class="online"></span><b>${me().name}</b> (you) · ${Z(S.zone).name}</div></div>`+ps.map(q=>`<div class="row"><div class="grow"><span class="online"></span><b>${q.name}</b> & ${q.fname} <span class="small">${q.old?'<span title="old">⚠️</span> ':''}(${q.genes&&SPECIES[q.genes.species]?SPECIES[q.genes.species].name:''} Lv ${q.level}) · ${q.zone==='visit'?'visiting':Z(q.zone)?Z(q.zone).name:''}</span></div>${btn('Visit sphere','ui',{v:'mpVisit',id:q.id})}${q.zone!=='visit'&&q.zone!=='home'&&S.unlocked[q.zone]&&q.zone!==S.zone?btn('Go to','travel',{zone:q.zone}):''}</div>`).join('')+(NetMP.chatHere().length?'<h3>Chat</h3>'+NetMP.chatHere().slice(-8).map(l=>`<div class="small"><b style="color:#2f8a1a">${l.n}:</b> ${l.t.replace(/</g,'&lt;')}</div>`).join(''):'');
  if(NetMP.isWorld())h+=`<h3>${es()?'Sala privada (opcional)':'Private room (optional)'}</h3>${btn('➕ Create Room','ui',{v:'mpCreate'})}<div class="row"><div class="grow"><input id="jc" maxlength="8" placeholder="Room code" style="text-transform:uppercase;width:140px"></div>${btn('Join','ui',{v:'mpJoin'})}</div>`;
  h+=`<div class="row"><div class="grow">🏝️ Amelia's Faunasphere (guide NPC)</div>${btn('Visit','visit',{who:'Amelia'})}</div>`;open(h)};
 // auto-join from link
