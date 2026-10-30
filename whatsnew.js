@@ -1,10 +1,14 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.2',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.3',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.3',[
+  ['⚔️','Clearer battle feedback: one message per defeated monster with the right name and total Lux, one boss announcement, and the screen only shakes when a monster really hits you.','Batallas más claras: un solo mensaje por monstruo derrotado con su nombre correcto y el Lux total, un solo aviso del jefe, y la pantalla solo tiembla cuando un monstruo te golpea de verdad.'],
+  ['🐾','If your fauna faints on the zap that defeats a monster, the win now still counts (Lux, XP and quest progress).','Si tu fauna se desmaya con el rayo que derrota a un monstruo, la victoria ahora cuenta (Lux, XP y progreso de misión).'],
+  ['📜','Finished quest steps are easy to read again in the quest card.','Los pasos de misión completados vuelven a leerse bien en la tarjeta de misión.']]],
  ['8.3.2',[
   ['🎩','More Spanish: the Faunawear tab, the Collar Store, the Wear and Remove Hat buttons, item types and the Morning Cap gift message.','Más español: la pestaña Ropa de fauna, la Tienda de collares, los botones Ponerse y Quitar gorro, los tipos de objeto y el mensaje del Gorro Mañanero.']]],
  ['8.3.1',[

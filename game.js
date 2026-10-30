@@ -46,7 +46,7 @@ const R={
  adopt({species,name,color}){S.fauna.push(mkFauna({species,color,pattern:'Plain',tail:'Normal',eyes:'Round'},name))},
  zap({oid}){const f=fa(),s=zs(S.zone),o=s.objs.find(o=>o.id===oid),z=Z(S.zone);if(!o)return;
   if(f.energy<3){if(!rt.sleep){rt.sleep=true;toast(f.name+' ran out of energy and is taking a quick nap… 💤');setTimeout(()=>{rt.sleep=false;f.energy=Math.max(f.energy,20);renderHUD()},10000)}return}f.energy=clamp(f.energy-ZAPF*3);rt.beam=now();if(o.hp0==null)Object.defineProperty(o,'hp0',{value:o.hp,writable:true,configurable:true});o.hp=Math.max(0,Math.round((o.hp-(f.level>=10?2:1)*ZAPF)*100)/100);emit('hit',o);
-  if(o.type==='tox'){f.happiness=clamp(f.happiness-enemyDmg(3*ZAPF));emit('hurt');if(f.happiness<=0)return tooSad()}
+  if(o.type==='tox'){f.happiness=clamp(f.happiness-enemyDmg(3*ZAPF));emit('hurt');if(f.happiness<=0){if(o.hp>0)return tooSad();setTimeout(()=>{try{tooSad()}catch(e){}},0)}} // v8.3.3: a killing blow still counts (Lux, XP, quest) before fainting
   if(o.hp>0)return;s.objs.splice(s.objs.indexOf(o),1);
   const tox=o.type==='tox',lux=(tox?12:4)+z.tier*3+Math.floor(Math.random()*4);gainLux(lux);emit('pop',{o,lux});gainXP((tox?30:10)+z.tier*5);
   S.stats.zap[S.zone]=(S.stats.zap[S.zone]||0)+1;if(tox){S.stats.tox++;S.stats.toxZ[S.zone]=(S.stats.toxZ[S.zone]||0)+1}

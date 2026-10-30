@@ -16,7 +16,7 @@ const L=(en,s)=>es()?s:en;
 const snd=n=>{try{if(G.Sound&&Sound.ctx)Sound.sfx(n)}catch(e){}};
 const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
 const lastHp=new WeakMap(),lag=new WeakMap(),flashT=new WeakMap();
-const nums=[];
+const nums=[];let selfHit=0; // v8.3.3: the small happiness drain from your own zap no longer fires the hurt shake/vignette (only real monster hits do)
 // ---------- health bars (drawn in gl.js overlay instead of the heart row) ----------
 G.FS_hpDraw=(c,x,y,o,e)=>{if(o.hid)return true;const h0=Math.max(o.hp0||0,o.hp||0,1),fr=Math.max(0,Math.min(1,(o.hp||0)/h0));
  let lg=lag.get(o);if(lg==null||lg<fr)lg=fr;lg+=(fr-lg)*.08;lag.set(o,lg);lastHp.set(o,o.hp);
@@ -51,9 +51,9 @@ const E0=G.emit;G.emit=function(ev,d){const r=E0.apply(this,arguments);try{
  if(ev==='hit'&&d&&d.type==='tox'){const prev=lastHp.has(d)?lastHp.get(d):(d.hp+1),dm=Math.max(0,+(prev-d.hp).toFixed(2))||1;lastHp.set(d,d.hp);
   const e=objMap.get(d.id),p=(e?e.g.position.clone():objW(d)).add(V3(0,(e&&e.g.userData.hpY||.95)*.85,0));
   num(p,'-'+(+dm.toFixed(1)),d.hp<=0?'#fff35a':'#ffd84a',d.hp<=0);tint(d,WHITE,70);knock(d,d.el===2?.1:.28);
-  snd('hit80');rt.shake=Math.min(rt.shake||0,PH?2:3.5)}
+  snd('hit80');rt.shake=Math.min(rt.shake||0,PH?2:3.5);selfHit=performance.now()}
  else if(ev==='hit'){rt.shake=Math.min(rt.shake||0,PH?1.5:3)}
- if(ev==='hurt'){shake(PH?4:8);vg.classList.remove('on');void vg.offsetWidth;vg.classList.add('on')}
+ if(ev==='hurt'&&performance.now()-selfHit>60){shake(PH?4:8);vg.classList.remove('on');void vg.offsetWidth;vg.classList.add('on')}
  if(ev==='pop'&&d&&d.o&&d.o.type==='tox')defeat(d.o)}catch(e){console.warn('c80',e)}return r};
 try{emit=G.emit}catch(e){}
 function defeat(o){const p=objW(o).add(V3(0,.15,0)),big=o.el===2?2.2:o.el===1?1.5:1;snd(o.el===2?'bossdown80':'defeat80');
@@ -62,7 +62,7 @@ function defeat(o){const p=objW(o).add(V3(0,.15,0)),big=o.el===2?2.2:o.el===1?1.
  burstW(p.clone().add(V3(0,.2,0)),PH?10:18,0x2a2038,.9,{size:.22,decay:.02});
  if(o.el){floatW(p.clone().add(V3(0,1,0)),(o.el===2?'👑 ':'★ ')+L('Defeated!','¡Derrotado!'),'#ffd84a')}
  shake(o.el===2?(PH?6:12):(PH?2:4));
- if(o.el===2){try{const t=(Z(S.zone)||{}).tier|0,b=30+t*10;gainLux(b);toast('👑 '+L('Boss defeated! +','¡Jefe derrotado! +')+b+' Lux')}catch(e){}if(o===bossO)bossO=null}}
+ if(o.el===2){try{const t=(Z(S.zone)||{}).tier|0,b=30+t*10;gainLux(b);G.__boss80b=b}catch(e){}if(o===bossO)bossO=null}}
 // ---------- telegraphs + dodges (events from content24.js) ----------
 const COL={lunge:0xff3b3b,bite:0xff7a3b,spit:0x6fdcff,slam:0xffb020};
 addEventListener('fs80',ev=>{const d=ev.detail||{},o=d.o;try{
@@ -82,7 +82,7 @@ setInterval(()=>{try{if(typeof S==='undefined'||!S.zones||!fa())return;const id=
  const ex=s.objs.find(o=>o.type==='tox'&&o.mon&&o.el===2);if(ex){bossO=ex;return}if(bossO&&!s.objs.includes(bossO))bossO=null;
  const force=/[?&]boss80/.test(location.search);
  if(!tried[id]&&(rNow()>=.5||force)){tried[id]=1;const k=(FSmonKinds(id)||['stalker'])[0];const o=FSspawnMon(id,k,2,null);
-  if(o){bossO=o;snd('boss80');toast('👑 '+FSmonName(o)+' '+L('appeared! Defeat it for bonus Lux.','¡apareció! Derrótalo para ganar Lux extra.'));shake(PH?3:6)}}}catch(e){console.warn('boss80',e)}},2500);
+  if(o){bossO=o;(G.FS_ANN80=G.FS_ANN80||new WeakSet()).add(o);snd('boss80');toast('👑 '+L(FSmonName(o)+' appeared! Defeat it for bonus Lux.','¡Apareció '+FSmonName(o)+'! Derrótalo para ganar Lux extra.'));shake(PH?3:6)}}}catch(e){console.warn('boss80',e)}},2500);
 function drawBossBar(c){const o=bossO;if(!o||S.zones[S.zone].objs.indexOf(o)<0){return}const W=c.canvas.width/Math.min(2,devicePixelRatio||1),w=Math.min(PH?280:420,W*.7),x0=(W-w)/2,y0=PH?178:86;
  const h0=Math.max(o.hp0||o.hp,1),fr=Math.max(0,o.hp/h0);c.save();c.font='900 '+(PH?13:15)+'px "Trebuchet MS",system-ui';c.textAlign='center';c.lineWidth=4;c.strokeStyle='#000b';const nm='👑 '+FSmonName(o);c.strokeText(nm,W/2,y0-6);c.fillStyle='#ffe9a8';c.fillText(nm,W/2,y0-6);
  c.fillStyle='#0b1a10d0';rr(c,x0-3,y0-3,w+6,16,8);c.fill();const g=c.createLinearGradient(x0,0,x0+w,0);g.addColorStop(0,'#b31232');g.addColorStop(1,'#ff6a3a');c.fillStyle=g;if(fr>0){rr(c,x0,y0,Math.max(10,w*fr),10,5);c.fill()}

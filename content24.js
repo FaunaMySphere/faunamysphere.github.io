@@ -12,7 +12,7 @@ window.FS_MON=MON;
 const PRE={elite:['Elite ','Élite '],boss:['Boss ','Jefe ']};
 try{const es=window.I18N_ES||(window.I18N_ES={});for(const k in MON){es[MON[k].en]=MON[k].es;es[PRE.elite[0]+MON[k].en]=MON[k].es+' '+'de élite';es[PRE.boss[0]+MON[k].en]='Jefe '+MON[k].es}
  Object.assign(es,{'appeared!':'¡apareció!','spat at you!':'¡te escupió!','lunged at you!':'¡se abalanzó sobre ti!','rose from the mud!':'¡surgió del lodo!','defeated!':'¡derrotado!'})}catch(e){}
-const tr=s=>{try{return typeof t==='function'?t(s):window.T?window.T(s):s}catch(e){return s}};
+const tr=s=>{try{return typeof t==='function'?t(s):window.T?window.T(s):s}catch(e){return s}};const isES=()=>{try{return String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const nameOf=o=>{const M=MON[o.mon]||{en:'Monster',es:'Monstruo'},es=(window.LANG||'').startsWith('es');if(es){const b=M.es||tr(M.en);return o.el===2?PRE.boss[1]+b:o.el===1?PRE.elite[1]+b:b}return tr((o.el===2?PRE.boss[0]:o.el===1?PRE.elite[0]:'')+M.en)};
 window.FSmonName=nameOf;
 // v6.14 zone assignment table. New worlds: FSmonAssign('zoneid',['spider','stalker'],{count:6}) or add to FS_MON_ZONES before entering.
@@ -88,7 +88,7 @@ function stepTo(s,o,ti,tj){const di=Math.sign(ti-o.i),dj=Math.sign(tj-o.j);for(c
 function tick(){try{if(typeof S==='undefined'||!S.zones||!fa()||S.zone==='home'||S.zone==='visit'||document.hidden)return;const id=S.zone,s=zs(id);tagZone(id);const T=now(),P=rt.pos;
  const act=new Set(s.objs.filter(o=>o.type==='tox'&&o.mon).sort((a,b)=>Math.hypot(a.i-P.i,a.j-P.j)-Math.hypot(b.i-P.i,b.j-P.j)).slice(0,2));
  for(const o of s.objs){if(o.type!=='tox'||!o.mon)continue;const m=MON[o.mon],d=Math.hypot(o.i-P.i,o.j-P.j);
-  if(d<6&&!seen.has(id+o.id)){seen.add(id+o.id);if(!o.hid){toast('⚠️ '+nameOf(o)+' '+tr('appeared!'));play(o.mon,'g')}}
+  if(d<6&&!seen.has(id+o.id)){seen.add(id+o.id);if(!o.hid&&!(window.FS_ANN80&&FS_ANN80.has(o))){toast(isES()?'⚠️ ¡Apareció '+nameOf(o)+'!':'⚠️ '+nameOf(o)+' appeared!');play(o.mon,'g')}}
   if(!act.has(o)||T-(o.nt||0)<m.every*(o.el===2?.8:1))continue;o.nt=T;
   if(V80&&o.el===2&&((CNT.set(o,(CNT.get(o)||0)+1),CNT.get(o))%3===0)&&d<4){tel(s,o,{k:'slam',i:o.i,j:o.j,r:2.3,dur:1000},()=>{o.atk=now();play(o.mon,'a');return Math.hypot(rt.pos.i-o.i,rt.pos.j-o.j)<2.3},m.dmg*1.2)}
   else if(m.beh==='lunge'){if(d<m.range&&d>1.2){const ti=Math.round(P.i),tj=Math.round(P.j);const land=()=>{for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]])if(freeAt(s,ti+a,tj+b)){o.i=ti+a;o.j=tj+b;break}o.atk=now();play('stalker','a')};
@@ -99,7 +99,11 @@ function tick(){try{if(typeof S==='undefined'||!S.zones||!fa()||S.zone==='home'|
  if(T-lastG>7000){lastG=T;const near=s.objs.filter(o=>o.type==='tox'&&o.mon&&!o.hid).sort((a,b)=>Math.hypot(a.i-P.i,a.j-P.j)-Math.hypot(b.i-P.i,b.j-P.j))[0];if(near&&Math.hypot(near.i-P.i,near.j-P.j)<6)play(near.mon,'g')}}catch(e){console.warn('mon',e)}}
 setInterval(tick,300);
 // hidden lurkers can't be zapped until they rise; elites pay more
-const z0=R.zap;R.zap=function(p){const s=zs(S.zone),o=s.objs.find(x=>x.id===p.oid);if(o&&o.hid){o.hid=0;o.rise=now()}const r=z0.call(this,p);
- if(o&&o.mon&&!s.objs.includes(o)){toast('✨ '+nameOf(o)+' '+tr('defeated!'));if(o.el)try{gainLux(o.el===2?60:20)}catch(e){}}return r};
+const z0=R.zap;R.zap=function(p){const s=zs(S.zone),o=s.objs.find(x=>x.id===p.oid);if(o&&o.hid){o.hid=0;o.rise=now()}// v8.3.3: one toast per monster kill (was "Zapped 1-eyed Gassy! +21 Lux" + "Bramble Beast defeated!" with two different names)
+ let r,zt=null;const t0=window.toast;if(o&&o.mon){window.toast=function(m){if(zt===null&&typeof m==='string'&&m.indexOf('Zapped ')===0){zt=m;return}return t0.apply(this,arguments)}}
+ try{r=z0.call(this,p)}finally{if(o&&o.mon)window.toast=t0}
+ if(o&&o.mon&&!s.objs.includes(o)){const bon=o.el?(o.el===2?60:20):0;if(bon)try{gainLux(bon)}catch(e){}
+  const b80=o.el===2?(window.__boss80b|0):0;window.__boss80b=0;const mm=zt&&zt.match(/! \+(\d+) Lux(.*)$/);const lux=(mm?+mm[1]:0)+bon+b80;
+  toast((o.el===2?'👑 ':'✨ ')+(isES()?'¡Derrotaste a '+nameOf(o)+'!':nameOf(o)+' defeated!')+(lux?' +'+lux+' Lux':'')+(mm?mm[2]:''))}else if(zt)t0(zt);return r};
 window.FSmonSpawn=(mon,el)=>spawnMon(S.zone,mon,el|0,null);window.FSmonFill=fill;window.FSmonKinds=kindsFor;window.FSmonTarget=TARGET;
 })();
