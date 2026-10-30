@@ -1,10 +1,13 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.3',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.4',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.4',[
+  ['📱','Smoother on phones: the scenery in each world is now drawn in fewer batches (up to ~14% fewer draw calls), and it looks exactly the same.','Más fluido en teléfonos: el paisaje de cada mundo se dibuja en menos tandas (hasta ~14% menos llamadas de dibujo) y se ve exactamente igual.'],
+  ['👥','Friends online: if a chat relay is down, the game now waits longer between retries and pauses while you are offline, saving battery and data. Friend names from other players are cleaned up before they show.','Amigos en línea: si un servidor de chat no responde, el juego espera más entre reintentos y se pausa mientras no tienes conexión, para ahorrar batería y datos. Los nombres de otros jugadores se limpian antes de mostrarse.']]],
  ['8.3.3',[
   ['⚔️','Clearer battle feedback: one message per defeated monster with the right name and total Lux, one boss announcement, and the screen only shakes when a monster really hits you.','Batallas más claras: un solo mensaje por monstruo derrotado con su nombre correcto y el Lux total, un solo aviso del jefe, y la pantalla solo tiembla cuando un monstruo te golpea de verdad.'],
   ['🐾','If your fauna faints on the zap that defeats a monster, the win now still counts (Lux, XP and quest progress).','Si tu fauna se desmaya con el rayo que derrota a un monstruo, la victoria ahora cuenta (Lux, XP y progreso de misión).'],

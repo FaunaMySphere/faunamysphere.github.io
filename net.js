@@ -21,7 +21,7 @@ let SQ=0;const seen=new Set();function send(m){m.id=m.id||NetMP.myId;m.sq=m.sq||
 const RESEND={giftResp:1,pvpAsk:1,pvpAns:1,pvpGo:1,hvReq:1,hvNo:1};
 NetMP.send=send;NetMP._rx=m=>handle(m);
 function es(){return(window.I18N&&I18N.lang==='es')||window.LANG==='es'}
-let updHint=0;function fixPeer(m){try{if(m.genes&&typeof m.genes==='object'){if(!SPECIES[m.genes.species]){m.oddSp=m.genes.species;m.genes={...m.genes,species:Object.keys(SPECIES)[0]}}}
+let updHint=0;function fixPeer(m){try{const cl=v=>String(v==null?'':v).replace(/[<>&"`]/g,'').slice(0,20);if('name' in m)m.name=cl(m.name)||'Caretaker';if('fname' in m)m.fname=cl(m.fname);if('level' in m)m.level=Math.max(1,Math.min(999,m.level|0));if('zone' in m)m.zone=String(m.zone).replace(/[^\w:-]/g,'').slice(0,40);if(m.genes&&typeof m.genes==='object'){if(!SPECIES[m.genes.species]){m.oddSp=m.genes.species;m.genes={...m.genes,species:Object.keys(SPECIES)[0]}}}
  m.i=+m.i||0;m.j=+m.j||0;m.name=String(m.name||'Friend').slice(0,20);m.fname=String(m.fname||'');if(typeof m.zk!=='string')m.zk=m.zone==='home'?'home:'+m.id:String(m.zone||'');
  if(m.zk&&m.zk.indexOf('home:')!==0)m.zk=m.zk.trim().toLowerCase();
  const pv=+m.v||1;if(pv>NET_V&&!updHint){updHint=1;toast(es()?'🔄 Un amigo tiene una versión más nueva. Por favor actualiza (recarga la app).':'🔄 A friend has a newer version. Please update (reload the app).')}
@@ -42,6 +42,7 @@ function handle(m){if(m.id===NetMP.myId)return;if(m.sq){const k=m.id+':'+m.sq;if
 
 // ---- Relay fallback (works when WebRTC/UDP is blocked): tiny ephemeral messages over public Nostr relays (wss/443) ----
 const RELAYS=['wss://relay.damus.io','wss://nos.lol','wss://relay.primal.net'],KIND=20427;
+const RLF={},RLN={};// v8.3.4: relay reconnect backs off (4 s → 60 s) and waits for the network while offline; peer names/levels/zones are sanitized (fixPeer)
 const RL=NetMP.relay={socks:[],topic:null,sk:null,up:0,lastSt:0,pend:null};
 function relayStart(code){relayStop();if(!window.NostrTools)return;RL.topic=PFX+code;RL.sk=RL.sk||NostrTools.generateSecretKey();
  for(const u of RELAYS)relayOne(u,code)}
@@ -49,7 +50,7 @@ function relayOne(u,code){let ws;try{ws=new WebSocket(u)}catch(_){return}ws._u=u
   ws.onopen=()=>{ws._sub=NetMP.zk();ws.send(JSON.stringify(['REQ','fs'+code,{kinds:[KIND],'#t':[RL.topic],'#z':[ws._sub,'all'],since:Math.floor(Date.now()/1000)-60}]));ws._open=1;RL.up++;if(NetMP.status!=='online'){NetMP.status='online';toast('🟢 Connected to room '+code+'!')}tick(true)};
   ws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}if(d[0]!=='EVENT'||!d[2])return;let m;try{m=JSON.parse(d[2].content)}catch(_){return}
    if(!m||typeof m!=='object'||m.id===NetMP.myId)return;if(!m.to||m.to===NetMP.myId)handle(m)};
-  ws.onclose=()=>{RL.up=Math.max(0,RL.up-(ws._open?1:0));const i=RL.socks.indexOf(ws);if(i>=0)RL.socks.splice(i,1);if(RL.topic===PFX+code)setTimeout(()=>{if(RL.topic===PFX+code)relayOne(u,code)},4000)};ws.onerror=()=>{}}
+  ws.onclose=()=>{RL.up=Math.max(0,RL.up-(ws._open?1:0));const i=RL.socks.indexOf(ws);if(i>=0)RL.socks.splice(i,1);if(RL.topic===PFX+code){const f=RLF[u]=ws._open?0:(RLF[u]||0)+1;const go=()=>{if(RL.topic!==PFX+code||RL.socks.some(w=>w._u===u))return;if(navigator.onLine===false){addEventListener('online',()=>setTimeout(go,500+Math.random()*1500),{once:true});return}relayOne(u,code)};const dl=Math.min(60000,4000*Math.pow(2,Math.min(f,4)));RLN[u]=Date.now()+dl;setTimeout(go,dl)}};ws.onerror=()=>{}}
 function relayStop(){RL.topic=null;for(const w of RL.socks)try{w.close()}catch(_){}RL.socks=[];RL.up=0}
 function relayRaw(m){if(!RL.topic||!RL.up)return;let ev;try{ev=NostrTools.finalizeEvent({kind:KIND,created_at:Math.floor(Date.now()/1000),tags:[['t',RL.topic],['z',m._z||NetMP.zk()]],content:JSON.stringify(m)},RL.sk)}catch(_){return}
  const f=JSON.stringify(['EVENT',ev]);for(const w of RL.socks)if(w.readyState===1)try{w.send(f)}catch(_){}}
@@ -106,7 +107,7 @@ const ui5=ui;ui=function(v,p={}){if(v==='mpCreate'){NetMP.create();setTimeout(()
 // ---- v6.13.1: heal after backgrounding / network change, peer counter, Find players ----
 let hidAt=0,lastHeal=0;
 function heal(hard){if(!NetMP.room)return;const n=Date.now();if(!hard&&n-lastHeal<3000)return;lastHeal=n;const code=NetMP.room;
- try{if(hard||RL.topic!==PFX+code){RL.topic=null;for(const w of RL.socks)try{w.onclose=null;w.close()}catch(_){}RL.socks=[];RL.up=0;relayStart(code)}else{const have=new Set(RL.socks.map(w=>w._u));for(const u of RELAYS)if(!have.has(u))relayOne(u,code)}}catch(_){}
+ try{if(hard||RL.topic!==PFX+code){RL.topic=null;for(const w of RL.socks)try{w.onclose=null;w.close()}catch(_){}RL.socks=[];RL.up=0;relayStart(code)}else{const have=new Set(RL.socks.map(w=>w._u));for(const u of RELAYS)if(!have.has(u)&&!((RLN[u]||0)>n))relayOne(u,code)}}catch(_){}
  try{const pr=NetMP.peer,hc=NetMP.hostConn;if(hard||!pr||pr.destroyed||(!NetMP.isHost&&!(hc&&hc.open)&&NetMP.status!=='connecting')){const keep=new Map(NetMP.peers);NetMP._quiet=1;try{start(code,'auto')}finally{NetMP._quiet=0}for(const[k,v]of keep)if(!NetMP.peers.has(k))NetMP.peers.set(k,v)}else if(pr.disconnected)pr.reconnect()}catch(_){}
  [300,1200,3000,6000].forEach(d=>setTimeout(announce,d))}
 NetMP.heal=heal;NetMP.findPlayers=()=>{heal(true);toast(es()?'🔄 Buscando jugadores…':'🔄 Finding players…')};

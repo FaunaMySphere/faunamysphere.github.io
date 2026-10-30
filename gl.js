@@ -5,6 +5,7 @@ import {RenderPass} from './vendor/three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from './vendor/three/addons/postprocessing/UnrealBloomPass.js';
 import {ShaderPass} from './vendor/three/addons/postprocessing/ShaderPass.js';
 import {OutputPass} from './vendor/three/addons/postprocessing/OutputPass.js';
+import {mergeGeometries} from './vendor/three/addons/utils/BufferGeometryUtils.js';
 
 const G=window, QS=new URLSearchParams(location.search);
 // ---------- quality ----------
@@ -510,6 +511,38 @@ const hoverTile=mesh(new THREE.PlaneGeometry(.96,.96),new THREE.MeshBasicMateria
 
 function objVisualState(o){if(o.type==='treetree')o.count=S.home.treat.count;if(o.type==='totem')o.ready=now()-S.home.totem.last>=3e5;if(o.type==='nest')o.egg=!!S.home.nest.egg;
  if(o.type==='project'){const p=S.projects[S.zone];if(p){o.prog=p.prog;o.need=p.need}}if(o.type==='goal')o.alert=GOALS.some(g=>g.zone===S.zone&&!S.done[g.id]&&g.check(S))}
+// v8.3.4: freed GPU geometry/textures of merged-away meshes only when nothing live still uses them (deferred, one scene walk per batch).
+const FREEQ=[];function freeLater(g){if(g)FREEQ.push(g)}
+// v8.3.4 phone perf: merge static world dressing (same material, never moves) into one mesh per material -> far fewer draw calls.
+// Only plain opaque meshes whose transform/visibility stayed unchanged for a few seconds; same materials, so the look is identical. ?nomerge disables.
+const MRG={isl:null,snap:null,at:0,done:null,n:0};G.FSmerge=MRG;const MOK=new Set(['noToon','hlift','v77']);
+const udOK=o=>{for(const k in o.userData)if(!MOK.has(k))return false;return true};
+function mCands(isl){const out=[];const walk=(o,ok)=>{for(const c of o.children){if(!c.visible)continue;const good=ok&&udOK(c)&&c.onBeforeRender===THREE.Object3D.prototype.onBeforeRender;
+  if(c.isMesh&&!c.isInstancedMesh&&!c.isSkinnedMesh&&good&&c.children.length===0){const m=c.material,g=c.geometry;
+   if(m&&!Array.isArray(m)&&!m.transparent&&m.opacity>=1&&!m.isShaderMaterial&&!/uTime|begin_vertex|transformed/.test(String(m.onBeforeCompile))&&g&&g.isBufferGeometry&&g.attributes.position&&!g.morphAttributes.position)out.push(c)}
+  if(c.children.length&&!c.isMesh)walk(c,good&&!c.isInstancedMesh)}};walk(isl,true);return out}
+function mTry(force){try{if(QS.has('nomerge')&&!force)return;const isl=island;if(!isl||!builtZone||builtZone==='home'||builtZone==='visit')return;if(force){MRG.isl=isl;MRG.at=performance.now()-5000}
+ if(MRG.isl!==isl){MRG.isl=isl;MRG.at=performance.now();MRG.snap=MRG.last=null;MRG.n=0;MRG.passes=0;MRG.rej=null;return}const age=performance.now()-MRG.at;if(age<3000||age>40000)return;
+ isl.updateMatrixWorld(true);const c=mCands(isl),sig=c.map(o=>o.id+':'+o.matrixWorld.elements.map(v=>v.toFixed(4)).join(',')+':'+o.material.uuid).join('|')+'#'+isl.children.length;
+ if(!force&&MRG.snap!==sig){MRG.snap=sig;return}if(!force&&MRG.last===sig)return;
+ const inv=new THREE.Matrix4().copy(isl.matrixWorld).invert(),bins=new Map();
+ for(const o of c){const g=o.geometry,m4=new THREE.Matrix4().multiplyMatrices(inv,o.matrixWorld);if(m4.determinant()<=0)continue;
+  const k=o.material.uuid+'|'+(o.castShadow?1:0)+(o.receiveShadow?1:0)+'|'+o.renderOrder+'|'+o.layers.mask+'|'+Object.keys(o.userData).sort().join(',');
+  let b=bins.get(k);if(!b)bins.set(k,b=[]);b.push([o,m4])}
+ const trash=new THREE.Group();let before=0,after=0;
+ for(const[,b0]of bins){if(b0.length<2)continue;const M=b0[0][0].material,needUV=!!(M.map||M.normalMap||M.roughnessMap||M.metalnessMap||M.aoMap||M.emissiveMap||M.alphaMap||M.bumpMap||M.lightMap||M.displacementMap),needC=!!M.vertexColors;
+  const b=b0.filter(([o])=>{const A=o.geometry.attributes;if(!A.normal||(needUV&&!A.uv)||(needC&&!A.color))return false;for(const k in A)if(A[k].isInterleavedBufferAttribute)return false;return true});if(b.length<2){if(b0.length>4)MRG.rej=(MRG.rej||[]).concat([[b0.length,'filt',b.length]]);continue}
+  const keep=['position','normal'].concat(needUV?['uv']:[],needC?['color']:[]);const fmt=k=>b.map(([o])=>{const x=o.geometry.attributes[k];return x.itemSize+(x.normalized?'n':'')+x.array.constructor.name});if(keep.some(k=>new Set(fmt(k)).size>1)){MRG.rej=(MRG.rej||[]).concat([[b.length,'fmt',keep.map(k=>[...new Set(fmt(k))].join('/')).join(' ')]]);continue}
+  const anyN=b.some(([o])=>!o.geometry.index);let mg=null;try{mg=mergeGeometries(b.map(([o,m4])=>{let g=new THREE.BufferGeometry();for(const k of keep)g.setAttribute(k,o.geometry.attributes[k]);if(o.geometry.index)g.setIndex(o.geometry.index);g=anyN&&g.index?g.toNonIndexed():g.clone();g.applyMatrix4(m4);return g}),false)}catch(e){mg=null}
+  if(!mg){MRG.rej=(MRG.rej||[]).concat([[b.length,'merge']]);continue}mg.computeBoundingSphere();mg.computeBoundingBox();const o0=b[0][0],mm=new THREE.Mesh(mg,o0.material);mm.castShadow=o0.castShadow;mm.receiveShadow=o0.receiveShadow;mm.renderOrder=o0.renderOrder;mm.layers.mask=o0.layers.mask;
+  Object.assign(mm.userData,o0.userData,{merged83:b.length});mm.matrixAutoUpdate=false;mm.updateMatrix();isl.add(mm);for(const[o]of b){o.parent.remove(o);trash.add(o)}before+=b.length;after++}
+ MRG.n+=before-after;MRG.passes=(MRG.passes||0)+1;freeLater(trash);isl.updateMatrixWorld(true);MRG.last=MRG.snap=mCands(isl).map(o=>o.id+':'+o.matrixWorld.elements.map(v=>v.toFixed(4)).join(',')+':'+o.material.uuid).join('|')+'#'+isl.children.length}catch(e){console.warn('merge83',e)}}
+MRG.cands=()=>mCands(island);MRG.force=()=>mTry(true);setInterval(mTry,1000);
+
+setInterval(()=>{if(!FREEQ.length)return;try{const q=FREEQ.splice(0);const liveG=new Set(),liveT=new Set();const tx=m=>{if(!m)return;for(const k in m){const v=m[k];if(v&&v.isTexture)liveT.add(v)}};
+ scene.traverse(o=>{if(o.geometry)liveG.add(o.geometry);const m=o.material;if(m){if(Array.isArray(m))m.forEach(tx);else tx(m)}});
+ const dg=new Set(),dt=new Set();for(const g of q){if(g.parent)continue;g.traverse(o=>{if(o.geometry&&!liveG.has(o.geometry))dg.add(o.geometry);const m=o.material;(Array.isArray(m)?m:[m]).forEach(mm=>{if(!mm)return;for(const k in mm){const v=mm[k];if(v&&v.isTexture&&!liveT.has(v)&&v.image&&!(typeof ImageBitmap!=='undefined'&&v.image instanceof ImageBitmap))dt.add(v)}})})}
+ dg.forEach(x=>x.dispose());dt.forEach(x=>x.dispose())}catch(e){console.warn('free833',e)}},4000);
 function syncObjs(){const s=zs(S.zone),seen=new Set();
  for(const o of s.objs){seen.add(o.id);let e=objMap.get(o.id);const key=o.type+(o.item||'');
   if(!e||e.key!==key){if(e)scene.remove(e.g);const g=shadowify((B[o.type]||B.rock)(o));g.rotation.y+=(o.type==='gate'||o.type==='house'?0:(hsh(o.i,o.j,2)-.5)*.6);
