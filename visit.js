@@ -50,7 +50,7 @@ NetMP.visit=V.request;
 function toJSON(){const o=Object.assign({},this);delete o.toJSON;const r=V.real;if(!r)return o;o.home=r.home;o.zones=Object.assign({},this.zones,{home:r.zh});o.fauna=r.fauna;o.active=r.active;o.zone='home';return o}
 function apply(id,s,name){const first=!V.on;V.pend=null;
  if(first){try{if(window.FSarr&&FSarr.on)FSarr.setOn(false)}catch(_){}rt.decor=null;rt.paint=null;V.real={home:S.home,zh:zs('home'),fauna:S.fauna,active:S.active};Object.defineProperty(S,'toJSON',{value:toJSON,configurable:true,writable:true,enumerable:false})}
- const own=V.real.fauna[V.real.active];S.home=Object.assign({decor:[],paint:{}},s.h);S.zones.home=s.z;S.fauna=[own].concat(s.f);S.active=0;
+ const own=V.real.fauna[V.real.active];S.home=Object.assign({decor:[],paint:{}},s.h);{const H=S.home,o=x=>x&&typeof x==='object'&&!Array.isArray(x),n=x=>typeof x==='number'&&isFinite(x);if(!o(H.paint))H.paint={};if(!o(H.nest))H.nest={egg:null,inc:null,at:0};if(!o(H.treat)||!n(H.treat.count)||!n(H.treat.last))H.treat={count:0,last:now()};if(!o(H.totem)||!n(H.totem.last))H.totem={last:now()}}S.zones.home=s.z;S.fauna=[own].concat(s.f);S.active=0;
  V.on=true;V.owner=id;V.name=name;V.offline=false;
  if(first){if(S.zone!=='home'){S.zone='home'}const n=s.z.tiles.length,c=(n-1)/2;rt.pos={i:c,j:c+1.5};rt.tgt=null;try{Sound.sfx('gate')}catch(_){}toast('🏠 '+T('Visiting ','Visitando la casa de ')+esc(name)+T("'s home",''))}
  try{G.rebuildIsland&&G.rebuildIsland()}catch(_){}banner();NetMP.announce&&NetMP.announce()}

@@ -1,10 +1,13 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.1.1',K='fs_seen_ver';
+const VER='8.1.2',K='fs_seen_ver';
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.1.2',[
+  ['🏊','Visiting a friend? Your fauna can now swim in their pool! Tap the pool (or the 🛁 Bathe button when close). Your friend\'s home is not changed.','¿Visitas a un amigo? ¡Ahora tu fauna puede nadar en su piscina! Toca la piscina (o el botón 🛁 Bañar cuando estés cerca). La casa de tu amigo no cambia.'],
+  ['🛠️','Fixed a rare freeze when visiting some friends\' homes.','Arreglamos un congelamiento poco común al visitar la casa de algunos amigos.']]],
  ['8.1.1',[
   ['🖼️','Bigger game view on iPhone and Android: the top bar is now see-through, the bottom controls are slimmer, and the 3D view always fits the screen (no more stretched or squashed view after rotating or when the browser bars move).','Vista del juego más grande en iPhone y Android: la barra de arriba ahora es transparente, los controles de abajo son más delgados y la vista 3D siempre se ajusta a la pantalla (ya no se estira ni se aplasta al girar o cuando se mueven las barras del navegador).'],
   ['💬','Chat is now local: you only see messages from players in the same place as you (the same home or the same world). When you move, the old place\'s messages go away.','El chat ahora es local: solo ves mensajes de jugadores que están en el mismo lugar que tú (la misma casa o el mismo mundo). Al moverte, los mensajes del lugar anterior desaparecen.'],

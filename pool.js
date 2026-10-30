@@ -51,10 +51,10 @@ function finish(){const f=B.f;f.bathT=Date.now();f.happiness=Math.min(100,(f.hap
  try{toast(es()?'✨ ¡'+f.name+' está limpio y feliz! +20 felicidad':'✨ '+f.name+' is squeaky clean! +20 happiness')}catch(e){}try{save()}catch(e){}try{if(G.ui&&cur)ui(cur.v,cur)}catch(e){}B=null}
 function chirp(){try{Sound.noise(.5,.12,1800,.01,'bandpass');Sound.tone(520,.12,'sine',.08,.01,780);setTimeout(()=>Sound.tone(660,.12,'sine',.07,.01,990),140)}catch(e){}}
 function hookInteract(){if(typeof G.interact!=='function')return setTimeout(hookInteract,300);const i0=G.interact;G.interact=function(o){if(!o||o.type!=='pool')return i0.apply(this,arguments);
- if(S.zone!=='home'||(G.FSVisit&&FSVisit.on)){toast(es()?'👀 Solo mirar: esta piscina es de tu amigo.':'👀 View only: this is your friend\'s pool.');return}
+ if(S.zone!=='home'){toast(es()?'👀 Solo mirar.':'👀 View only.');return}
  if(G.FSarr&&FSarr.on)return i0.apply(this,arguments);if(B)return;rt.tgtObj=o;try{Sound.sfx('click')}catch(e){}walkTo(o,()=>bathe(o))};try{interact=G.interact}catch(e){}}hookInteract();
 // Bathe button when near a pool
-let bb=null;function near(){if(G.FSVisit&&FSVisit.on)return null;if(S.zone!=='home'||!rt||!rt.pos)return null;const s=zs('home');let best=null;for(const o of s.objs)if(o.type==='pool'&&Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<1.8)best=o;return best}
+let bb=null;function near(){if(S.zone!=='home'||!rt||!rt.pos)return null;const s=zs('home');let best=null;for(const o of s.objs)if(o.type==='pool'&&Math.hypot(o.i-rt.pos.i,o.j-rt.pos.j)<1.8)best=o;return best}
 setInterval(()=>{try{const o=(!B&&!(G.FSarr&&FSarr.on)&&typeof S!=='undefined')?near():null;if(!bb){bb=document.createElement('button');bb.id='bathebtn';bb.style.cssText='position:fixed;left:50%;bottom:205px;transform:translateX(-50%);z-index:40;border:3px solid #fff;border-radius:16px;background:#2aa6d8;color:#fff;font:800 16px inherit;padding:8px 16px;box-shadow:0 3px 0 #0004;display:none';
  bb.onclick=e=>{e.stopPropagation();if(bb.dataset.k==='new'){openPool();return}const p=near();if(p)bathe(p)};document.body.appendChild(bb)}const hp=!o&&!B&&S.zone==='home'&&!(G.FSVisit&&FSVisit.on)&&!(G.FSarr&&FSarr.on)&&!document.getElementById('buildm')&&!zs('home').objs.some(x=>x.type==='pool')&&!(typeof MB!=='undefined'&&MB&&MB.offsetParent);bb.dataset.k=o?'bathe':hp?'new':'';bb.textContent=o?'🛁 '+t('Bathe'):'🛁 '+t('New: Pool!');bb.style.display=(o||hp)?'block':'none'}catch(e){}},400);
 // per-frame: water shimmer + bathing animation (called from gl.js after animFauna)
