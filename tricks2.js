@@ -28,8 +28,8 @@ async function render(k){const s=SONG[k],sr=22050,e=60/s.bpm/2,steps=64,len=e*st
 let pre=false;function prerender(){if(pre||!window.OfflineAudioContext)return;pre=true;let i=0;const nx=()=>{if(i<DANCES.length)render(DANCES[i++]).then(()=>setTimeout(nx,150)).catch(()=>{})};setTimeout(nx,500)}
 function stopSong(){if(!cur)return;const c=Sound.ctx,x=cur;cur=null;try{x.g.gain.setTargetAtTime(0,c.currentTime,.25);setTimeout(()=>{try{x.src.stop()}catch(e){}},1200)}catch(e){}duck(false)}
 function playSong(k,vol,who){if(cur&&cur.k===k&&cur.who===who)return;stopSong();const c=Sound.ctx;if(!c||Sound.muted||!BUF[k])return;
- const src=c.createBufferSource(),g=c.createGain();src.buffer=BUF[k];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(vol,c.currentTime+.3);src.connect(g);g.connect(Sound.master);src.start();cur={k,src,g,who,t0:c.currentTime};duck(true)}
-function duck(on){try{if(Sound.mus&&Sound.mus.gain)Sound.mus.gain.setTargetAtTime(on?.12:1,Sound.ctx.currentTime,.3)}catch(e){}}
+ const src=c.createBufferSource(),g=c.createGain();src.buffer=BUF[k];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);vol*=(Sound.getVol?Sound.getVol('mus'):1);g.gain.linearRampToValueAtTime(vol,c.currentTime+.3);src.connect(g);g.connect(Sound.master);src.start();cur={k,src,g,who,t0:c.currentTime};duck(true)}// v8.3.7: dance songs follow the Music volume
+function duck(on){try{if(Sound.mus&&Sound.mus.gain){const base=.5*(Sound.getVol?Sound.getVol('mus'):1);Sound.mus.gain.setTargetAtTime(on?base*.24:base,Sound.ctx.currentTime,.3)}}catch(e){}}// v8.3.7: after a dance song music came back at 1 (2× the normal level, ignoring the Music volume slider)
 // sound effects per trick
 function sfx(k){const c=Sound.ctx;if(!c||Sound.muted)return;const T=(f,d,w,v,at,sl)=>Sound.tone(f,d,w,v,at,sl);
  ({greet:()=>{T(660,.12,'sine',.12,0,1.3);T(880,.14,'sine',.1,.13,1.2)},play:()=>{T(500,.08,'square',.06,0,1.6);T(800,.08,'square',.06,.1,1.6);T(1000,.12,'triangle',.08,.2,1.4)},

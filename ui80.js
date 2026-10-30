@@ -21,8 +21,8 @@ document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.c
 // Sound panel: the speaker button now opens Sound settings (music / effects volume + a big mute toggle) instead of muting at once
 const mute=document.getElementById('mute');
 if(mute){mute.title=L('Sound settings','Ajustes de sonido');mute.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();try{Sound.init();Sound.sfx('click')}catch(_){}showVol()},true)}
-function row(k,ic,lab){const v=Math.round((window.Sound&&Sound.getVol?Sound.getVol(k):1)*100);return `<label>${ic}<span><span style="display:block;margin-bottom:6px">${lab}</span><input type="range" min="0" max="100" step="1" value="${v}" data-k="${k}" style="--p:${v}%" aria-label="${lab}"></span><b>${v}%</b></label>`}
-function showVol(){const muted=window.Sound&&Sound.muted;
+function row(k,ic,lab){const v=Math.round((typeof Sound!=='undefined'&&Sound.getVol?Sound.getVol(k):1)*100);return `<label>${ic}<span><span style="display:block;margin-bottom:6px">${lab}</span><input type="range" min="0" max="100" step="1" value="${v}" data-k="${k}" style="--p:${v}%" aria-label="${lab}"></span><b>${v}%</b></label>`}
+function showVol(){const muted=typeof Sound!=='undefined'&&Sound.muted;// v8.3.7: Sound is a top-level const (not on window), so the panel always showed 100% and 'Sound is on'
  open(`<h2>🎚 ${L('Sound','Sonido')}</h2><div class="v80vol">${row('mus','🎵',L('Music','Música'))}${row('fx','🔔',L('Effects','Efectos'))}</div>
   <p style="margin:14px 2px 6px;opacity:.9">${L('Music changes with each world and grows brighter as you clear pollution.','La música cambia en cada mundo y se vuelve más alegre al limpiar la contaminación.')}</p>
   <button class="btn" id="v80mute">${muted?L('🔇 Sound is off — turn on','🔇 Sonido apagado — activar'):L('🔊 Sound is on — mute','🔊 Sonido activado — silenciar')}</button> <button class="btn" id="v80test">${L('▶ Test','▶ Probar')}</button>`);

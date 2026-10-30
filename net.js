@@ -48,7 +48,7 @@ const RL=NetMP.relay={socks:[],topic:null,sk:null,up:0,lastSt:0,pend:null};
 function relayStart(code){relayStop();if(!window.NostrTools)return;RL.topic=PFX+code;RL.sk=RL.sk||NostrTools.generateSecretKey();
  for(const u of RELAYS)relayOne(u,code)}
 function relayOne(u,code){let ws;try{ws=new WebSocket(u)}catch(_){return}ws._u=u;RL.socks.push(ws);
-  ws.onopen=()=>{ws._sub=NetMP.zk();ws.send(JSON.stringify(['REQ','fs'+code,{kinds:[KIND],'#t':[RL.topic],'#z':[ws._sub,'all'],since:Math.floor(Date.now()/1000)-60}]));ws._open=1;RL.up++;if(NetMP.status!=='online'){NetMP.status='online';toast('🟢 Connected to room '+code+'!')}tick(true)};
+  ws.onopen=()=>{ws._sub=NetMP.zk();ws.send(JSON.stringify(['REQ','fs'+code,{kinds:[KIND],'#t':[RL.topic],'#z':[ws._sub,'all'],since:Math.floor(Date.now()/1000)-60}]));ws._open=1;RL.up++;if(NetMP.status!=='online'){NetMP.status='online';toast(window.LANG==='es'?'🟢 ¡Conectado a la sala '+code+'!':'🟢 Connected to room '+code+'!')}tick(true)};
   ws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}if(d[0]!=='EVENT'||!d[2])return;let m;try{m=JSON.parse(d[2].content)}catch(_){return}
    if(!m||typeof m!=='object'||m.id===NetMP.myId)return;if(!m.to||m.to===NetMP.myId)handle(m)};
   ws.onclose=()=>{RL.up=Math.max(0,RL.up-(ws._open?1:0));const i=RL.socks.indexOf(ws);if(i>=0)RL.socks.splice(i,1);if(RL.topic===PFX+code){const f=RLF[u]=ws._open?0:(RLF[u]||0)+1;const go=()=>{if(RL.topic!==PFX+code||RL.socks.some(w=>w._u===u))return;if(navigator.onLine===false){addEventListener('online',()=>setTimeout(go,500+Math.random()*1500),{once:true});return}relayOne(u,code)};const dl=Math.min(60000,4000*Math.pow(2,Math.min(f,4)));RLN[u]=Date.now()+dl;setTimeout(go,dl)}};ws.onerror=()=>{}}

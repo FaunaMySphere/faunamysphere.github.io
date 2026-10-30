@@ -71,7 +71,7 @@ const SND={
  lurker:{g:()=>{Sound.noise(.8,.14,120,0,'lowpass',null,null,6);Sound.tone(45,.8,'sine',.1,0,-10)},a:()=>{Sound.noise(.4,.2,400,0,'bandpass',null,null,3);Sound.tone(90,.4,'sawtooth',.08,0,-50)}},
  scorpion:{g:()=>{for(let k=0;k<5;k++)Sound.noise(.04,.1,3000,k*.06,'bandpass',null,null,8)},a:()=>{Sound.noise(.1,.2,5000,0,'highpass');Sound.tone(600,.12,'square',.05,0,-400)}},
  spider:{g:()=>{for(let k=0;k<6;k++)Sound.noise(.03,.07,6000,k*.04,'highpass')},a:()=>{Sound.noise(.12,.15,3500,0,'bandpass',null,null,5)}}};
-const play=(k,w)=>{try{if(window.Sound&&Sound.ctx&&!Sound.muted)SND[k][w]()}catch(e){}};
+const play=(k,w)=>{try{if(typeof Sound!=='undefined'&&Sound.ctx&&!Sound.muted)SND[k][w]()}catch(e){}};// v8.3.7: window.Sound is undefined (top-level const) so these never played
 // ---- behaviour ----
 const seen=new Set();let lastG=0;
 // v8.3.6: two monsters of the same kind that come into range on the same tick used to toast '… appeared!' twice in the same millisecond → one toast per kind per tick ('Bramble Beast ×2 appeared!'), one growl

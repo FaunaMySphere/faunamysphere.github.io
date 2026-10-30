@@ -1,10 +1,11 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.6',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.7',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.7',[['🐣 The hatch message and the "egg hatched" card now name the species that really hatched','🐣 El aviso de eclosión y la tarjeta de "huevo eclosionado" ahora muestran la especie que nació de verdad'],['🎚 The Sound panel now shows your saved volumes and the right mute state','🎚 El panel de Sonido ahora muestra tus volúmenes guardados y el estado de silencio correcto'],['🎵 Music comes back at your volume after a dance song, and dance songs follow the Music slider','🎵 La música vuelve a tu volumen después de una canción de baile, y las canciones de baile siguen el control de Música'],['🇪🇸 Spanish fixes for feeding, hatching, faunawear and the fauna list','🇪🇸 Correcciones en español al alimentar, eclosionar, en la faunarropa y en la lista de fauna']]],
  ['8.3.6',[
   ['🛠️','Smoother long sessions on phones: worlds you leave now free their 3D shapes, so memory no longer keeps growing as you travel between worlds.','Sesiones largas más fluidas en teléfonos: los mundos que dejas liberan sus formas 3D, así la memoria ya no sigue creciendo al viajar entre mundos.'],
   ['🏗️','Build fixes: Undo now brings back a house you stored or recolored, the Market shop no longer sells Build items at triple their price, and Build items can no longer be sold back for more than they cost.','Arreglos al construir: Deshacer ahora recupera una casa que guardaste o recoloreaste, la tienda del Mercado ya no vende objetos de Construir al triple de su precio, y esos objetos ya no se pueden revender por más de lo que cuestan.'],
