@@ -588,8 +588,8 @@ const origEmit=G.emit;G.emit=function(ev,d={}){try{origEmit(ev,d)}catch(_){}
  const me=mePosW().add(new THREE.Vector3(0,.5,0));
  if(ev==='hit'){rt.zapT=now();try{Sound.noise(.25,.12,2400);setTimeout(()=>Sound.noise(.12,.08,3200),90)}catch(_){}burstW(objW(d).add(new THREE.Vector3(0,.35,0)),14,0xb8ff5a,1.6);rt.shake=4;vib(12)}
  if(ev==='pop'){const p=objW(d.o).add(new THREE.Vector3(0,.3,0));burstW(p,40,d.o.type==='tox'?0xc070ff:0x9be15a,2.4);burstW(p,18,0xfff6a0,1.4,{size:.07});floatW(p.clone().add(new THREE.Vector3(0,.5,0)),'+'+d.lux+' Lux','#ffe25a');vib([10,30,20])}
- if(ev==='level'){for(const c of[0xffe25a,0x77aadd,0xff8fb1,0x88ff88])burstW(me,20,c,2.2,{decay:.01});floatW(me.clone().add(new THREE.Vector3(0,.6,0)),'LEVEL UP!','#fff');vib([30,40,60])}
- if(ev==='egg'){floatW(me.clone().add(new THREE.Vector3(0,.6,0)),'🥚 Egg!','#fff');burstW(me,16,0xfff2c0,1.2)}
+ if(ev==='level'){for(const c of[0xffe25a,0x77aadd,0xff8fb1,0x88ff88])burstW(me,20,c,2.2,{decay:.01});floatW(me.clone().add(new THREE.Vector3(0,.6,0)),(window.LANG==='es'?'¡SUBE DE NIVEL!':'LEVEL UP!'),'#fff');vib([30,40,60])}
+ if(ev==='egg'){floatW(me.clone().add(new THREE.Vector3(0,.6,0)),(window.LANG==='es'?'🥚 ¡Huevo!':'🥚 Egg!'),'#fff');burstW(me,16,0xfff2c0,1.2)}
  if(ev==='skill'&&d.o){const p=objW(d.o).add(new THREE.Vector3(0,.5,0));burstW(p,24,0xfff9b0,1.6);if(d.l)floatW(p.clone().add(new THREE.Vector3(0,.4,0)),'+'+d.l+' Lux','#ffe25a');vib(15)}
  if(ev==='eat'){burstW(me,d.fav?16:7,0xff6f9f,.8,{g:.6,decay:.012,size:.16})}
  if(ev==='hurt'){floatW(me.clone().add(new THREE.Vector3(0,.5,0)),'-'+(+(window.__lastHurt||2).toFixed(1))+' ♥','#ff7a8a');vib(40)}

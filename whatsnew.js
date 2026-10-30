@@ -1,10 +1,11 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.7',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.8',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.8',[['🐾 New players now see the title, then adopt their fauna (the title no longer pops back after adopting)','🐾 Los jugadores nuevos ven primero la portada y luego adoptan su fauna (la portada ya no reaparece después de adoptar)'],['📱 The Pool button no longer covers the tutorial\'s Skip button on phones','📱 El botón de Piscina ya no tapa el botón Saltar del tutorial en teléfonos'],['🖥️ On PC the Server pill no longer sits on top of the world name','🖥️ En PC la etiqueta del servidor ya no se encima sobre el nombre del mundo'],['🇪🇸 Spanish fixes: adoption screen, a tutorial step, level-up and egg messages','🇪🇸 Correcciones en español: pantalla de adopción, un paso del tutorial y mensajes de nivel y de huevo']]],
  ['8.3.7',[['🐣 The hatch message and the "egg hatched" card now name the species that really hatched','🐣 El aviso de eclosión y la tarjeta de "huevo eclosionado" ahora muestran la especie que nació de verdad'],['🎚 The Sound panel now shows your saved volumes and the right mute state','🎚 El panel de Sonido ahora muestra tus volúmenes guardados y el estado de silencio correcto'],['🎵 Music comes back at your volume after a dance song, and dance songs follow the Music slider','🎵 La música vuelve a tu volumen después de una canción de baile, y las canciones de baile siguen el control de Música'],['🇪🇸 Spanish fixes for feeding, hatching, faunawear and the fauna list','🇪🇸 Correcciones en español al alimentar, eclosionar, en la faunarropa y en la lista de fauna']]],
  ['8.3.6',[
   ['🛠️','Smoother long sessions on phones: worlds you leave now free their 3D shapes, so memory no longer keeps growing as you travel between worlds.','Sesiones largas más fluidas en teléfonos: los mundos que dejas liberan sus formas 3D, así la memoria ya no sigue creciendo al viajar entre mundos.'],

@@ -1,5 +1,13 @@
 # Releases
 
+## v8.3.8 — new-player flow + HUD bug fixes
+- Fresh save: the adoption sheet opened on top of the title, and after adopting the title ("Play") showed again over the tutorial. Adoption now opens after Play.
+- Adoption text said "Every species is unlocked" (5 are level-gated); now "pick any one you like! More species unlock as you level up." ES for it and the 3 species blurbs (was English / "Born A prueba de agua").
+- Phone: the "🛁 New: Pool!" pill covered the tutorial's Skip button; it now sits above the tutorial card while it shows.
+- PC (≥700px): the Server pill overlapped the world name at top centre; it now sits beside it.
+- ES: tutorial step "Now visit the Goal Station…" was half English; fauna level-up toast, "LEVEL UP!" and "🥚 Egg!" floating texts now Spanish.
+- ES: flujo de jugador nuevo, botón de Piscina, etiqueta del servidor en PC y textos en español.
+
 ## v8.3.7 — fauna + audio bug fixes
 - Hatch toast and "egg hatched" overlay named the species before the level/rarity re-roll (said Hoofer when a Sniffer hatched); now they name the real one. ES text built directly (was "A Hoofer ¡nació!").
 - Sound panel always showed 100% / "Sound is on" (it checked `window.Sound`, but Sound is a top-level const) — now shows saved volumes and mute state. Same bug silenced the stalker/wraith/lurker monster sounds; fixed.

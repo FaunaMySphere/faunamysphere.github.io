@@ -40,10 +40,10 @@ function spawnTox(id){const s=S.zones[id],z=Z(id),p=freeTile(id);if(p)s.objs.pus
 // Egg Meter = level meter (sources): Lux fills it, x1.0–1.4 by energy+happiness; full = level up + egg (eggs only laid at home)
 function gainLux(n){S.player.lux+=n;const f=fa();if(!f)return;const mult=1+.4*((f.energy+f.happiness)/200);if(f.level<20)S.player.eggMeter+=n*mult*100/(30+f.level*25);checkEgg()}
 function checkEgg(){const f0=fa();if(f0&&S.zone==='home'&&S.player.pendingEggs){const k=S.player.pendingEggs;S.player.pendingEggs=0;for(let i=0;i<k;i++)layEgg()}
- while(S.player.eggMeter>=100){S.player.eggMeter-=100;const f=fa();if(f.level<20){f.level++;toast('⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');if(f.level===20){addItem('trophy');setTimeout(()=>open('<h2>🏆 Level 20!</h2><p>'+f.name+' made it to Level 20! What an accomplishment! Their zapper collar turned gold, and a Level 20 Fauna Trophy is in your Goods.</p>'),1500)}}
+ while(S.player.eggMeter>=100){S.player.eggMeter-=100;const f=fa();if(f.level<20){f.level++;toast(window.LANG==='es'?'⭐ ¡'+f.name+' llegó al nivel '+f.level+'!':'⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');if(f.level===20){addItem('trophy');setTimeout(()=>open('<h2>🏆 Level 20!</h2><p>'+f.name+' made it to Level 20! What an accomplishment! Their zapper collar turned gold, and a Level 20 Fauna Trophy is in your Goods.</p>'),1500)}}
   if(f.level>=20)S.player.eggMeter=0;if(S.zone!=='home'){S.player.pendingEggs=(S.player.pendingEggs||0)+1;toast('An egg is on the way — it will be laid when you return home.');continue}layEgg()}}
 function layEgg(){if(S.player.eggs.length<6){S.player.eggs.push({id:'egg'+now()+Math.random(),genes:{...fa().genes,heatProof:false},parent:fa().name});toast('🥚 '+fa().name+' laid an egg! Hatch it in your Nest.');emit('egg')}else toast('Egg basket full (6).')}
-function gainXP(n){return;const f=fa();if(f.level>=20)return;f.xp+=n;while(f.level<20&&f.xp>=xpNeed(f.level)){f.xp-=xpNeed(f.level);f.level++;toast('⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');}}
+function gainXP(n){return;const f=fa();if(f.level>=20)return;f.xp+=n;while(f.level<20&&f.xp>=xpNeed(f.level)){f.xp-=xpNeed(f.level);f.level++;toast(window.LANG==='es'?'⭐ ¡'+f.name+' llegó al nivel '+f.level+'!':'⭐ '+f.name+' reached level '+f.level+'!');emit('level');banner('Level up!');}}
 const xpNeed=l=>40+l*30;
 // v6.10: zaps do half damage per hit, so pollution takes ~2x as many zaps (energy and tox sting per hit halved to match)
 const ZAPF=.5;
@@ -270,10 +270,14 @@ function ui(v,p={}){cur={...p,v};const f=fa(),inv=S.player.inv;
  if(v==='friends'){open(`<h2>👥 Friends</h2><p>Your Caretaker ID: <b>${S.player.id}</b></p><p class="small">Online friends and co-op zapping come in a later version. For now, the state is ready to sync (every action goes through dispatch(), and there's a Net.send hook).</p><div class="row"><div class="grow">🏝️ Amelia's Faunasphere (guide NPC)</div>${btn('Visit','visit',{who:'Amelia'})}</div>`)}}
 // ===== Adoption =====
 function adoptScreen(){let sel='hoofer';const col=pick(['Tan','Cocoa','Cream','Slate','Sky']);
- open('<h2>Become a Caretaker!</h2><p class="small">Choose your first fauna. Every species is unlocked — pick any one you like!</p><div class="grid" id="sg"></div><p><input id="pn" placeholder="Name your fauna" maxlength="16"></p><button class="btn" id="go">Adopt</button>');
+ open('<h2>Become a Caretaker!</h2><p class="small">Choose your first fauna — pick any one you like! More species unlock as you level up.</p><div class="grid" id="sg"></div><p><input id="pn" placeholder="Name your fauna" maxlength="16"></p><button class="btn" id="go">Adopt</button>');
  document.getElementById('x').style.display='none';const sg=document.getElementById('sg');
  const fill=()=>{sg.innerHTML='';Object.entries(SPECIES).filter(([k])=>!(window.PLV&&PLV.isLocked(k))).forEach(([k,s])=>{const d=document.createElement('div');d.className='card'+(k===sel?' sel':'');d.dataset.sp=k;d.appendChild(faunaPortrait({species:k,color:col,pattern:'Plain',tail:'Normal',eyes:'Round'}));d.insertAdjacentHTML('beforeend',`<b>${s.name}</b><br><span class="small">${s.desc||""}</span>`);d.onclick=()=>{sel=k;sg.querySelectorAll('.card').forEach(c=>c.classList.toggle('sel',c===d))};sg.appendChild(d)});};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fill);else fill();
  document.getElementById('go').onclick=()=>{dispatch('adopt',{species:sel,name:document.getElementById('pn').value.trim()||'Sprout',color:col});document.getElementById('x').style.display='';close();boot()}}
+// v8.3.7+: a new player saw the adoption sheet over the title, then the title again ("Play") after adopting. Show it after Play.
+function adoptWhenReady(){if(/[?&]notitle/.test(location.search))return adoptScreen();let done=0;const go=()=>{if(done)return;done=1;adoptScreen()};
+ const hook=()=>{const ti=document.getElementById('title'),pl=document.getElementById('play');if(ti&&pl&&!ti.classList.contains('hidden')&&!ti.classList.contains('out')){pl.addEventListener('click',()=>setTimeout(go,300));setTimeout(()=>{if(!document.getElementById('title'))go()},15000)}else go()};
+ if(document.readyState==='complete')setTimeout(hook,0);else addEventListener('load',()=>setTimeout(hook,0))}
 // ===== Boot =====
 let last=now();function loop(){requestAnimationFrame(loop);const t=now(),dt=Math.min(100,t-last);last=t;if(fa()){try{step(dt);simulate(dt);draw()}catch(e){if(!loop._e||t-loop._e>5000){loop._e=t;console.error(e)}}}}
 function boot(){S.tf=S.tf||{};if(S.tut==null)S.tut=99;Sound.biome=Z(S.zone).biome;zs('home');syncHomeDecor();const g=S.zones[S.zone]?S.zones[S.zone].objs.find(o=>o.type==='gate'):null;if(g)rt.pos={i:g.i-1,j:g.j};
@@ -282,7 +286,7 @@ function boot(){S.tf=S.tf||{};if(S.tut==null)S.tut=99;Sound.biome=Z(S.zone).biom
  toast(S.done.g_buy?'Welcome back, Caretaker!':'Tip: walk into the World Gate (glowing ring) to visit the Rock Garden.')}
 try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){console.warn('bad save',e);S=null}if(S&&!Array.isArray(S.fauna))S=null;if(S&&S.zone&&!Z(S.zone))S.zone='home';if(!S){const o=JSON.parse(localStorage.getItem('faunasphere_save_v2')||'null');if(o&&o.fauna&&o.fauna.length){o.zones={};o.tut=99;S=o}}resize();
 // migrate: species stored in genes
-if(S&&S.fauna.length){try{boot()}catch(e){console.error('boot error',e);try{S.zone='home';boot()}catch(e2){}}}else{S=newState();adoptScreen();window.FSidb&&FSidb.get().then(j=>{try{const o=j&&JSON.parse(j);if(o&&o.fauna&&o.fauna.length&&!(S.fauna&&S.fauna.length)){localStorage.setItem(KEY,j);location.reload()}}catch(e){}})}
+if(S&&S.fauna.length){try{boot()}catch(e){console.error('boot error',e);try{S.zone='home';boot()}catch(e2){}}}else{S=newState();adoptWhenReady();window.FSidb&&FSidb.get().then(j=>{try{const o=j&&JSON.parse(j);if(o&&o.fauna&&o.fauna.length&&!(S.fauna&&S.fauna.length)){localStorage.setItem(KEY,j);location.reload()}}catch(e){}})}
 requestAnimationFrame(loop);setTimeout(()=>{const l=document.getElementById("loading");if(l)l.remove()},6000);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
 // ===== v4 reliable saving =====

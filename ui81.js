@@ -76,7 +76,7 @@ if(document.body)hook();else addEventListener('DOMContentLoaded',hook);
 
 // ---------- HUD layout on phones: one tidy row of pills under the top bar, nothing under the notch ----------
 function lay(){
- if(innerWidth>=700)return;
+ if(innerWidth>=700){try{const mp=document.getElementById('mpcount'),zn=document.getElementById('zoneName');if(mp&&zn){if(mp.dataset.l81){mp.style.left='50%';mp.style.transform='translateX(-50%)';mp.style.top='calc(env(safe-area-inset-top) + 4px)';delete mp.dataset.l81}const a=mp.getBoundingClientRect(),b=zn.getBoundingClientRect();if(a.width&&b.width&&getComputedStyle(zn).display!=='none'&&zn.textContent.trim()&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top){mp.style.left=Math.round(b.right+8)+'px';mp.style.transform='none';mp.style.top=Math.round(b.top+(b.height-a.height)/2)+'px';mp.dataset.l81=1}}}catch(e){}return}// v8.3.8: on PC the Server pill sat on top of the world name
  const top=document.getElementById('top');if(!top)return;
  const tb=top.getBoundingClientRect().bottom;
  const mb=document.getElementById('microbox'),mp=document.getElementById('mpcount'),zn=document.getElementById('zoneName'),q=document.getElementById('q81');
