@@ -1,10 +1,12 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.3.1',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.3.2',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3.2',[
+  ['🎩','More Spanish: the Faunawear tab, the Collar Store, the Wear and Remove Hat buttons, item types and the Morning Cap gift message.','Más español: la pestaña Ropa de fauna, la Tienda de collares, los botones Ponerse y Quitar gorro, los tipos de objeto y el mensaje del Gorro Mañanero.']]],
  ['8.3.1',[
   ['🛠️','Polish and fixes: Spanish now covers the Save panel, fauna cards and certificates, item cards (energy, counts), the world map tiers, quest guide names and room messages.','Pulido y arreglos: el español ahora cubre el panel de Guardado, las tarjetas y certificados de fauna, las tarjetas de objetos (energía, cantidades), los niveles del mapa, los nombres de los guías de misiones y los mensajes de sala.'],
   ['🐾','Fixes: the Fauna panel showed the wrong number of free spots (now matches 10), and the Tricks wheel no longer stays open behind other windows. The Save panel shows the current version.','Arreglos: el panel de Fauna mostraba mal los espacios libres (ahora cuadra con 10) y la rueda de Trucos ya no se queda abierta detrás de otras ventanas. El panel de Guardado muestra la versión actual.']]],
