@@ -1,5 +1,6 @@
 // v8.2 PREVIEW "more realistic views and details" (not shipped). Visual only: never reads beyond S.zone/S.zones, never writes the save.
 // Phones (any tier): light grass tufts, ground detail, sculpted rocks, contact shading, a touch more haze. No new passes, no shadows.
+// Phone High (preview 3): soft contact shadows under fauna and props, distance fog tinted toward the sky horizon. ?v82nocs / ?v82nofogtint to compare.
 // PC High / Ultra: denser tufts, finer trees, real sun shadows, subtle bloom, daytime light shafts. Low: nothing. ?v82off disables all.
 import * as THREE from 'three';
 import {ShaderPass} from './vendor/three/addons/postprocessing/ShaderPass.js';
@@ -160,7 +161,23 @@ let skyDone=0;function skyUp(){if(!PCHI||skyDone||QS.has('v82nosky'))return;cons
   vec2 cq=vD.xz/(hh+.2)*vec2(.55,2.6)+vec2(uTime*.005,0.);float ci=n2(cq)*n2(cq*2.07+3.1);
   c+=vec3(1.,.99,.97)*smoothstep(.3,.6,ci)*smoothstep(.08,.35,hh)*smoothstep(.95,.5,hh)*.1*max(uCloud,.4)*dy;}
  `+m.fragmentShader.slice(i);m.needsUpdate=true}
+// ---------- phone High: soft contact shadows under fauna + props, aerial fog tint (v82 preview 3) ----------
+// Cheap by design: fauna reuse their existing shadow disc (soft texture swap, 0 extra draws); all prop shadows are ONE InstancedMesh; fog tint is applied only while rendering (no state drift with restore.js).
+const PHHI=HI&&isPhone&&!QS.has('v82nocs');G.FS_V82.PHHI=PHHI;
+const softM=new THREE.MeshBasicMaterial({map:blobT(),transparent:true,depthWrite:false,opacity:.74,color:0x140f06,fog:true});
+function faunaSoft(){if(!PHHI)return;scene.traverse(m=>{if(!m.isMesh||m.userData.v82s||!m.geometry||m.geometry.type!=='CircleGeometry'||!m.geometry.parameters||Math.abs(m.geometry.parameters.radius-.28)>1e-3)return;const mt=m.material;if(!mt||!mt.isMeshBasicMaterial||Math.abs((mt.opacity||0)-.28)>1e-3)return;m.userData.v82s=1;m.material=softM;m.scale.multiplyScalar(1.55);G.FS_V82.dbg.fsoft=(G.FS_V82.dbg.fsoft|0)+1})}
+const SKIPCS=/poll|tox|grime|smog|puddle|water|path|tile|floor|rug|spark|mud|ice/i;let csMesh=null,csSig='';const bb=new THREE.Box3(),bs=new THREE.Vector3();
+function propShadows(){if(!PHHI||!G.W80||!G.W80.objMap)return;const M=G.W80.objMap;let sig=W6.zone+':'+M.size;M.forEach((e,id)=>{sig+=','+id});if(sig===csSig)return;csSig=sig;
+ if(csMesh){scene.remove(csMesh);csMesh.dispose();csMesh=null}const L=[];
+ M.forEach(e=>{const g=e&&e.g,o=e&&e.o;if(!g||!o||SKIPCS.test(o.type||'')||g.userData.v82)return;bb.setFromObject(g);if(bb.isEmpty())return;bb.getSize(bs);if(bs.y<.18)return;const r=Math.min(2.6,Math.max(bs.x,bs.z)*.72);if(r<.25)return;L.push([g.position.x,g.position.y,g.position.z,r])});
+ if(!L.length)return;csMesh=new THREE.InstancedMesh(blobG,softM,L.length);const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),p=new THREE.Vector3();
+ L.forEach(([x,y,z,r],k)=>{sc.set(r,1,r);p.set(x,y+.014,z);m4.compose(p,q,sc);csMesh.setMatrixAt(k,m4)});csMesh.renderOrder=1;csMesh.userData.v82='propcs';csMesh.frustumCulled=false;scene.add(csMesh);G.FS_V82.dbg.propcs=L.length}
+if(PHHI&&!QS.has('v82nofogtint')){const fc0=new THREE.Color(),tint=new THREE.Color();let saved=false;
+ const pB=scene.onBeforeRender,pA=scene.onAfterRender;
+ scene.onBeforeRender=function(...a){if(pB)try{pB.apply(this,a)}catch(e){}saved=false;const f=scene.fog;if(!f||!f.isFog||!W6.su||!W6.sky||!W6.sky.visible)return;const zb=typeof Z==='function'&&G.S?Z(S.zone).biome:'';if(zb==='dungeon')return;
+  fc0.copy(f.color);saved=true;tint.copy(W6.su.uHor.value);f.color.lerp(tint,.42)};
+ scene.onAfterRender=function(...a){if(saved&&scene.fog)scene.fog.color.copy(fc0);saved=false;if(pA)try{pA.apply(this,a)}catch(e){}}}
 // ---------- watcher ----------
 let lastIsl=null;(function tick(){try{const isl=W6.island;if(isl&&isl!==lastIsl&&W6.zone&&isl.children.length>2&&G._groundIM&&isl.children.includes(G._groundIM)){lastIsl=isl;setTimeout(()=>{try{if(W6.island===isl)dress(isl,W6.zone)}catch(e){console.warn('v82 dress',e)}},60)}
- haze();post();shafts();skyUp();if(((performance.now()/500)|0)!==tick.k){tick.k=(performance.now()/500)|0;treeScan();waterScan()}}catch(e){console.warn('v82',e);lastIsl=W6.island}requestAnimationFrame(tick)})();
+ haze();post();shafts();skyUp();if(((performance.now()/500)|0)!==tick.k){tick.k=(performance.now()/500)|0;treeScan();waterScan();faunaSoft();propShadows()}}catch(e){console.warn('v82',e);lastIsl=W6.island}requestAnimationFrame(tick)})();
 }
