@@ -1,5 +1,11 @@
 # Releases
 
+## v8.4
+- Realistic graphics layer (v82.js, the v8.2 preview, approved by Leo): grass tufts, ground detail, sculpted rocks and contact shading on phones (Med/High); PC High/Ultra adds sun shadows, finer trees, subtle bloom, daytime light shafts, rock detail, water reflections and a richer sky. Low is unchanged. Visual only, never writes the save. Kill switch: `?v82off` (also `?v82nocs`, `?v82nofogtint`, `?v82nohaze`, `?v82noshadow`).
+- Phone High: soft contact shadows under fauna (reused disc) and props (one InstancedMesh), distance fog tinted toward the sky horizon at render time.
+- Phone top-left corner (topleft84.js): "👋 Name" pill above small Reload / Help / 🌐 language chips with 44×44 tap boxes, inside the safe area; same links and handlers. PC unchanged.
+- ES: Capa de gráficos realistas (hierba, suelo, rocas, sombras de contacto; en PC Alta/Ultra sombras, árboles, reflejos y cielo); en móviles Alta sombras suaves y niebla teñida del cielo; esquina superior izquierda más limpia en móviles con botones de 44 px. Desactivar con ?v82off.
+
 ## v8.3.9
 - PC adoption screen: the name box and Adopt button are pinned at the bottom of the sheet (sticky footer), so they're visible without scrolling. Same look.
 - Map heading / gate label say "Tap this gate…" on touch devices and "Click on this gate…" with a mouse.

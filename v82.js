@@ -1,6 +1,6 @@
-// v8.2 PREVIEW "more realistic views and details" (not shipped). Visual only: never reads beyond S.zone/S.zones, never writes the save.
+// v8.4 "more realistic views and details" (graphics layer, developed as the v8.2 preview). Visual only: never reads beyond S.zone/S.zones, never writes the save.
 // Phones (any tier): light grass tufts, ground detail, sculpted rocks, contact shading, a touch more haze. No new passes, no shadows.
-// Phone High (preview 3): soft contact shadows under fauna and props, distance fog tinted toward the sky horizon. ?v82nocs / ?v82nofogtint to compare.
+// Phone High: soft contact shadows under fauna and props, distance fog tinted toward the sky horizon. ?v82nocs / ?v82nofogtint to compare.
 // PC High / Ultra: denser tufts, finer trees, real sun shadows, subtle bloom, daytime light shafts. Low: nothing. ?v82off disables all.
 import * as THREE from 'three';
 import {ShaderPass} from './vendor/three/addons/postprocessing/ShaderPass.js';
