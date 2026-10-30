@@ -1,10 +1,15 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.1.4',K='fs_seen_ver';
+const VER='8.3',K='fs_seen_ver';
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.3',[
+  ['🏗️','Bigger Build menu: 54 new pieces for your home base in 7 categories: Furniture, Plants, Paths & Fences, Lights, Water, Fauna Play and World Sets (pieces themed on the Rock Garden, Ruins, Frost Village, Whalebone Isthmus, Bogs, Quarry and the sky islands).','Menú de construcción más grande: 54 piezas nuevas para tu casa en 7 categorías: Muebles, Plantas, Caminos y vallas, Luces, Agua, Juegos de fauna y Sets de mundos (piezas inspiradas en el Jardín de rocas, las Ruinas, la Aldea helada, el Istmo de ballena, los Pantanos, la Cantera y las islas del cielo).'],
+  ['🎨','Pick a color before you buy, and in Edit Home you can move, rotate, recolor, stack and now resize pieces (⤢ Size).','Elige un color antes de comprar. En Editar casa puedes mover, girar, recolorear, apilar y ahora cambiar el tamaño de las piezas (⤢ Tamaño).'],
+  ['🧱','Ground tab: lay free paths (stone, boardwalk, brick, sand, gravel, flower meadow, mossy stone, crystal) and paint tiles. Themes tab: 8 new home-base themes.','Pestaña Suelo: pon caminos gratis (piedra, tablones, ladrillo, arena, grava, prado florido, piedra musgosa, cristal) y pinta casillas. Pestaña Temas: 8 temas nuevos para tu casa.'],
+  ['🎾','Fauna play: tap a trampoline, slide, swing, ball and more, and your fauna runs over to play (+5 happiness).','Juegos de fauna: toca una cama elástica, tobogán, columpio, pelota y más, y tu fauna corre a jugar (+5 de felicidad).']]],
  ['8.1.4',[
   ['🏠','When you visit a friend, the "Visiting" card now sits neatly where the world name was, instead of on top of it.','Cuando visitas a un amigo, la tarjeta "Visitando" ahora queda bien en el lugar del nombre del mundo, en vez de encima.']]],
  ['8.1.3',[
