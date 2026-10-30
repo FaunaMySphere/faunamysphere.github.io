@@ -1,10 +1,12 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.1.3',K='fs_seen_ver';
+const VER='8.1.4',K='fs_seen_ver';
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.1.4',[
+  ['🏠','When you visit a friend, the "Visiting" card now sits neatly where the world name was, instead of on top of it.','Cuando visitas a un amigo, la tarjeta "Visitando" ahora queda bien en el lugar del nombre del mundo, en vez de encima.']]],
  ['8.1.3',[
   ['🌈','Worlds now really light up as you save them: every monster and every bit of pollution you clear makes the world brighter and more colorful, until it is fully bright at 100%. Pollution no longer creeps back while you are there, and the sky changes too. When you leave, the world goes back to dark so you can save it again.','Ahora los mundos de verdad se iluminan al salvarlos: cada monstruo y cada mancha de contaminación que limpias hace el mundo más brillante y colorido, hasta quedar totalmente brillante al 100%. La contaminación ya no vuelve sola mientras estás ahí, y el cielo también cambia. Al irte, el mundo vuelve a oscurecerse para que puedas salvarlo otra vez.']]],
  ['8.1.2',[
