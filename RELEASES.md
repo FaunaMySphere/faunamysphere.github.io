@@ -1,5 +1,10 @@
 # Releases
 
+## v8.5
+- Phone top-left: the Save pill no longer reserves room for the faded "Saved"/"Guardado" label (it is now a compact 💾 ✓, same height and top as the name pill), so the 👋 name pill shows the name in Spanish at 375/390px instead of only 👋. Name truncates with … before collapsing to 👋 (threshold 58→48px). PC unchanged.
+- What's new popup: 2-column rows ([en, es], used by v8.3.7–v8.4) rendered the English text as the icon and the Spanish text as the body for English players; they now get a ✨ icon and the right language.
+- ES: En móviles el nombre vuelve a verse en español en pantallas pequeñas; botón de Guardado compacto 💾 ✓ y alineado.
+
 ## v8.4
 - Realistic graphics layer (v82.js, the v8.2 preview, approved by Leo): grass tufts, ground detail, sculpted rocks and contact shading on phones (Med/High); PC High/Ultra adds sun shadows, finer trees, subtle bloom, daytime light shafts, rock detail, water reflections and a richer sky. Low is unchanged. Visual only, never writes the save. Kill switch: `?v82off` (also `?v82nocs`, `?v82nofogtint`, `?v82nohaze`, `?v82noshadow`).
 - Phone High: soft contact shadows under fauna (reused disc) and props (one InstancedMesh), distance fog tinted toward the sky horizon at render time.

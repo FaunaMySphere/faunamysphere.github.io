@@ -8,7 +8,8 @@ const css=`@media (max-width:699px){
 #top #hi.tl84>a::after{content:attr(data-chip);display:block;font-weight:800;font-size:13px;line-height:1;color:#173f00;padding:5px 9px;min-width:16px;text-align:center;border-radius:12px;background:linear-gradient(#e9ffc4,#b8ec6a);box-shadow:inset 0 -2px 0 #6aa52a,0 1px 2px #0005;white-space:nowrap}
 #top #hi.tl84>a:active::after{transform:translateY(1px);filter:brightness(.92)}
 #top #hi.tl84>a.c1{left:env(safe-area-inset-left)}#top #hi.tl84>a.c2{left:calc(env(safe-area-inset-left) + 44px)}#top #hi.tl84>a.c3{left:calc(env(safe-area-inset-left) + 88px);width:58px}
-#top #hi.tl84~#savepill{align-self:flex-start}
+#top #hi.tl84~#savepill{align-self:flex-start;min-width:0!important;box-sizing:border-box;height:24px;line-height:1;font-size:12.5px!important;padding:0 8px!important;border-width:1.5px!important;border-radius:12px!important;margin-top:0!important;display:inline-flex;align-items:center;gap:3px}
+#top #hi.tl84~#savepill .svl{font-size:0;display:inline-block}#top #hi.tl84~#savepill .svl::after{content:'✓';font-size:12.5px;font-weight:900}
 }
 @media (max-width:699px){#top #hi.tl84.tl84s::before{font-size:11px;padding:5px 7px}}`;
 const st=document.createElement('style');st.id='tl84css';st.textContent=css;document.head.appendChild(st);
@@ -20,7 +21,7 @@ function up(){try{const h=document.getElementById('hi');if(!h)return;h.classList
   for(const e of top.children){if(e===h)continue;const r=e.getBoundingClientRect();if(!r.width)continue;const ps=getComputedStyle(e).position;if(ps==='absolute'||ps==='fixed')continue;used+=r.width;n++}used+=gap*n;
   const w=Math.max(34,Math.min(112,Math.floor(innerWidth-used-1)));if(h.style.getPropertyValue('--tl84w')!==w+'px')h.style.setProperty('--tl84w',w+'px');h.classList.toggle('tl84s',w<100)}
  if(es()&&nm==='Caretaker')nm='Cuidador';
- const tight=parseFloat(h.style.getPropertyValue('--tl84w'))<58;const nv=tight?'👋':'👋 '+nm;if(tight)h.title=nm;if(h.dataset.name!==nv)h.dataset.name=nv;
+ const tight=parseFloat(h.style.getPropertyValue('--tl84w'))<48;const nv=tight?'👋':'👋 '+nm;if(tight)h.title=nm;if(h.dataset.name!==nv)h.dataset.name=nv;
  const set=(a,c,chip,lab)=>{if(!a)return;a.classList.add(c);if(a.dataset.chip!==chip)a.dataset.chip=chip;if(a.getAttribute('aria-label')!==lab){a.setAttribute('aria-label',lab);a.title=lab}};
  set(rl,'c1','↻',es()?'Recargar juego':'Reload game');set(hp,'c2','?',es()?'Ayuda':'Help');set(lg,'c3',es()?'🌐 EN':'🌐 ES',es()?'Cambiar idioma: English':'Change language: Español');
 }catch(e){}}

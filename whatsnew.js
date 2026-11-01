@@ -1,10 +1,11 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.4',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.5',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.5',[['📱','Phones: your name is back in the top-left corner in Spanish on smaller screens (it showed only 👋), and the Save pill is now a compact 💾 ✓ lined up with it.','Teléfonos: tu nombre vuelve a verse en la esquina superior izquierda en español en pantallas pequeñas (solo se veía 👋), y el botón de Guardado ahora es un 💾 ✓ compacto y alineado con él.'],['📝','The What\'s new list now shows each update in your language (some older entries showed English and Spanish mixed).','La lista de Novedades ahora muestra cada actualización en tu idioma (algunas entradas anteriores mezclaban inglés y español).']]],
  ['8.4',[["More realistic worlds: grass tufts, ground detail, sculpted rocks and soft contact shadows; on PC High/Ultra also sun shadows, finer trees, water reflections and a richer sky.","Mundos más realistas: matas de hierba, detalle del suelo, rocas esculpidas y sombras de contacto suaves; en PC Alta/Ultra también sombras del sol, árboles más finos, reflejos en el agua y un cielo más rico."],["Phones on High: soft shadows under fauna and props, and distant fog that blends into the sky.","Móviles en Alta: sombras suaves bajo la fauna y los objetos, y niebla lejana que se funde con el cielo."],["Cleaner top-left corner on phones: your name, then Reload, Help and Language buttons that are easier to tap.","Esquina superior izquierda más limpia en móviles: tu nombre y luego botones de Recargar, Ayuda e Idioma más fáciles de tocar."],["Low quality is unchanged, and add ?v82off to the address to turn the new graphics off.","La calidad Baja no cambia, y añade ?v82off a la dirección para desactivar los nuevos gráficos."]]],
  ['8.3.9',[["On computers, the name box and Adopt button now stay visible at the bottom of the adoption screen.","En ordenador, la casilla del nombre y el botón Adoptar ahora siguen visibles al final de la pantalla de adopción."],["The map says 'Tap' on touch screens and 'Click' with a mouse.","El mapa dice 'Toca' en pantallas táctiles y 'Haz clic' con ratón."],["The Rock Island quest intro now waits until the tutorial ends.","La introducción de la misión de Isla Roca ahora espera a que termine el tutorial."],["The friend gate label is now in Spanish too.","La etiqueta de la puerta de amigos ahora también está en español."]]],
  ['8.3.8',[['🐾 New players now see the title, then adopt their fauna (the title no longer pops back after adopting)','🐾 Los jugadores nuevos ven primero la portada y luego adoptan su fauna (la portada ya no reaparece después de adoptar)'],['📱 The Pool button no longer covers the tutorial\'s Skip button on phones','📱 El botón de Piscina ya no tapa el botón Saltar del tutorial en teléfonos'],['🖥️ On PC the Server pill no longer sits on top of the world name','🖥️ En PC la etiqueta del servidor ya no se encima sobre el nombre del mundo'],['🇪🇸 Spanish fixes: adoption screen, a tutorial step, level-up and egg messages','🇪🇸 Correcciones en español: pantalla de adopción, un paso del tutorial y mensajes de nivel y de huevo']]],
@@ -74,7 +75,7 @@ body:has(#toast>div) #ver81{visibility:hidden}
 document.head.appendChild(css);
 function show(){
  let h=`<h2>✨ ${L("What's new","Novedades")}</h2><div class="wn81">`;
- for(const [v,rows] of NOTES){h+=`<h4>${L('Version','Versión')} ${v}</h4>`;for(const r of rows)h+=`<div class="r"><b>${r[0]}</b><span>${es()?r[2]:r[1]}</span></div>`}
+ for(const [v,rows] of NOTES){h+=`<h4>${L('Version','Versión')} ${v}</h4>`;for(let r of rows){if(r.length===2)r=['✨',r[0],r[1]];h+=`<div class="r"><b>${r[0]}</b><span>${es()?r[2]:r[1]}</span></div>`}}
  h+=`<button class="btn big ok" id="wn81ok">${L('OK','Vale')}</button></div>`;
  open(h);try{localStorage.setItem(K,VER)}catch(e){}
  const b=document.getElementById('wn81ok');if(b)b.onclick=()=>close();
