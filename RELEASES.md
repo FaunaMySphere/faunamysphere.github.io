@@ -1,5 +1,13 @@
 # Releases
 
+## v8.6 — realism layer (real85.js, approved by Leo from the v8.5 previews)
+- Sky: screen-space realistic sky (zenith blue, sun disc + glow, cirrus) over a sunlit procedural sea of clouds; follows day/night/pollution (su uniforms). Hides the old cartoon cloud sprites and the big flat backdrop dome while on.
+- Fog leans toward the sky horizon; image-based sky/ground light (PMREM, once per world) for standard materials; ground macro colour variation + procedural detail bumps (High); water PBR Fresnel + depth tint; soft sky rim light on toon fauna/monsters.
+- High: colour grade pass (contrast, warm light / cool shade, vignette). Phone High: soft sun shadows (1024).
+- Auto-lowering: FSperfStep step 1 also drops the grade pass, step 2 (gl.js) drops shadows, step 3 drops the new sky and restores the old backdrop; then the existing reload to Low (real85 does nothing on Low).
+- Kill switches: ?r85off (all), ?r85nosky ?r85noshadow ?r85nograde ?r85nodetail ?r85noibl ?r85nognd ?r85nowater ?r85norim; ?r85tm = neutral tone mapping (off by default).
+- ES: Cielo realista con mar de nubes, sombras suaves en teléfonos (Alta), color y luz más ricos, bruma, detalle del suelo, agua más natural; la fauna conserva su estilo con un brillo de borde. Desactivar con ?r85off.
+
 ## v8.5
 - Phone top-left: the Save pill no longer reserves room for the faded "Saved"/"Guardado" label (it is now a compact 💾 ✓, same height and top as the name pill), so the 👋 name pill shows the name in Spanish at 375/390px instead of only 👋. Name truncates with … before collapsing to 👋 (threshold 58→48px). PC unchanged.
 - What's new popup: 2-column rows ([en, es], used by v8.3.7–v8.4) rendered the English text as the icon and the Spanish text as the body for English players; they now get a ✨ icon and the right language.

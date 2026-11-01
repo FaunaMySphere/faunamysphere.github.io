@@ -1,4 +1,4 @@
-// v8.5 REALISM PREVIEW (branch v85-real-preview, not shipped). Visual only: never touches the save.
+// v8.6 realism layer (developed as the v8.5 realism previews, approved by Leo). Visual only: never touches the save.
 // - Neutral (Khronos PBR) tone mapping: highlight roll-off without washing colours.   ?r85tm to try (off by default: it flattened colours in tests)
 // - Image-based light: a soft sky/ground environment (rebuilt once per world) gives props, buildings, rocks and trees real ambient reflections. ?r85noibl
 // - Ground: large-scale colour/brightness variation so tiles stop looking repeated.  ?r85nognd
@@ -55,6 +55,7 @@ setTimeout(()=>{scan();rimCol();buildEnv()},800);
 // Tiers: PC High = everything (5-octave sky, 2048 soft shadows, grade). Phone High = sky (4 oct), 1024 soft shadows, grade. Med = sky (3 oct) + ground + IBL. Low = nothing.
 // Switches: ?r85nosky ?r85noshadow ?r85nograde ?r85nodetail
 const HI=Q==='high',PCHI=HI&&!isPhone,OCT=PCHI?5:HI?4:3;
+let skyQ=null,skyOff=false;
 // ---------- 1. realistic sky: deep blue zenith, sun + glow, high cirrus, and a sunlit sea of clouds below the floating island ----------
 if(ON('sky')){const U2={uTop:W6.su.uTop,uHor:W6.su.uHor,uSunC:W6.su.uSunC,uSunS:{value:new THREE.Vector2(.7,.9)},uHz:{value:.6},uAz:{value:0},uT:{value:0},uNight:{value:0},uAsp:{value:1}};
  const sm=new THREE.ShaderMaterial({uniforms:U2,depthWrite:false,depthTest:true,fog:false,
@@ -76,15 +77,15 @@ if(ON('sky')){const U2={uTop:W6.su.uTop,uHor:W6.su.uHor,uSunC:W6.su.uSunC,uSunS:
     vec3 lit=mix(vec3(.50,.56,.68),vec3(1.02,1.,.97)+sc*.18,clamp(sh,0.,1.));lit*=mix(.8,1.05,smoothstep(.45,.8,cl));lit*=clamp(lh*1.3,.35,1.08);
     vec3 cs=mix(deep,lit,cov);float far=exp(-d*9.);c=mix(cs,hor,far*.7);}
    c=mix(c,c*vec3(.18,.22,.4),uNight*.85);gl_FragColor=vec4(c,1.);}`});
- const q=new THREE.Mesh(new THREE.PlaneGeometry(1,1),sm);q.frustumCulled=false;q.renderOrder=9999;scene.add(q);D.sky=1;
+ const q=skyQ=new THREE.Mesh(new THREE.PlaneGeometry(1,1),sm);q.frustumCulled=false;q.renderOrder=9999;scene.add(q);D.sky=1;
  const v=new THREE.Vector3(),f=new THREE.Vector3(),t0=performance.now();
- q.onBeforeRender=(r,sc,cam)=>{const zb=(()=>{try{return Z(S.zone).biome}catch(e){return ''}})();q.visible=zb!=='dungeon';
+ q.onBeforeRender=(r,sc,cam)=>{if(skyOff){q.visible=false;return}const zb=(()=>{try{return Z(S.zone).biome}catch(e){return ''}})();q.visible=zb!=='dungeon';
   cam.getWorldDirection(f);f.y=0;if(f.lengthSq()<1e-6)f.set(0,0,-1);f.normalize();v.copy(cam.position).addScaledVector(f,5000);v.project(cam);U2.uHz.value=Math.min(.98,Math.max(.05,v.y*.5+.5));
   U2.uAz.value=Math.atan2(f.x,f.z)/6.283;U2.uAsp.value=cam.aspect||1;U2.uT.value=(performance.now()-t0)/1000;
   try{const n=G.W81&&G.W81.su&&G.W81.su.uNight?G.W81.su.uNight.value:0;U2.uNight.value=n}catch(e){}
   if(W6.sun){v.copy(cam.position).add(W6.sun.position.clone().sub(W6.sun.target?W6.sun.target.position:new THREE.Vector3()).normalize().multiplyScalar(500));v.project(cam);U2.uSunS.value.set(v.x*.5+.5,Math.max(U2.uHz.value+.12,Math.min(.95,v.z<1?v.y*.5+.5:.9)))}};
  // the old cartoon cloud sprites fight the new sky: hide them (the distant floating islets stay)
- const hideBig=()=>{scene.traverse(o=>{if(o.isMesh&&o!==q&&!o.userData.r85h&&o.material&&o.material.isMeshBasicMaterial&&o.geometry){const g=o.geometry;if(!g.boundingSphere)g.computeBoundingSphere();if(g.boundingSphere&&g.boundingSphere.radius*o.scale.x>=200){o.userData.r85h=1;o.visible=false;o.layers.disable(0)}}});scene.traverse(o=>{if(o.isSprite&&o.material&&o.material.fog===false&&o.material.depthWrite===false&&!o.userData.r85h&&o.scale.x>20){o.userData.r85h=1;o.visible=false;o.layers.disable(0)}})};hideBig();setInterval(hideBig,3000);
+ const hideBig=()=>{if(skyOff)return;scene.traverse(o=>{if(o.isMesh&&o!==q&&!o.userData.r85h&&o.material&&o.material.isMeshBasicMaterial&&o.geometry){const g=o.geometry;if(!g.boundingSphere)g.computeBoundingSphere();if(g.boundingSphere&&g.boundingSphere.radius*o.scale.x>=200){o.userData.r85h=1;o.visible=false;o.layers.disable(0)}}});scene.traverse(o=>{if(o.isSprite&&o.material&&o.material.fog===false&&o.material.depthWrite===false&&!o.userData.r85h&&o.scale.x>20){o.userData.r85h=1;o.visible=false;o.layers.disable(0)}})};hideBig();setInterval(hideBig,3000);
  // atmospheric fog follows the sky horizon so the island edges melt into the haze
  setInterval(()=>{const fg=scene.fog;if(fg&&fg.isFog&&W6.su){const zb=(()=>{try{return Z(S.zone).biome}catch(e){return ''}})();if(zb!=='dungeon')fg.color.lerp(W6.su.uHor.value.clone().lerp(new THREE.Color(1,1,1),.1),.15)}},500)}
 // ---------- 2. soft sun shadows on phone High too (PC High already has them from v8.4) ----------
@@ -97,4 +98,8 @@ const GRADE={uniforms:{tDiffuse:{value:null},uAmt:{value:1}},vertexShader:'varyi
   g=g*g*(3.-2.*g)*.35+g*.65;float vg=1.-.22*smoothstep(.45,.95,distance(vUv,vec2(.5)));g*=vg;gl_FragColor=vec4(mix(c,clamp(g,0.,1.),uAmt),t.a);}`};
 let gp=null;function grade(){if(gp||!ON('grade')||!HI)return;const C=W6.composer;if(!C)return;try{const oi=C.passes.findIndex(p=>p.constructor&&/OutputPass/.test(p.constructor.name));gp=new ShaderPass(GRADE);C.insertPass(gp,oi>=0?oi+1:C.passes.length-1);D.grade=1}catch(e){console.warn('r85 grade',e)}}
 setTimeout(grade,1200);
+// ---------- auto-lowering on struggling phones (perf621 calls FSperfStep 1..3, then reloads on Low where none of this runs) ----------
+// step 1: drop the colour grade pass; step 2: gl.js turns shadows off; step 3: drop the new sky and give back the old backdrop.
+{const ps0=G.FSperfStep;G.FSperfStep=n=>{try{if(ps0)ps0(n)}catch(e){}try{if(n>=1&&gp){gp.enabled=false;D.grade=0}
+ if(n>=3&&skyQ&&!skyOff){skyOff=true;skyQ.visible=false;D.sky=0;scene.traverse(o=>{if(o.userData.r85h){o.visible=true;o.layers.enable(0)}})}D.perf=n}catch(e){console.warn('r85 perf',e)}}}
 }
