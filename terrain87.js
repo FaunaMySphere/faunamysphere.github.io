@@ -106,6 +106,7 @@ function build(){const im=G._groundIM;if(!im)return;let z,s;try{z=Z(S.zone);s=zs
    const ti=(j*n+i)*4;const w=(data[ti+2]||0)/255;const hh=(data[ti]||0)/40;const gr=G.HT?Math.abs((G.HT(i+1,j)||0)-(G.HT(i-1,j)||0))+Math.abs((G.HT(i,j+1)||0)-(G.HT(i,j-1)||0)):0;
    const r=Math.sin(k*91.7)*.5+.5;const oc=(data[ti+3]||0)/255,ed=(data[ti+1]||0)/255;if(pv>.42||w>.3||oc>.45||(oc>.2&&r<.6)||(ed<.3&&r<.55)||(gr>.9&&r<.7)||(hh>2.1&&r<.5)){sc.multiplyScalar(pv>.45&&pv<.6?.45:0);m.compose(p,q,sc);o.setMatrixAt(k,m);k2++}}
   o.instanceMatrix.needsUpdate=true;D.cleared+=k2});
+ G.FS_T87={isl:W6.island,n,C0,data,pathAt:at,biome:z.biome,zone:S.zone};
  D.builds++}
 let isl=null,pend=null;setInterval(()=>{if(document.hidden)return;if(W6.island&&W6.island!==isl&&W6.island!==pend&&G._groundIM&&W6.island.children.includes(G._groundIM)){const me=pend=W6.island;setTimeout(()=>{if(W6.island===me){isl=me;try{build()}catch(e){console.warn('r87 build',e)}}},900)}},700);
 // auto-lowering hook (perf621 -> FSperfStep 1..3; then reload to Low where none of this runs)
