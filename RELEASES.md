@@ -1,5 +1,10 @@
 # Releases
 
+## v8.7 — terrain & ground (terrain87.js, approved by Leo from v87-preview)
+- Ground blends grass / soil / rock / sand by slope, height, island edge and water (wet glossy sand at waterlines, rocky outcrops); worn dirt paths between landmarks with grass cleared; layered cliff strata with grassy overhang on island sides, terraces and underside rocks.
+- Sky: richer cloud-sea blue, crisper clouds, less white horizon haze; fog kept beyond the island on the far-out phone home camera (no white wash).
+- Kill switches ?r87off ?r87noground ?r87nopath ?r87nocliff ?r87nodetail ?r87oldsky. Auto-lowering: step 1 drops detail, step 3 turns terrain shading off. Low: nothing runs.
+
 ## v8.6 — realism layer (real85.js, approved by Leo from the v8.5 previews)
 - Sky: screen-space realistic sky (zenith blue, sun disc + glow, cirrus) over a sunlit procedural sea of clouds; follows day/night/pollution (su uniforms). Hides the old cartoon cloud sprites and the big flat backdrop dome while on.
 - Fog leans toward the sky horizon; image-based sky/ground light (PMREM, once per world) for standard materials; ground macro colour variation + procedural detail bumps (High); water PBR Fresnel + depth tint; soft sky rim light on toon fauna/monsters.

@@ -1,4 +1,4 @@
-// v8.7 PREVIEW: terrain & ground realism. Visual only: never touches the save.
+// v8.7: terrain & ground realism. Visual only: never touches the save.
 // - Ground blends grass / bare soil / rock / sand by slope, height, island edge and water: steep hillsides and hilltops turn to rock,
 //   gentle slopes and eroded island rims to soil, pools/ponds/basins get a dry sand ring with dark glossy wet sand at the waterline.
 // - Worn dirt paths link the landmarks of each world (gate, vendor, goal, den, nest, pools...), with grass cleared off them.

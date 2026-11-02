@@ -1,10 +1,14 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.6',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.7',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.7',[['⛰️','The ground is now real terrain: steep hillsides turn to rock, slopes and island edges to bare soil, and pools get sandy shores that are wet and shiny at the waterline.','El suelo ahora es terreno de verdad: las laderas empinadas se vuelven roca, las pendientes y los bordes de la isla tierra, y las pozas tienen orillas de arena mojada y brillante junto al agua.'],
+  ['🥾','Worn dirt paths now link the places in every world, from the gate to your den, nest and pools.','Caminos de tierra gastada unen ahora los lugares de cada mundo, desde la puerta hasta tu guarida, nido y pozas.'],
+  ['🪨','Island cliffs show layers of rock with grass hanging over the edge.','Los acantilados de la isla muestran capas de roca con hierba asomando por el borde.'],
+  ['🌤️','A clearer, bluer sky, and no more white haze over your home island on phones.','Un cielo más claro y azul, y sin neblina blanca sobre tu isla en el móvil.']]],
  ['8.6',[['🌤️','A real sky: deep blue overhead, a glowing sun and a sea of drifting clouds below your floating island. It follows day, night and pollution.','Un cielo de verdad: azul intenso arriba, un sol brillante y un mar de nubes que se mueven bajo tu isla flotante. Cambia con el día, la noche y la contaminación.'],
   ['✨','More realistic look: soft sun shadows on phones with High graphics, richer colours and light, haze at the horizon, finer ground detail, sky light on buildings, rocks and trees, and more natural water.','Aspecto más realista: sombras suaves del sol en teléfonos con gráficos Altos, colores y luz más ricos, bruma en el horizonte, más detalle en el suelo, luz del cielo en edificios, rocas y árboles, y agua más natural.'],
   ['🐾','Fauna keep their look, now with a soft sky-coloured rim light.','La fauna mantiene su estilo, ahora con un suave brillo de borde del color del cielo.'],
