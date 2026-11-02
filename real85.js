@@ -56,6 +56,8 @@ setTimeout(()=>{scan();rimCol();buildEnv()},800);
 // Switches: ?r85nosky ?r85noshadow ?r85nograde ?r85nodetail
 const HI=Q==='high',PCHI=HI&&!isPhone,OCT=PCHI?5:HI?4:3;
 let skyQ=null,skyOff=false;
+// v8.7 preview: less washed-out sky (richer blue gaps between clouds, crisper cloud shading, less white horizon haze). ?r87oldsky for the v8.6 look
+const S87=!QS.has('r87oldsky')&&!QS.has('r87off');
 // ---------- 1. realistic sky: deep blue zenith, sun + glow, high cirrus, and a sunlit sea of clouds below the floating island ----------
 if(ON('sky')){const U2={uTop:W6.su.uTop,uHor:W6.su.uHor,uSunC:W6.su.uSunC,uSunS:{value:new THREE.Vector2(.7,.9)},uHz:{value:.6},uAz:{value:0},uT:{value:0},uNight:{value:0},uAsp:{value:1}};
  const sm=new THREE.ShaderMaterial({uniforms:U2,depthWrite:false,depthTest:true,fog:false,
@@ -64,7 +66,7 @@ if(ON('sky')){const U2={uTop:W6.su.uTop,uHor:W6.su.uHor,uSunC:W6.su.uSunC,uSunS:
   float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+1.),f.x),f.y);}
   float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<${OCT};i++){s+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return s;}
-  void main(){vec2 uv=vUv;float y=uv.y-uHz;vec3 top=uTop,hor=mix(uHor,vec3(1.),.18);
+  void main(){vec2 uv=vUv;float y=uv.y-uHz;vec3 top=uTop,hor=mix(uHor,vec3(1.),${S87?'.08':'.18'});
    vec3 zen=mix(top*vec3(.55,.75,1.15),top,.35);
    vec3 c=mix(hor,zen,pow(clamp(y/(1.-uHz+.001),0.,1.),.55));
    vec2 sp=vec2((uv.x-uSunS.x)*uAsp,uv.y-uSunS.y);float sd=length(sp);
@@ -73,9 +75,9 @@ if(ON('sky')){const U2={uTop:W6.su.uTop,uHor:W6.su.uHor,uSunC:W6.su.uSunC,uSunS:
    if(y>0.){vec2 q=vec2((uv.x*uAsp+uAz)*1.4,y*5.)+vec2(uT*.004,0.);float ci=fbm(q*vec2(1.,3.)+vec2(0.,uT*.002));ci=smoothstep(.55,.85,ci)*smoothstep(0.,.25,y);c=mix(c,mix(hor,vec3(1.),.7),ci*.55);}
    else{float d=-y;vec2 q=vec2((uv.x-.5)*uAsp/(d+.06)+uAz*6.,1./(d+.06))*2.4+vec2(uT*.01,uT*.006);
     float cl=fbm(q);float cl2=fbm(q+vec2(.21,.13));float sh=clamp((cl-cl2)*5.+.55,0.,1.4);
-    float cov=smoothstep(.40,.60,cl);float lt=dot(top,vec3(.3,.59,.11)),lh=dot(hor,vec3(.3,.59,.11));vec3 deep=mix(top,vec3(.20,.40,.74)*clamp(lt*1.6,.25,1.1),.65)*mix(.8,1.05,n(q*.3));
-    vec3 lit=mix(vec3(.50,.56,.68),vec3(1.02,1.,.97)+sc*.18,clamp(sh,0.,1.));lit*=mix(.8,1.05,smoothstep(.45,.8,cl));lit*=clamp(lh*1.3,.35,1.08);
-    vec3 cs=mix(deep,lit,cov);float far=exp(-d*9.);c=mix(cs,hor,far*.7);}
+    float cov=${S87?'smoothstep(.46,.60,cl)':'smoothstep(.40,.60,cl)'};float lt=dot(top,vec3(.3,.59,.11)),lh=dot(hor,vec3(.3,.59,.11));vec3 deep=${S87?'mix(top,vec3(.13,.36,.80)*clamp(lt*1.9,.3,1.15),.85)*mix(.78,1.08,n(q*.3))':'mix(top,vec3(.20,.40,.74)*clamp(lt*1.6,.25,1.1),.65)*mix(.8,1.05,n(q*.3))'};
+    vec3 lit=mix(${S87?'vec3(.42,.49,.64)':'vec3(.50,.56,.68)'},vec3(1.02,1.,.97)+sc*.18,clamp(sh,0.,1.));lit*=mix(.8,1.05,smoothstep(.45,.8,cl));lit*=clamp(lh*1.3,.35,1.08);
+    vec3 cs=mix(deep,lit,cov);float far=exp(-d*9.);c=mix(cs,hor,far*${S87?'.42':'.7'});}
    c=mix(c,c*vec3(.18,.22,.4),uNight*.85);gl_FragColor=vec4(c,1.);}`});
  const q=skyQ=new THREE.Mesh(new THREE.PlaneGeometry(1,1),sm);q.frustumCulled=false;q.renderOrder=9999;scene.add(q);D.sky=1;
  const v=new THREE.Vector3(),f=new THREE.Vector3(),t0=performance.now();
@@ -87,7 +89,9 @@ if(ON('sky')){const U2={uTop:W6.su.uTop,uHor:W6.su.uHor,uSunC:W6.su.uSunC,uSunS:
  // the old cartoon cloud sprites fight the new sky: hide them (the distant floating islets stay)
  const hideBig=()=>{if(skyOff)return;scene.traverse(o=>{if(o.isMesh&&o!==q&&!o.userData.r85h&&o.material&&o.material.isMeshBasicMaterial&&o.geometry){const g=o.geometry;if(!g.boundingSphere)g.computeBoundingSphere();if(g.boundingSphere&&g.boundingSphere.radius*o.scale.x>=200){o.userData.r85h=1;o.visible=false;o.layers.disable(0)}}});scene.traverse(o=>{if(o.isSprite&&o.material&&o.material.fog===false&&o.material.depthWrite===false&&!o.userData.r85h&&o.scale.x>20){o.userData.r85h=1;o.visible=false;o.layers.disable(0)}})};hideBig();setInterval(hideBig,3000);
  // atmospheric fog follows the sky horizon so the island edges melt into the haze
- setInterval(()=>{const fg=scene.fog;if(fg&&fg.isFog&&W6.su){const zb=(()=>{try{return Z(S.zone).biome}catch(e){return ''}})();if(zb!=='dungeon')fg.color.lerp(W6.su.uHor.value.clone().lerp(new THREE.Color(1,1,1),.1),.15)}},500)}
+ setInterval(()=>{const fg=scene.fog;if(fg&&fg.isFog&&W6.su){const zb=(()=>{try{return Z(S.zone).biome}catch(e){return ''}})();if(zb!=='dungeon')fg.color.lerp(W6.su.uHor.value.clone().lerp(new THREE.Color(1,1,1),.1),.15);
+  // v8.7 preview: the phone home camera sits far out (portrait zoom), so the old fog bands washed the island white. Keep the fog beyond the island at home.
+  if(S87&&W6.camera){let hz='';try{hz=S.zone}catch(e){}if(hz==='home'){const d=W6.camera.position.length();if(fg.near<d*1.05)fg.near=d*1.05;if(fg.far<d*2.6)fg.far=d*2.6}}}},500)}
 // ---------- 2. soft sun shadows on phone High too (PC High already has them from v8.4) ----------
 if(HI&&ON('shadow')&&!R.shadowMap.enabled&&W6.sun){R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;W6.sun.castShadow=true;if(isPhone){W6.sun.shadow.mapSize.set(1024,1024);if(W6.sun.shadow.map){W6.sun.shadow.map.dispose();W6.sun.shadow.map=null}}
  if('intensity' in W6.sun.shadow)W6.sun.shadow.intensity=.6;W6.sun.shadow.radius=3;scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>{m.needsUpdate=true})});D.shadow=isPhone?1024:2048}
