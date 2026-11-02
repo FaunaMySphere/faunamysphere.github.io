@@ -1,10 +1,13 @@
 // v8.1 — "What's new" popup (once per version, at game start) + small always-visible version badge. EN/ES.
 // The last seen version lives in localStorage key fs_seen_ver (NOT the save).
 (function(){
-const VER='8.7',K='fs_seen_ver';window.FS_VER=VER;
+const VER='8.8',K='fs_seen_ver';window.FS_VER=VER;
 const es=()=>{try{return (window.FS&&FS.lang==='es')||String(window.LANG||'').startsWith('es')}catch(e){return false}};
 const L=(en,s)=>es()?s:en;
 const NOTES=[
+ ['8.8',[['🌾','Meadows are now full of long grass that sways and ripples as the wind rolls across your island.','Las praderas ahora están llenas de hierba alta que se mece y ondula cuando el viento recorre tu isla.'],
+  ['🌿','Eight new kinds of plants grow in the worlds: ferns, reeds by the water, clover, shrubs, lupines, daisies, foxtails and dandelion puffs.','Ocho nuevos tipos de plantas crecen en los mundos: helechos, juncos junto al agua, tréboles, arbustos, lupinos, margaritas, colas de zorro y dientes de león.'],
+  ['📱','On phones the meadow is lighter, and it thins out on its own if your device needs it.','En los teléfonos la pradera es más ligera, y se aclara sola si tu dispositivo lo necesita.']]],
  ['8.7',[['⛰️','The ground is now real terrain: steep hillsides turn to rock, slopes and island edges to bare soil, and pools get sandy shores that are wet and shiny at the waterline.','El suelo ahora es terreno de verdad: las laderas empinadas se vuelven roca, las pendientes y los bordes de la isla tierra, y las pozas tienen orillas de arena mojada y brillante junto al agua.'],
   ['🥾','Worn dirt paths now link the places in every world, from the gate to your den, nest and pools.','Caminos de tierra gastada unen ahora los lugares de cada mundo, desde la puerta hasta tu guarida, nido y pozas.'],
   ['🪨','Island cliffs show layers of rock with grass hanging over the edge.','Los acantilados de la isla muestran capas de roca con hierba asomando por el borde.'],

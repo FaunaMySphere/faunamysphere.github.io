@@ -1,5 +1,12 @@
 # Releases
 
+## v8.8 — meadow grass & plants (grass88.js, approved by Leo from v88-preview 16a516e)
+- Dense long-grass clumps (3 bent blade shapes) on open ground, bent by a travelling world-space wind wave + gusts with a bright sheen on the crests; kept off paths, water, outcrops, landmarks and steep slopes (uses terrain87's FS_T87 layout).
+- 8 new plant types: fern, reeds (by water), clover, shrub, lupine, daisy, foxtail, dandelion puff; mix per biome.
+- Density: PC High 1, phone High 0.5, Med 0.25, Low none. Auto-lowering: step 1 grass x0.5, step 2 grass x0.25 + plants x0.5, step 3 hides all.
+- Kill switches ?r88off ?r88nograss ?r88noplants ?r88nowind.
+- ES: Praderas de hierba alta que se mece con el viento y 8 nuevas plantas; más ligera en teléfonos. Desactivar con ?r88off.
+
 ## v8.7 — terrain & ground (terrain87.js, approved by Leo from v87-preview)
 - Ground blends grass / soil / rock / sand by slope, height, island edge and water (wet glossy sand at waterlines, rocky outcrops); worn dirt paths between landmarks with grass cleared; layered cliff strata with grassy overhang on island sides, terraces and underside rocks.
 - Sky: richer cloud-sea blue, crisper clouds, less white horizon haze; fog kept beyond the island on the far-out phone home camera (no white wash).

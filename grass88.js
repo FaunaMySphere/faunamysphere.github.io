@@ -1,4 +1,4 @@
-// v8.8 PREVIEW: dense meadow grass that waves in the wind + 8 new plant types. Visual only: never touches the save.
+// v8.8: dense meadow grass that waves in the wind + 8 new plant types. Visual only: never touches the save.
 // - Long grass clumps (3 blade shapes) fill the open ground; travelling wind waves bend them and roll a bright sheen across the field.
 // - New plants: ferns, cattail reeds (by water), clover, leafy shrubs, blue lupines, daisies, foxtail grass, dandelion puffs. Mixed per biome.
 // - Respects v8.7 terrain: nothing grows on paths, rock or wet sand, or under landmarks.
